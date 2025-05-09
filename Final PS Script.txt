@@ -14,8 +14,6 @@ $SpecificWorkspaceID1 = ""  # Replace with your actual workspace ID or leave emp
 $SpecificWorkspaceID2 = ""  # Replace with your actual workspace ID or leave empty and the script will loop through every workspace
 
 
-$ErrorActionPreference = "SilentlyContinue"
-
 # Check for PBI Tools folder and extract if necessary
 $PBIToolsFolderPath = Join-Path -Path $baseFolderPath\Config -ChildPath "PBI Tools"
 $PBIToolsZipPattern = "pbi-tools*.zip"
@@ -32,6 +30,8 @@ if (-not (Test-Path -Path $PBIToolsFolderPath)) {
         Write-Output "Extracted $($zipFile.Name) to $PBIToolsFolderPath"
     }
 }
+
+$ErrorActionPreference = "SilentlyContinue"
 
 # Define the folder path and zip pattern for Tabular Editor
 $TabularEditorFolderPath = Join-Path -Path $baseFolderPath\Config -ChildPath "TabularEditor"
@@ -566,6 +566,15 @@ foreach ($workspace in $workspacesInfo) {
 
 #### Start of 'My Workspace' detail extract ####
 
+
+
+
+
+
+
+
+
+
 # Check if either variable is filled out, if so, skip this section
 if (-not $SpecificWorkspaceID1 -and -not $SpecificWorkspaceID2) {
 
@@ -843,6 +852,28 @@ if (-not (Test-Path -Path $tempExtractFolder)) {
     New-Item -Path $tempExtractFolder -ItemType Directory -Force
 }
 
+# Function to Export Using REST API and Stored Token
+function Export-ReportUsingAPI {
+    param (
+        [string]$GroupId,
+        [string]$ReportId,
+        [string]$OutFilePath,
+        [string]$DownloadType
+    )
+
+    $accessToken = Get-CurrentAccessToken
+    $apiUrl = "https://api.powerbi.com/v1.0/myorg/groups/$GroupId/reports/$ReportId/Export?downloadType=$DownloadType"
+
+    try {
+        Invoke-RestMethod -Uri $apiUrl `
+            -Headers @{ Authorization = "Bearer $accessToken" } `
+            -Method GET `
+            -OutFile $OutFilePath
+    } catch {
+        
+    }
+}
+
 foreach ($workspace in $workspacesInfo) {
     $workspaceName = $workspace.WorkspaceName
     $workspaceId = $workspace.WorkspaceId
@@ -852,105 +883,91 @@ foreach ($workspace in $workspacesInfo) {
     $cleanWorkspaceName = $cleanWorkspaceName -replace "[^a-zA-Z0-9\(\)&,.-]", " "
     $cleanWorkspaceName = $cleanWorkspaceName.TrimStart()
 
-    # Fetch reports from the existing list, NOT from Get-PowerBIReport
+    # Fetch reports from the existing list
     $reports = $reportsInfo | Where-Object { $_.WorkspaceId -eq $workspaceId }
 
-    # Export each report in the workspace
     foreach ($report in $reports) {
-
-    $reportName = $report.ReportName
-    $reportId = $report.ReportId
+        $reportName = $report.ReportName
+        $reportId = $report.ReportId
 
         # Clean up report name
         $cleanReportName = $reportName -replace '\[', '(' -replace '\]', ')'
         $cleanReportName = $cleanReportName -replace "[^a-zA-Z0-9\(\)&,.-]", " "
         $cleanReportName = $cleanReportName.TrimStart()
 
-        # Determine the file extension based on the report type
+        # Determine file extension
         $fileExtension = if ($report.WebUrl -like "*/rdlreports/*") { "rdl" } else { "pbix" }
         $filename = "$cleanWorkspaceName ~ $cleanReportName.$fileExtension"
         $filepath = Join-Path -Path $newDateFolder -ChildPath $filename
         $extractFolder = Join-Path -Path $tempExtractFolder -ChildPath "$cleanWorkspaceName ~ $cleanReportName"
 
-        # Check if the file exists and remove it if it does
+        # Delete file if it already exists
         if (Test-Path $filepath) {
             Remove-Item $filepath -Force
         }
 
         Write-Output "Exporting $cleanWorkspaceName ~ $cleanReportName"
-        Export-PowerBIReport -Id $reportId -OutFile $filepath
 
-        # Only process model extraction if the Workspace is not Premium or Fabric Capacity (i.e. only Pro Workspaces)
-
+        # Export based on Workspace Type
         if ($workspace.WorkspaceIsOnDedicatedCapacity -eq $false) {
-            # Extract the pbix file
+            # Pro Workspace → IncludeModel
+            Export-ReportUsingAPI -GroupId $workspaceId -ReportId $reportId -OutFilePath $filepath -DownloadType "IncludeModel"
+        } else {
+            # Premium/Fabric Workspace → LiveConnect
+            Export-ReportUsingAPI -GroupId $workspaceId -ReportId $reportId -OutFilePath $filepath -DownloadType "LiveConnect"
+        }
+
+        # Only process model extraction for Pro Workspaces
+        if ($workspace.WorkspaceIsOnDedicatedCapacity -eq $false) {
             Write-Output "Extracting $cleanWorkspaceName ~ $cleanReportName"
             pbi-tools extract $filepath -extractFolder $extractFolder -modelSerialization Raw
 
-            # Define a different drive letter to use (e.g., Q:)
             $driveLetter = "Q:"
             $quotedExtractFolder = "`"$extractFolder`""
 
-            # Ensure the drive letter is not already mapped
-            if (Test-Path $driveLetter) {
-                subst $driveLetter /D
-            }
+            if (Test-Path $driveLetter) { subst $driveLetter /D }
 
-            # Log the command for debugging
             $substCommand = "subst $driveLetter $quotedExtractFolder"
             Write-Output "Running command: $substCommand"
-
-            # Execute the subst command directly
             cmd.exe /c $substCommand
 
-            # Confirm mapping success
             if (-not (Test-Path $driveLetter)) {
                 Write-Error "Failed to map $extractFolder to $driveLetter"
                 continue
             }
 
-            # Generate the .bim file using the mapped drive
             Write-Output "Generating .bim for $cleanWorkspaceName ~ $cleanReportName using $driveLetter"
             pbi-tools generate-bim $driveLetter -transforms RemovePBIDataSourceVersion
 
-            # Rename and move the generated .bim files
             $bimFilesGenerated = Get-ChildItem -Path $extractFolder -Filter *.bim
             foreach ($bimFile in $bimFilesGenerated) {
                 $newBimName = "$cleanWorkspaceName ~ $cleanReportName.bim"
                 $newBimPath = Join-Path -Path $tempExtractFolder -ChildPath $newBimName
 
-                # Rename and move the .bim file
                 Move-Item -Path $bimFile.FullName -Destination $newBimPath -Force
                 Write-Output "Moved .bim file to $newBimPath"
             }
 
-            # Cleanup: Unmap the drive
             subst $driveLetter /D
-        } else {
         }
     }
 
     Write-Output "$cleanWorkspaceName Reports exported and processed"
 }
 
-# Move .bim files to the report backups path and clean up temp folder
+# Move .bim files to the Model backups path and clean up temp folder
 $bimFiles = Get-ChildItem -Path $tempExtractFolder -Recurse -Filter *.bim
 foreach ($bimFile in $bimFiles) {
-    $destinationPath = Join-Path -Path $newDateFolder -ChildPath $bimFile.Name
-    Move-Item -Path $bimFile.FullName -Destination $folderPath -Force
+    $destinationPath = Join-Path -Path $folderPath -ChildPath $bimFile.Name
+    Move-Item -Path $bimFile.FullName -Destination $destinationPath -Force
 }
 
 $tempDestinationRemovalPath = "$baseFolderPath\Config"
 
-# Remove the temporary extraction folder
-Remove-Item -Path $tempDestinationRemovalPath\Temp -Recurse -Force
-
-# Remove the temporary localhost folder
-Remove-Item -Path $tempDestinationRemovalPath\localhost -Recurse -Force
-
-# Remove the temporary localhost folder
-Remove-Item -Path $baseFolderPath\localhost -Recurse -Force
-
+# Clean up temporary folders
+Remove-Item -Path "$tempDestinationRemovalPath\Temp" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item -Path "$tempDestinationRemovalPath\localhost" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item -Path "$baseFolderPath\localhost" -Recurse -Force -ErrorAction SilentlyContinue
 
 
 
@@ -1098,7 +1115,11 @@ foreach ($dataset in $datasetsInfo) {
 
 Write-Host "First model export and script run completed."
 
+
+
 #### Start of PowerShell Combining to Semantic Models Worksheet ####
+
+
 
 # Define the output Excel file path in the base folder
 $outputExcelFile = Join-Path -Path $baseFolderPath -ChildPath "Model Detail.xlsx"
@@ -1130,15 +1151,7 @@ Write-Output "CSV files combined into the 'Semantic Models' worksheet in $output
 
 
 
-
-
-
-
 #### Start of Model Detail Script Run with Script3Path ####
-
-
-
-
 
 
 
