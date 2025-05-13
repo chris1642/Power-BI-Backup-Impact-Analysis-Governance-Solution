@@ -34,10 +34,11 @@ if (!System.IO.Directory.Exists(dateFolderPath))
 
 // Retrieve the model name
 var modelName = Model.Database.Name;
+var modelID = Model.Database.ID;
 
 // Initialize the StringBuilder for the CSV content
 var sb = new System.Text.StringBuilder();
-sb.AppendLine("MeasureName,DependsOn,DependsOnType,ModelAsOfDate,ModelName");
+sb.AppendLine("MeasureName,DependsOn,DependsOnType,ModelAsOfDate,ModelName,ModelID");
 
 // Process each measure in the model and list its dependencies
 foreach (var table in Model.Tables)
@@ -50,12 +51,13 @@ foreach (var table in Model.Tables)
         foreach (var dependency in dependencies)
         {
             // Add the measure name, dependency name, dependency type, the resolved date, and model name to the CSV
-            sb.AppendLine(String.Format("\"{0}\",\"{1}\",\"{2}\",\"{3}\",\"{4}\"", 
+            sb.AppendLine(String.Format("\"{0}\",\"{1}\",\"{2}\",\"{3}\",\"{4}\",\"{5}\"", 
                                          measure.Name, 
                                          dependency.Key.DaxObjectFullName, 
                                          dependency.Key.ObjectType, 
                                          currentDateStr, 
-                                         modelName));
+                                         modelName,
+                                         modelID));
         }
     }
 }
