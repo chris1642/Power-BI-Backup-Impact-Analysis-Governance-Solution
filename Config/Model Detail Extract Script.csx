@@ -2,6 +2,7 @@
 var basePath = @"C:\Power BI Backups";
 var addedPath = System.IO.Path.Combine(basePath, "Model Backups");
 var modelName = Model.Database.Name; // Retrieve the model name
+var modelID = Model.Database.ID;
 
 // Dynamically find the latest-dated folder
 string[] folders = System.IO.Directory.GetDirectories(addedPath);
@@ -37,7 +38,7 @@ if (!System.IO.Directory.Exists(dateFolderPath))
 var filePath = System.IO.Path.Combine(dateFolderPath, modelName + ".csv");
 
 // Define the header for the file
-var header = "\"Type\",\"Table\",\"Name\",\"FormatString\",\"DisplayFolder\",\"Description\",\"IsHidden\",\"Expression\",\"ModelAsOfDate\",\"ModelName\",\"RelationshipFromTable\",\"RelationshipFromColumn\",\"RelationshipToTable\",\"RelationshipToColumn\",\"RelationshipStatus\",\"RelationshipFromCardinality\",\"RelationshipToCardinality\",\"RelationshipCrossFilteringBehavior\"";
+var header = "\"Type\",\"Table\",\"Name\",\"FormatString\",\"DisplayFolder\",\"Description\",\"IsHidden\",\"Expression\",\"ModelAsOfDate\",\"ModelName\",\"ModelID\",\"RelationshipFromTable\",\"RelationshipFromColumn\",\"RelationshipToTable\",\"RelationshipToColumn\",\"RelationshipStatus\",\"RelationshipFromCardinality\",\"RelationshipToCardinality\",\"RelationshipCrossFilteringBehavior\"";
 
 // Initialize a string builder to collect data
 var sb = new System.Text.StringBuilder();
@@ -66,6 +67,7 @@ foreach (var t in Model.Tables)
         FormatField(""),
         FormatField(currentDateStr),
         FormatField(modelName),
+        FormatField(modelID),
         FormatField(""),
         FormatField(""),
         FormatField(""),
@@ -91,6 +93,7 @@ foreach (var m in Model.CalculationGroups)
         FormatField(""),
         FormatField(currentDateStr),
         FormatField(modelName),
+        FormatField(modelID),
         FormatField(""),
         FormatField(""),
         FormatField(""),
@@ -116,6 +119,7 @@ foreach (var c in Model.AllColumns)
         FormatField(""),
         FormatField(currentDateStr),
         FormatField(modelName),
+        FormatField(modelID),
         FormatField(""),
         FormatField(""),
         FormatField(""),
@@ -144,6 +148,7 @@ foreach (var column in calculatedColumns)
         FormatField(column.Expression),
         FormatField(currentDateStr),
         FormatField(modelName),
+        FormatField(modelID),
         FormatField(""),
         FormatField(""),
         FormatField(""),
@@ -170,6 +175,7 @@ foreach (var am in Model.AllMeasures)
         FormatField(am.Expression),
         FormatField(currentDateStr),
         FormatField(modelName),
+        FormatField(modelID),
         FormatField(""),
         FormatField(""),
         FormatField(""),
@@ -195,6 +201,7 @@ foreach (var h in Model.AllHierarchies)
         FormatField(""),
         FormatField(currentDateStr),
         FormatField(modelName),
+        FormatField(modelID),
         FormatField(""),
         FormatField(""),
         FormatField(""),
@@ -220,6 +227,7 @@ foreach (var l in Model.AllLevels)
         FormatField(""),
         FormatField(currentDateStr),
         FormatField(modelName),
+        FormatField(modelID),
         FormatField(""),
         FormatField(""),
         FormatField(""),
@@ -245,6 +253,7 @@ foreach (var p in Model.AllPartitions)
         FormatField(p.Expression),
         FormatField(currentDateStr),
         FormatField(modelName),
+        FormatField(modelID),
         FormatField(""),
         FormatField(""),
         FormatField(""),
@@ -270,6 +279,7 @@ foreach (var r in Model.Relationships)
         FormatField(r.Name),
         FormatField(currentDateStr),
         FormatField(modelName),
+        FormatField(modelID),
         FormatField(r.FromTable.Name),
         FormatField(r.FromColumn.Name),
         FormatField(r.ToTable.Name),
