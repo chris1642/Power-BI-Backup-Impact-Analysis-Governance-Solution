@@ -1516,4 +1516,8 @@ Stop-Job -Name "TokenRefreshJob"
 Remove-Job -Name "TokenRefreshJob"
 
 Write-Output "Excel files processed and combined successfully."
+
+$scriptEndTime = Get-Date
+$elapsedTime = New-TimeSpan -Start $scriptStartTime -End $scriptEndTime
+Write-Host "Total Elapsed Time: $($elapsedTime.Hours)h $($elapsedTime.Minutes)m $($elapsedTime.Seconds)s"
  
