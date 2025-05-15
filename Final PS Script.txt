@@ -1014,21 +1014,28 @@ if ($latestDateFolder) {
 }
 
 foreach ($txtFile in (Get-ChildItem -Path $newDateFolder -Filter *.txt)) {
-    # Get the base name of the file (without extension) for the worksheet name
     $worksheetName = [System.IO.Path]::GetFileNameWithoutExtension($txtFile.FullName)
     
-    # Import the TXT file, assuming it's tab-delimited
-    $txtData = Get-Content -Path $txtFile.FullName -Encoding UTF8 | ConvertFrom-Csv -Delimiter "`t"
+    # Read raw lines without automatically trimming leading or trailing spaces
+    $lines = Get-Content -Path $txtFile.FullName -Encoding UTF8
+    $headers = $lines[0] -split "`t"
+    $data = $lines[1..($lines.Count - 1)] | ForEach-Object {
+        $values = $_ -split "`t", -1  # -1 keeps empty trailing fields and preserves spaces
+        $obj = @{}
+        for ($i = 0; $i -lt $headers.Length; $i++) {
+            $obj[$headers[$i]] = $values[$i]
+        }
+        [PSCustomObject]$obj
+    }
 
     if ($excelExists) {
-        # Append data to the existing Excel file
-        $txtData | Export-Excel -Path $outputExcelFile -WorksheetName $worksheetName -AutoNameRange -Append
+        $data | Export-Excel -Path $outputExcelFile -WorksheetName $worksheetName -AutoNameRange -Append
     } else {
-        # Create a new Excel file with the data
-        $txtData | Export-Excel -Path $outputExcelFile -WorksheetName $worksheetName -AutoNameRange
+        $data | Export-Excel -Path $outputExcelFile -WorksheetName $worksheetName -AutoNameRange
         $excelExists = $true
     }
 }
+
 
 
 Write-Output "TXT files appended to $outputExcelFile"
