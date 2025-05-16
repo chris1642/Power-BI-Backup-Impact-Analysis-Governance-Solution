@@ -756,6 +756,18 @@ foreach ($dataset in $datasetsInfo) {
     # Get workspace details
     $workspace = $workspacesInfo | Where-Object { $_.WorkspaceId -eq $dataset.WorkspaceId }
 
+        # Construct the folder path and create it if it doesn't exist
+        $modelBackupsPath = "$baseFolderPath\Model Backups"
+        if (-not (Test-Path $modelBackupsPath)) {
+            New-Item -ItemType Directory -Force -Path $modelBackupsPath
+        }
+
+        # Construct the date model backup folder path and create it if it doesn't exist
+        $folderPath = "$modelBackupsPath\$date"
+        if (-not (Test-Path $folderPath)) {
+            New-Item -ItemType Directory -Force -Path $folderPath
+        }
+
     # Check if the workspace is Premium or Fabric capacity before proceeding
     if ($workspace.WorkspaceIsOnDedicatedCapacity -eq $true) {
 
@@ -772,18 +784,6 @@ foreach ($dataset in $datasetsInfo) {
         $cleanDatasetName = $datasetName -replace '\[', '(' -replace '\]', ')'
         $cleanDatasetName = $cleanDatasetName -replace "[^a-zA-Z0-9\(\)&,.-]", " "
         $cleanDatasetName = $cleanDatasetName.TrimStart()
-
-        # Construct the folder path and create it if it doesn't exist
-        $modelBackupsPath = "$baseFolderPath\Model Backups"
-        if (-not (Test-Path $modelBackupsPath)) {
-            New-Item -ItemType Directory -Force -Path $modelBackupsPath
-        }
-
-        # Construct the date model backup folder path and create it if it doesn't exist
-        $folderPath = "$modelBackupsPath\$date"
-        if (-not (Test-Path $folderPath)) {
-            New-Item -ItemType Directory -Force -Path $folderPath
-        }
 
         # Define the new model database name
         $newModelDatabaseName = "$cleanDatasetWorkspaceName ~ $cleanDatasetName"
@@ -1010,7 +1010,6 @@ if ($latestDateFolder) {
     Write-Output "Using the latest dated folder: $newDateFolder"
 } else {
     Write-Error "No valid dated folders found in 'Report Backups'."
-    exit
 }
 
 foreach ($txtFile in (Get-ChildItem -Path $newDateFolder -Filter *.txt)) {
@@ -1086,7 +1085,6 @@ if ($latestModelDateFolder) {
 } else {
     # Throw an error if no valid dated folders are found
     Write-Error "No valid dated folders found in 'Model Backups'."
-    exit
 }
 
 # Check if there are any .bim files in the $folderPath
