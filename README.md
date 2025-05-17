@@ -20,7 +20,7 @@ This provides a quick and automated way to identify where and how specific field
 
 ## Instructions:
 
-1. Create a new folder on your C: drive called 'Power BI Backups' (C:/Power BI Backups).
+1. Create a new folder on your C: drive called 'Power BI Backups' (C:\Power BI Backups).
 2. Download contents of this repo and place in C:\Power BI Backups folder. The contents of the Config folder should be at C:\Power BI Backups\Config
 5. Open PowerShell and run 'Final PS Script' (either via copy/paste or renaming the format from .txt to .ps1 and executing).
 6. Once complete, open 'Power BI Governance Model.pbit' and the model will refresh with your data. All relationships, Visuals, and Measures are set up. Save as PBIX.
@@ -106,7 +106,7 @@ This provides a quick and automated way to identify where and how specific field
 ..
 
 <img width="1235" alt="image" src="https://github.com/user-attachments/assets/805d3145-8290-4d84-8da2-bb27529bb050">
-<img width="1259" alt="image" src="https://github.com/user-attachments/assets/08a1090a-389e-49da-8544-ed3cf8a6e544">
+<img width="1259" alt="image" src="https://github.com/user-attachments/assets/54212360-8d0f-44c5-9337-db2cdd0fb5ee">
 <img width="1221" alt="image" src="https://github.com/user-attachments/assets/e120c1bb-b52a-4197-aeb3-2a6ddbb67a9f">
 <img width="1221" alt="image" src="https://github.com/user-attachments/assets/c9f5331d-8976-4f66-be76-5628e38e8d0f">
 <img width="1241" alt="image" src="https://github.com/user-attachments/assets/9d814034-494d-478b-b231-f759d7eebeab">
