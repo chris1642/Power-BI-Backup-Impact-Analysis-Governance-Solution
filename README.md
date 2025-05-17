@@ -1,3 +1,4 @@
+
 ## This all-in-one solution is designed to be ran by ANYONE. 
 - Everything within the script is limited to your access within the Power BI environment.
 - All computer requirements are at the user level and do not require admin privileges.
@@ -106,6 +107,7 @@ This provides a quick and automated way to identify where and how specific field
 ..
 
 <img width="1235" alt="image" src="https://github.com/user-attachments/assets/805d3145-8290-4d84-8da2-bb27529bb050">
+<img width="1259" alt="image" src="https://github.com/user-attachments/assets/9280e350-8714-40e5-8e09-d1de07faf5f5">
 <img width="1259" alt="image" src="https://github.com/user-attachments/assets/54212360-8d0f-44c5-9337-db2cdd0fb5ee">
 <img width="1221" alt="image" src="https://github.com/user-attachments/assets/e120c1bb-b52a-4197-aeb3-2a6ddbb67a9f">
 <img width="1221" alt="image" src="https://github.com/user-attachments/assets/c9f5331d-8976-4f66-be76-5628e38e8d0f">
