@@ -282,6 +282,16 @@ $appReportRenameMap = @{
     "sections" = "AppReportSections"
 }
 
+# Define renaming map for Fabric Items
+$fabricItemsRenameMap = @{
+    "id" = "FabricItemID";
+    "type" = "FabricItemType";
+    "displayName" = "FabricItemName";
+    "description" = "FabricItemDescription"
+}
+
+
+
 # Fetch and filter workspaces
 $workspacesUrl = "https://api.powerbi.com/v1.0/myorg/groups"
 $workspacesResponse = Invoke-PowerBIRestMethod -Method GET -Url $workspacesUrl | ConvertFrom-Json
@@ -307,6 +317,7 @@ elseif ($SpecificWorkspaceID1 -and $SpecificWorkspaceID2 -and
 }
 
 # Initialize collections for all necessary information
+$fabricItemsInfo = @()
 $datasetsInfo = @()
 $datasetSourcesInfo = @()
 $dataflowsInfo = @()
@@ -557,6 +568,34 @@ foreach ($workspace in $workspacesInfo) {
 }
 
 
+# Loop through all workspaces to fetch Fabric Items (excluding Reports and Semantic Models)
+foreach ($workspace in $workspacesInfo) {
+    $workspaceId = $workspace.WorkspaceId
+    $workspaceName = $workspace.WorkspaceName
+    $fabricItemsUrl = "https://api.fabric.microsoft.com/v1/workspaces/$workspaceId/items"
+
+    try {
+        $fabricItemsResponse = Invoke-PowerBIRestMethod -Method GET -Url $fabricItemsUrl | ConvertFrom-Json
+
+
+        $filteredItems = $fabricItemsResponse.value | Where-Object {
+            $_.type -ne 'Report' -and $_.type -ne 'SemanticModel'
+        }
+
+        foreach ($item in $filteredItems) {
+            $renamedItem = Rename-Properties -object $item -renameMap $fabricItemsRenameMap
+            $renamedItem | Add-Member -NotePropertyName "WorkspaceId" -NotePropertyValue $workspaceId -Force
+            $renamedItem | Add-Member -NotePropertyName "WorkspaceName" -NotePropertyValue $workspaceName -Force
+
+            $fabricItemsInfo += $renamedItem
+        }
+    } catch {
+        Write-Warning "Failed to fetch Fabric items for Workspace ID: $workspaceId. $_"
+    }
+}
+
+
+
 
 
 
@@ -565,15 +604,6 @@ foreach ($workspace in $workspacesInfo) {
 
 
 #### Start of 'My Workspace' detail extract ####
-
-
-
-
-
-
-
-
-
 
 # Check if either variable is filled out, if so, skip this section
 if (-not $SpecificWorkspaceID1 -and -not $SpecificWorkspaceID2) {
@@ -719,6 +749,7 @@ if (Test-Path $excelFile) {
 }
 
 $workspacesInfo | Export-Excel -Path $excelFile -WorksheetName "Workspaces" -AutoSize
+$fabricItemsInfo | Export-Excel -Path $excelFile -WorksheetName "FabricItems" -AutoSize -Append
 $datasetsInfo | Export-Excel -Path $excelFile -WorksheetName "Datasets" -AutoSize -Append
 $datasetSourcesInfo | Export-Excel -Path $excelFile -WorksheetName "DatasetSourcesInfo" -AutoSize -Append
 $datasetRefreshHistory | Export-Excel -Path $excelFile -WorksheetName "DatasetRefreshHistory" -AutoSize -Append
@@ -731,8 +762,7 @@ $reportPagesInfo | Export-Excel -Path $excelFile -WorksheetName "ReportPages" -A
 $appsInfo | Export-Excel -Path $excelFile -WorksheetName "Apps" -AutoSize -Append
 $reportsInAppInfo | Export-Excel -Path $excelFile -WorksheetName "AppReports" -AutoSize -Append
 
-Write-Host "Export completed. Data is saved to $excelFile"
- 
+Write-Host "Export completed. Data is saved to $excelFile"  
 
 
 
