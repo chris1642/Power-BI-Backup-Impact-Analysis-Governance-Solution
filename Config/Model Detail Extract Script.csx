@@ -1,6 +1,8 @@
+using System.IO;
+
 // Define the base path for the backups
-var basePath = @"C:\Power BI Backups";
-var addedPath = System.IO.Path.Combine(basePath, "Model Backups");
+string baseFolderPath = Directory.GetCurrentDirectory();
+var addedPath = System.IO.Path.Combine(baseFolderPath, "Model Backups");
 var modelName = Model.Database.Name; // Retrieve the model name
 var modelID = Model.Database.ID;
 
