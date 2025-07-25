@@ -17,7 +17,7 @@ using System.Text;
 ************************************************************************************************************/
 
 // User Parameters
-string baseFolderPath = @"C:\Power BI Backups"; // User-defined base path
+string baseFolderPath = Directory.GetCurrentDirectory();
 
 // Do not modify these parameters
 var addedPath = Path.Combine(baseFolderPath, "Report Backups");
