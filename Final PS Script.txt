@@ -1015,8 +1015,9 @@ Remove-Item -Path "$baseFolderPath\localhost" -Recurse -Force -ErrorAction Silen
 
 
 # Start Tabular Editor process
-$p = Start-Process -filePath "$TabularEditor2Path" -Wait -NoNewWindow -PassThru `
-       -ArgumentList "`"$baseFolderPath\Config\Blank Model.bim`" -S `"$Script1Path`" -B `"localhost\tabular`" `"MyModel`""
+$p = Start-Process -FilePath "$TabularEditor2Path" -Wait -NoNewWindow -PassThru `
+    -WorkingDirectory $baseFolderPath `
+    -ArgumentList "`"$baseFolderPath\Config\Blank Model.bim`" -S `"$Script1Path`""
 
 # Define the output Excel file path in the parent folder
 $outputExcelFile = Join-Path -Path $baseFolderPath -ChildPath "Report Detail.xlsx"
@@ -1142,10 +1143,11 @@ foreach ($dataset in $datasetsInfo) {
     $cleanDatasetName = $cleanDatasetName.TrimStart()
 
     # Construct the argument list for the first model script run
-    $modelScriptArgs = "`"$sourceFolderPath\$cleanDatasetWorkspaceName ~ $cleanDatasetName.bim`" -S `"$Script2Path`" -B `"localhost\tabular`" `"MyModel`""
+    $modelScriptArgs = "`"$sourceFolderPath\$cleanDatasetWorkspaceName ~ $cleanDatasetName.bim`" -S `"$Script2Path`""
     
     # Start the Tabular Editor process to run the first model script
-    Start-Process -FilePath "$TabularEditor2Path" -Wait -NoNewWindow -PassThru -ArgumentList $modelScriptArgs
+    Start-Process -FilePath "$TabularEditor2Path" -WorkingDirectory $baseFolderPath  
+    -Wait -NoNewWindow -PassThru -ArgumentList $modelScriptArgs
 }
 
 Write-Host "First model export and script run completed."
@@ -1207,10 +1209,11 @@ foreach ($dataset in $datasetsInfo) {
     $cleanDatasetName = $cleanDatasetName.TrimStart()
 
     # Construct the argument list for the second model script run
-    $modelScriptArgs = "`"$sourceFolderPath\$cleanDatasetWorkspaceName ~ $cleanDatasetName.bim`" -S `"$Script3Path`" -B `"localhost\tabular`" `"MyModel`""
+    $modelScriptArgs = "`"$sourceFolderPath\$cleanDatasetWorkspaceName ~ $cleanDatasetName.bim`" -S `"$Script3Path`""
     
     # Start the Tabular Editor process to run the second model script
-    Start-Process -FilePath "$TabularEditor2Path" -Wait -NoNewWindow -PassThru -ArgumentList $modelScriptArgs
+    Start-Process -FilePath "$TabularEditor2Path" -WorkingDirectory $baseFolderPath  
+    -Wait -NoNewWindow -PassThru -ArgumentList $modelScriptArgs
 }
 
 Write-Host "Second model export and script run completed."
