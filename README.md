@@ -32,7 +32,7 @@ Follow these 4 simple steps to get started:
 
 
 
-#### ✅ Step 2: Add Files — *place all downloaded repo files into that folder*  
+#### ✅ Step 2: Add Files — *download all repo files and place into the created folder*  
 > 💡 *Using a different folder?*  
 > Make sure to update this on line 4 in the beginning of the Final PS Script:  
 > ```powershell
