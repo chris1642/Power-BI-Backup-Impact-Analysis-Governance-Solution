@@ -22,23 +22,74 @@ This provides a quick and automated way to identify where and how specific field
 
      .
 
-## Instructions:
+## 🚀 Quick Start Instructions
 
-1. Create a new folder on your C: drive called 'Power BI Backups' (C:\Power BI Backups).
-2. Download contents of this repo and place in C:\Power BI Backups folder. The contents of the Config folder should be at C:\Power BI Backups\Config
-5. Open PowerShell and run 'Final PS Script' (either via copy/paste or renaming the format from .txt to .ps1 and executing).
-6. Once complete, open 'Power BI Governance Model.pbit' and the model will refresh with your data. All relationships, Visuals, and Measures are set up. Save as PBIX.
+Follow these 4 simple steps to get started:
 
 
-     .
 
-     .
+#### ✅ Step 1: Create Folder — *make a folder at `C:\Power BI Backups`*
 
-- ** If any modules are required within PowerShell, PowerShell will request to install (user level, no admin access required) **
-- ** This includes the portable version of Tabular Editor 2 v2.26.0 (https://github.com/TabularEditor/TabularEditor - MIT License). This no longer requires having it preinstalled, as it will run from the portable version with no differences. ** 
-- ** For backing up Models, the solution will use the XMLA endpoint via Tabular Editor 2's Command Line Interface for PPU, Premium, and Fabric workspaces. Within Pro workspaces, pbi-tools is leveraged to extract the Model into a BIM file via the PBIX. This solution includes pbi-tools v1.2 (https://github.com/pbi-tools/pbi-tools - AGPL 3.0 license). **
-- ** For users of the commercial/enterprise Tabular Editor 3, Tabular Editor 2 is still required. TE3 does not have a command line interface feature **
-- ** If you see a refresh error in the Power BI Governance Model Template along the lines of "Query XXXXXX references other queries or steps, so it may not directly access a data source. Please rebuild this data combination", this is related to the privacy settings within Power BI Desktop. To resolve, go to: File -> Options and settings -> Options -> Privacy (under Global) -> change to EITHER "Combine data according to each file's Privacy Level settings" or "Always Ignore Privacy Level Settings". The template model file is set to ignore privacy settings for the excel files - but requires that the global privacy settings are either per file or always ignored. **
+
+
+#### ✅ Step 2: Add Files — *place all downloaded repo files into that folder*  
+> 💡 *Using a different folder?*  
+> Make sure to update this on line 4 in the beginning of the Final PS Script:  
+> ```powershell
+> $baseFolderPath = "C:\Power BI Backups"
+> ```
+
+
+
+#### ✅ Step 3: Run Script — *open PowerShell and run the Final PS Script*  
+> You can:  
+> - Copy/paste the full script  
+> - Or rename it from `.txt` to `.ps1` and run it directly
+
+
+
+
+#### ✅ Step 4: Open the Power BI File — *let it refresh, then save as `.pbix`*  
+> Open: `Power BI Governance Model.pbit`
+
+
+.
+.
+
+🎉 That’s it — enjoy! 🎉
+
+
+
+
+
+
+---
+
+### ℹ️ Additional Notes
+
+> ⚙️ *PowerShell may prompt to install required modules.*  
+> No admin access is needed — they install at the user level.
+
+> 🧰 *This setup uses the portable version of Tabular Editor 2 (v2.26.0).*  
+> You don't need it preinstalled. It runs locally from the folder with no differences.  
+> https://github.com/TabularEditor/TabularEditor _(MIT License)_
+
+> 🧠 *Model backups use XMLA (for PPU, Premium, Fabric).*  
+> For Pro workspaces, `pbi-tools` extracts the BIM from the PBIX.  
+> Includes `pbi-tools v1.2`: https://github.com/pbi-tools/pbi-tools _(AGPL 3.0 License)_
+
+> 🚨 *Using Tabular Editor 3?*  
+> Tabular Editor 2 is still required. TE3 doesn't support command line execution.
+
+> 🧩 *Privacy setting error in Power BI Desktop?*  
+> If you see:  
+> _"Query XXXXXX references other queries or steps..."_  
+> Change your Power BI privacy settings:  
+> **File → Options and settings → Options → Privacy**  
+> Then select:  
+> - “Combine data according to each file's Privacy Level settings”  
+>   **or**  
+> - “Always ignore Privacy Level settings”
 
 
 ## Features
