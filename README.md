@@ -93,6 +93,7 @@ Follow these 4 simple steps to get started:
 > - “Always ignore Privacy Level settings”
 
 
+---
 ## Features
 
 ### 1. Workspace and Power BI Environment Metadata Extraction
