@@ -83,7 +83,8 @@ Follow these 4 simple steps to get started:
 
 > 🧩 *Privacy setting error in Power BI Desktop?*  
 > If you see:  
-> _"Query XXXXXX references other queries or steps..."_  
+> _"**Query XXXXXX references other queries or steps...**"_
+> 
 > Change your Power BI privacy settings:  
 > **File → Options and settings → Options → Privacy**  
 > Then select:  
