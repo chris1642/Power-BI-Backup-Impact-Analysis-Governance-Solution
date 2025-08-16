@@ -7,12 +7,11 @@ using System.Text;
 
 /************************************************************************************************************
 
-    Instructions:
+    Instructions if running manually:
 
     1. Open Blank Model.bim in Tabular Editor or create a new model (compatibility level does not matter)
     2. Paste this code into the Advanced Scripting window of Tabular Editor.
-
-    3. Update the baseFolderPath described below
+    3. Update the baseFolderPath below with the actual directory in quotes - example: "C:/Power BI Backups"
 
 ************************************************************************************************************/
 
@@ -524,22 +523,16 @@ try
                         string formatStr = "";
                         try { formatStr = (string)m["formatInformation"]["formatString"]; } catch { }
 
-                        // Escape for TSV
-                        expr = expr.Replace("\"", "\"\"");
-                        formatStr = formatStr.Replace("\"", "\"\"");
+                        // Escape tabs so they don’t break your .txt structure
+                        expr = expr.Replace("\t", " ");
+                        formatStr = formatStr.Replace("\t", " ");
 
-                        // Normalize newlines for Excel cell display
-                        expr = expr.Replace("\r\n", "\n").Replace("\n", "\r\n");
+                        // Remove all newlines completely (collapse into one line)
+                        expr = expr.Replace("\r\n", " ").Replace("\n", " ");
+                        formatStr = formatStr.Replace("\r\n", " ").Replace("\n", " ");
 
-                        // Wrap in quotes to keep it in one cell
-                        expr = "\"" + expr + "\"";
-                        formatStr = "\"" + formatStr + "\"";
-
-                        sb_ReportLevelMeasures.Append(
-                            ReportName + '\t' + ReportID + '\t' + ModelID + '\t' +
-                            tableName + '\t' + measureName + '\t' + expr + '\t' +
-                            hidden.ToString().ToLower() + '\t' + formatStr + '\t' + ReportDate + newline
-                        );
+                    // Keep it raw text with tabs
+                    sb_ReportLevelMeasures.Append( ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + tableName + '\t' + measureName + '\t' + expr + '\t' + hidden.ToString().ToLower() + '\t' + formatStr + '\t' + ReportDate + newline );
                     }
                     catch
                     {
@@ -3387,3 +3380,5 @@ public class ReportLevelMeasures
 }
 
 static void _() { // Comment out this line if using Tabular Editor 3
+
+
