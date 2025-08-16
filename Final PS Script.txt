@@ -1048,17 +1048,9 @@ if ($latestDateFolder) {
 foreach ($txtFile in (Get-ChildItem -Path $newDateFolder -Filter *.txt)) {
     $worksheetName = [System.IO.Path]::GetFileNameWithoutExtension($txtFile.FullName)
     
-    # Read raw lines without automatically trimming leading or trailing spaces
-    $lines = Get-Content -Path $txtFile.FullName -Encoding UTF8
-    $headers = $lines[0] -split "`t"
-    $data = $lines[1..($lines.Count - 1)] | ForEach-Object {
-        $values = $_ -split "`t", -1  # -1 keeps empty trailing fields and preserves spaces
-        $obj = @{}
-        for ($i = 0; $i -lt $headers.Length; $i++) {
-            $obj[$headers[$i]] = $values[$i]
-        }
-        [PSCustomObject]$obj
-    }
+      
+ # Import as tab-delimited, honoring quotes and embedded newlines
+    $data = Import-Csv -Path $txtFile.FullName -Delimiter "`t" -Encoding UTF8
 
     if ($excelExists) {
         $data | Export-Excel -Path $outputExcelFile -WorksheetName $worksheetName -AutoNameRange -Append
@@ -1067,9 +1059,6 @@ foreach ($txtFile in (Get-ChildItem -Path $newDateFolder -Filter *.txt)) {
         $excelExists = $true
     }
 }
-
-
-
 Write-Output "TXT files appended to $outputExcelFile"
 
 
