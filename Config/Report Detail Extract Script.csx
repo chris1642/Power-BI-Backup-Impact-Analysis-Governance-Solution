@@ -102,6 +102,9 @@ sb_Connections.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t'
 var sb_VisualInteractions = new System.Text.StringBuilder();
 sb_VisualInteractions.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "PageName" + '\t' + "PageId" + '\t' + "SourceVisualID" + '\t' + "TargetVisualID" + '\t' + "TypeID" + '\t' + "Type" + '\t' + "ReportDate" + newline);
 
+var sb_ReportLevelMeasures = new System.Text.StringBuilder();
+sb_ReportLevelMeasures.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "TableName" + '\t' + "MeasureName" + '\t' + "Expression" + '\t' + "HiddenFlag" + '\t' + "FormatString" + '\t' + "ReportDate" + newline);
+
 if (pbiFile.Length > 0 && pbiFolderName.Length == 0)
 {
     Error("If specifying the 'pbiFile' you must also specify the 'pbiFolderName'.");
@@ -131,6 +134,7 @@ foreach (var rpt in FileList)
     var Pages = new List<Page>();
     var Connections = new List<Connection>();
     var VisualInteractions = new List<VisualInteraction>();
+    var ReportLevelMeasures = new List<ReportLevelMeasures>();
     string fileExt = Path.GetExtension(rpt);
     string ReportName = Path.GetFileNameWithoutExtension(rpt);
     string ReportDate = latestFolder != null ? latestDate.ToString("yyyy-MM-dd") : DateTime.Now.ToString("yyyy-MM-dd");
@@ -477,6 +481,100 @@ catch (Exception ex)
 
 
 
+
+
+
+// ****ReportLevelMeasures (C# 5.0 compatible) ****
+try
+{
+    string configRaw = (string)json["config"];
+    if (!string.IsNullOrEmpty(configRaw))
+    {
+        var configToken = Newtonsoft.Json.Linq.JToken.Parse(configRaw);
+
+        Action<Newtonsoft.Json.Linq.JToken> processEntities = delegate(Newtonsoft.Json.Linq.JToken entitiesToken)
+        {
+            if (entitiesToken == null) return;
+
+            foreach (var ent in entitiesToken.Children())
+            {
+                string tableName = (string)ent["name"];
+                if (string.IsNullOrEmpty(tableName))
+                    tableName = (string)ent["Name"];
+
+                var measures = ent["measures"];
+                if (measures == null) measures = ent["Measures"];
+                if (measures == null) continue;
+
+                foreach (var m in measures.Children())
+                {
+                    try
+                    {
+                        string measureName = (string)m["name"];
+                        if (string.IsNullOrEmpty(measureName))
+                            measureName = (string)m["Name"];
+
+                        string expr = (string)m["expression"];
+                        if (string.IsNullOrEmpty(expr))
+                            expr = (string)m["Expression"];
+
+                        bool hidden = false;
+                        try { hidden = (bool)m["hidden"]; } catch { }
+
+                        string formatStr = "";
+                        try { formatStr = (string)m["formatInformation"]["formatString"]; } catch { }
+
+                        // Escape for TSV
+                        expr = expr.Replace("\"", "\"\"");
+                        formatStr = formatStr.Replace("\"", "\"\"");
+
+                        // Normalize newlines for Excel cell display
+                        expr = expr.Replace("\r\n", "\n").Replace("\n", "\r\n");
+
+                        // Wrap in quotes to keep it in one cell
+                        expr = "\"" + expr + "\"";
+                        formatStr = "\"" + formatStr + "\"";
+
+                        sb_ReportLevelMeasures.Append(
+                            ReportName + '\t' + ReportID + '\t' + ModelID + '\t' +
+                            tableName + '\t' + measureName + '\t' + expr + '\t' +
+                            hidden.ToString().ToLower() + '\t' + formatStr + '\t' + ReportDate + newline
+                        );
+                    }
+                    catch
+                    {
+                        // Skip malformed measure
+                    }
+                }
+            }
+        };
+
+        // Path 1: modelExtensions -> entities -> measures
+        var modelExtensions = configToken["modelExtensions"];
+        if (modelExtensions == null) modelExtensions = configToken["ModelExtensions"];
+        if (modelExtensions != null)
+        {
+            foreach (var me in modelExtensions.Children())
+            {
+                var entities = me["entities"];
+                if (entities == null) entities = me["Entities"];
+                processEntities(entities);
+            }
+        }
+
+        // Path 2: Extension -> Entities -> Measures
+        var extension = configToken["Extension"];
+        if (extension != null)
+        {
+            var extensionEntities = extension["Entities"];
+            processEntities(extensionEntities);
+        }
+    }
+}
+catch
+{
+    // Ignore if config not present or parse fails
+}
 
 
 
@@ -2913,6 +3011,11 @@ try
     {
         sb_VisualInteractions.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.PageName + '\t' + x.PageId + '\t' + x.SourceVisualID + '\t' + x.TargetVisualID + '\t' + x.TypeID + '\t' + x.Type + '\t' + ReportDate +    newline);
     }
+    foreach (var m in ReportLevelMeasures.ToList())
+    {
+        sb_ReportLevelMeasures.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + m.TableName + '\t' + m.MeasureName + '\t' + m.Expression + '\t' + m.HiddenFlag + '\t' + m.FormatString + '\t' + ReportDate + newline);
+    }
+
 }
 
 // Save to text files or print out results
@@ -2928,6 +3031,7 @@ if (saveToFile)
     System.IO.File.WriteAllText(pbiFolderName+@"\"+"Pages.txt", sb_Pages.ToString());
     System.IO.File.WriteAllText(pbiFolderName+@"\"+"Connections.txt", sb_Connections.ToString());
     System.IO.File.WriteAllText(pbiFolderName+@"\"+"VisualInteractions.txt", sb_VisualInteractions.ToString());
+    System.IO.File.WriteAllText(pbiFolderName+@"\"+"ReportLevelMeasures.txt", sb_ReportLevelMeasures.ToString());
 }
 else
 {
@@ -2941,6 +3045,7 @@ else
     sb_Pages.Output();
     sb_Connections.Output();
     sb_VisualInteractions.Output();
+    sb_ReportLevelMeasures.Output();
 }
 
 // Add dependencies to the perspective
@@ -3265,6 +3370,19 @@ public class VisualInteraction
     public string TargetVisualID { get; set; }
     public int TypeID { get; set; }
     public string Type { get; set; }
+    public string ReportDate { get; set; }
+}
+
+public class ReportLevelMeasures
+{
+    public string TableName { get; set; }
+    public string MeasureName { get; set; }
+    public string Expression { get; set; }
+    public string HiddenFlag { get; set; }
+    public string FormatString { get; set; }
+    public string ReportName { get; set; }
+    public string ReportID { get; set; }
+    public string ModelID { get; set; }
     public string ReportDate { get; set; }
 }
 
