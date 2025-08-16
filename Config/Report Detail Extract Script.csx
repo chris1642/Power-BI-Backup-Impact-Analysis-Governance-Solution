@@ -102,7 +102,7 @@ var sb_VisualInteractions = new System.Text.StringBuilder();
 sb_VisualInteractions.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "PageName" + '\t' + "PageId" + '\t' + "SourceVisualID" + '\t' + "TargetVisualID" + '\t' + "TypeID" + '\t' + "Type" + '\t' + "ReportDate" + newline);
 
 var sb_ReportLevelMeasures = new System.Text.StringBuilder();
-sb_ReportLevelMeasures.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "TableName" + '\t' + "MeasureName" + '\t' + "Expression" + '\t' + "HiddenFlag" + '\t' + "FormatString" + '\t' + "ReportDate" + newline);
+sb_ReportLevelMeasures.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "TableName" + '\t' + "ObjectName" + '\t' + "ObjectType" + '\t' + "Expression" + '\t' + "HiddenFlag" + '\t' + "FormatString" + '\t' + "ReportDate" + newline);
 
 if (pbiFile.Length > 0 && pbiFolderName.Length == 0)
 {
@@ -509,9 +509,10 @@ try
                 {
                     try
                     {
-                        string measureName = (string)m["name"];
-                        if (string.IsNullOrEmpty(measureName))
-                            measureName = (string)m["Name"];
+                        // renamed: measureName → objectName
+                        string objectName = (string)m["name"];
+                        if (string.IsNullOrEmpty(objectName))
+                            objectName = (string)m["Name"];
 
                         string expr = (string)m["expression"];
                         if (string.IsNullOrEmpty(expr))
@@ -531,8 +532,22 @@ try
                         expr = expr.Replace("\r\n", " ").Replace("\n", " ");
                         formatStr = formatStr.Replace("\r\n", " ").Replace("\n", " ");
 
-                    // Keep it raw text with tabs
-                    sb_ReportLevelMeasures.Append( ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + tableName + '\t' + measureName + '\t' + expr + '\t' + hidden.ToString().ToLower() + '\t' + formatStr + '\t' + ReportDate + newline );
+                        // Added: objectType is always "Measure"
+                        string objectType = "Measure";
+
+                        // Keep it raw text with tabs
+                        sb_ReportLevelMeasures.Append(
+                            ReportName + '\t' +
+                            ReportID + '\t' +
+                            ModelID + '\t' +
+                            tableName + '\t' +
+                            objectName + '\t' +
+                            objectType + '\t' +   // inserted after objectName
+                            expr + '\t' +
+                            hidden.ToString().ToLower() + '\t' +
+                            formatStr + '\t' +
+                            ReportDate + newline
+                        );
                     }
                     catch
                     {
@@ -3006,7 +3021,7 @@ try
     }
     foreach (var m in ReportLevelMeasures.ToList())
     {
-        sb_ReportLevelMeasures.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + m.TableName + '\t' + m.MeasureName + '\t' + m.Expression + '\t' + m.HiddenFlag + '\t' + m.FormatString + '\t' + ReportDate + newline);
+        sb_ReportLevelMeasures.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + m.TableName + '\t' + m.ObjectName + '\t' + m.ObjectType + '\t' + m.Expression + '\t' + m.HiddenFlag + '\t' + m.FormatString + '\t' + ReportDate + newline);
     }
 
 }
@@ -3369,7 +3384,8 @@ public class VisualInteraction
 public class ReportLevelMeasures
 {
     public string TableName { get; set; }
-    public string MeasureName { get; set; }
+    public string ObjectName { get; set; }
+    public string ObjectType { get; set; }
     public string Expression { get; set; }
     public string HiddenFlag { get; set; }
     public string FormatString { get; set; }
@@ -3380,5 +3396,7 @@ public class ReportLevelMeasures
 }
 
 static void _() { // Comment out this line if using Tabular Editor 3
+
+
 
 
