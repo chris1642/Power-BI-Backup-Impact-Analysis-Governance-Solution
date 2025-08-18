@@ -1049,73 +1049,30 @@ if ($latestDateFolder) {
     Write-Error "No valid dated folders found in 'Report Backups'."
 }
 
-# Helper: sanitize worksheet name for Excel
-function Get-ExcelSheetName([string]$name) {
-    $s = $name -replace '[:\\/?*\[\]]','_'   # illegal chars -> _
-    if ($s.Length -gt 31) { $s = $s.Substring(0,31) }  # Excel limit
-    return $s
-}
-
-# Collect all *.txt files
-$txtFiles = Get-ChildItem -Path $newDateFolder -Filter *.txt
-
-# Group by base name (strip -PBIR if uppercase only)
-$groups = $txtFiles | Group-Object {
-    if ($_.BaseName -match '-PBIR$') {
-        $_.BaseName -replace '-PBIR$',''
-    } else {
-        $_.BaseName
-    }
-}
-
-foreach ($g in $groups) {
-    $baseName      = $g.Name
-    $worksheetName = Get-ExcelSheetName $baseName
-
-    # Separate files
-    $stdFile  = $g.Group | Where-Object { $_.BaseName -notmatch '-PBIR$' } | Select-Object -First 1
-    $pbirFile = $g.Group | Where-Object { $_.BaseName -match    '-PBIR$' } | Select-Object -First 1
-
-    # Pick header source
-    $headerFile = $stdFile
-    if (-not $headerFile) { $headerFile = $pbirFile }
-    if (-not $headerFile) { continue }
-
-    # Get header line
-    $headerLine = (Get-Content -Path $headerFile.FullName -Encoding UTF8 -TotalCount 1)
-    $headers    = $headerLine -split "`t"
-
-    # Build DataTable with those headers
-    $dt = New-Object System.Data.DataTable
-    foreach ($h in $headers) { [void]$dt.Columns.Add($h) }
-
-    # Function to add rows
-    function Add-RowsFromFile($file, $table, $hdrs) {
-        if (-not $file) { return }
-        $lines = Get-Content -Path $file.FullName -Encoding UTF8
-        if ($null -eq $lines -or $lines.Count -le 1) { return }
-        for ($i = 1; $i -lt $lines.Count; $i++) {
-            $values = $lines[$i] -split "`t", -1
-            $row = $table.NewRow()
-            for ($c = 0; $c -lt $hdrs.Length; $c++) {
-                $row[$hdrs[$c]] = if ($c -lt $values.Length) { $values[$c] } else { $null }
-            }
-            $table.Rows.Add($row) | Out-Null
+foreach ($txtFile in (Get-ChildItem -Path $newDateFolder -Filter *.txt)) {
+    $worksheetName = [System.IO.Path]::GetFileNameWithoutExtension($txtFile.FullName)
+    
+    # Read raw lines without automatically trimming leading or trailing spaces
+    $lines = Get-Content -Path $txtFile.FullName -Encoding UTF8
+    $headers = $lines[0] -split "`t"
+    $data = $lines[1..($lines.Count - 1)] | ForEach-Object {
+        $values = $_ -split "`t", -1  # -1 keeps empty trailing fields and preserves spaces
+        $obj = @{}
+        for ($i = 0; $i -lt $headers.Length; $i++) {
+            $obj[$headers[$i]] = $values[$i]
         }
+        [PSCustomObject]$obj
     }
 
-    # Add rows from both files
-    Add-RowsFromFile $stdFile  $dt $headers
-    Add-RowsFromFile $pbirFile $dt $headers
-
-    # Export to Excel
     if ($excelExists) {
-        Export-Excel -Path $outputExcelFile -WorksheetName $worksheetName -AutoNameRange -Append -InputObject $dt
+        $data | Export-Excel -Path $outputExcelFile -WorksheetName $worksheetName -AutoNameRange -Append
     } else {
-        Export-Excel -Path $outputExcelFile -WorksheetName $worksheetName -AutoNameRange -InputObject $dt
+        $data | Export-Excel -Path $outputExcelFile -WorksheetName $worksheetName -AutoNameRange
         $excelExists = $true
     }
 }
+
+
 
 Write-Output "TXT files appended to $outputExcelFile"
 
