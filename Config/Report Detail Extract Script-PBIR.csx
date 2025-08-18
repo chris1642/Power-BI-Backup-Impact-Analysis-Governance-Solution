@@ -1243,17 +1243,17 @@ bool saveToFile = true;
 
 if (saveToFile)
 {
-    File.WriteAllText(Path.Combine(pbiFolderName, "CustomVisuals-PBIR.txt"), sb_CustomVisuals.ToString());
-    File.WriteAllText(Path.Combine(pbiFolderName, "ReportFilters-PBIR.txt"), sb_ReportFilters.ToString());
-    File.WriteAllText(Path.Combine(pbiFolderName, "PageFilters-PBIR.txt"), sb_PageFilters.ToString());
-    File.WriteAllText(Path.Combine(pbiFolderName, "VisualFilters-PBIR.txt"), sb_VisualFilters.ToString());
-    File.WriteAllText(Path.Combine(pbiFolderName, "VisualObjects-PBIR.txt"), sb_VisualObjects.ToString());
-    File.WriteAllText(Path.Combine(pbiFolderName, "Visuals-PBIR.txt"), sb_Visuals.ToString());
-    File.WriteAllText(Path.Combine(pbiFolderName, "Bookmarks-PBIR.txt"), sb_Bookmarks.ToString());
-    File.WriteAllText(Path.Combine(pbiFolderName, "Pages-PBIR.txt"), sb_Pages.ToString());
-    File.WriteAllText(Path.Combine(pbiFolderName, "Connections-PBIR.txt"), sb_Connections.ToString());
-    File.WriteAllText(Path.Combine(pbiFolderName, "VisualInteractions-PBIR.txt"), sb_VisualInteractions.ToString());
-    File.WriteAllText(Path.Combine(pbiFolderName, "ReportLevelMeasures-PBIR.txt"), sb_ReportLevelMeasures.ToString());
+    File.WriteAllText(Path.Combine(pbiFolderName, "CustomVisuals.txt"), sb_CustomVisuals.ToString());
+    File.WriteAllText(Path.Combine(pbiFolderName, "ReportFilters.txt"), sb_ReportFilters.ToString());
+    File.WriteAllText(Path.Combine(pbiFolderName, "PageFilters.txt"), sb_PageFilters.ToString());
+    File.WriteAllText(Path.Combine(pbiFolderName, "VisualFilters.txt"), sb_VisualFilters.ToString());
+    File.WriteAllText(Path.Combine(pbiFolderName, "VisualObjects.txt"), sb_VisualObjects.ToString());
+    File.WriteAllText(Path.Combine(pbiFolderName, "Visuals.txt"), sb_Visuals.ToString());
+    File.WriteAllText(Path.Combine(pbiFolderName, "Bookmarks.txt"), sb_Bookmarks.ToString());
+    File.WriteAllText(Path.Combine(pbiFolderName, "Pages.txt"), sb_Pages.ToString());
+    File.WriteAllText(Path.Combine(pbiFolderName, "Connections.txt"), sb_Connections.ToString());
+    File.WriteAllText(Path.Combine(pbiFolderName, "VisualInteractions.txt"), sb_VisualInteractions.ToString());
+    File.WriteAllText(Path.Combine(pbiFolderName, "ReportLevelMeasures.txt"), sb_ReportLevelMeasures.ToString());
 }
 else
 {
@@ -1269,6 +1269,7 @@ else
     sb_VisualInteractions.Output();
     sb_ReportLevelMeasures.Output();
 }
+
 
 foreach (var folder in foldersToDelete)
 {
