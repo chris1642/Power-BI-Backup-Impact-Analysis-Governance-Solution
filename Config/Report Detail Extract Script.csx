@@ -111,7 +111,8 @@ if (pbiFile.Length > 0 && pbiFolderName.Length == 0)
 }    
 else if (pbiFile.Length == 0 && pbiFolderName.Length > 0)
 {
-    foreach (var x in System.IO.Directory.GetFiles(pbiFolderName, "*.pbi*"))
+    // Get all subdirectories in the latest date folder instead of files
+    foreach (var x in Directory.GetDirectories(pbiFolderName))
     {
         FileList.Add(x);
     }
@@ -134,51 +135,12 @@ foreach (var rpt in FileList)
     var Connections = new List<Connection>();
     var VisualInteractions = new List<VisualInteraction>();
     var ReportLevelMeasures = new List<ReportLevelMeasures>();
-    string fileExt = Path.GetExtension(rpt);
-    string ReportName = Path.GetFileNameWithoutExtension(rpt);
+    
+    // Since rpt is now a directory path, get the folder name as ReportName
+    string ReportName = Path.GetFileName(rpt);
     string ReportDate = latestFolder != null ? latestDate.ToString("yyyy-MM-dd") : DateTime.Now.ToString("yyyy-MM-dd");
     string folderName = Path.GetDirectoryName(rpt) + @"\";
-    string zipPath = folderName + ReportName + ".zip";
-    string unzipPath = folderName + ReportName;
-
-if (!(fileExt == ".pbix" || fileExt == ".pbit"))
-{
-    Error("'" + rpt + "' is not a valid file. File(s) must be a valid .pbix or .pbit.");
-    return;
-}
-
-bool extractionSucceeded = false;
-
-try
-{
-    // Make a copy of a pbi and turn it into a zip file
-    File.Copy(rpt, zipPath);
-    // Unzip file
-    System.IO.Compression.ZipFile.ExtractToDirectory(zipPath, unzipPath);
-    extractionSucceeded = true; // Set flag to true if extraction is successful
-}
-catch (System.IO.PathTooLongException)
-{
-    // Log or handle the PathTooLongException if needed
-}
-catch (System.IO.DirectoryNotFoundException)
-{
-    // Log or handle the DirectoryNotFoundException if needed
-}
-catch (System.IO.InvalidDataException ex)
-{
-
-}
-catch (Exception ex)
-{
-    
-}
-finally
-    {
-        // Delete zip file
-        File.Delete(zipPath);
-    }
-
+    string unzipPath = rpt; // rpt is already the directory path, no need for unzipping
 
 
 
@@ -318,8 +280,7 @@ if (File.Exists(connPath))
     Connections.Add(new Connection { ServerName = svName, ModelID = ModelID, Type = connType, ReportID = ReportID });        
 }
     
-
-    //Delete previously created folder
+    //Delete folders
     try
     {
         Directory.Delete(folderName + ReportName,true);
@@ -3396,7 +3357,4 @@ public class ReportLevelMeasures
 }
 
 static void _() { // Comment out this line if using Tabular Editor 3
-
-
-
-
+ 
