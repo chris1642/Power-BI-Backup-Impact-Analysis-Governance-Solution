@@ -2939,68 +2939,55 @@ try
         }
     }    
     
-    // Add results to StringBuilders
+    // === Add results to StringBuilders (rows only, no headers) ===
     foreach (var x in CustomVisuals.ToList())
-    {
-        sb_CustomVisuals.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.Name + '\t' + ReportDate +  newline);
-    }
-    foreach (var x in ReportFilters.ToList())
-    {
-        sb_ReportFilters.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.displayName + '\t' + x.TableName + '\t' + x.ObjectName + '\t' + x.ObjectType + '\t' + x.FilterType + '\t' + x.HiddenFilter + '\t' + x.LockedFilter + '\t' + x.AppliedFilterVersion + '\t' + ReportDate + newline);
-    }
-    foreach (var x in PageFilters.ToList())
-    {
-        sb_PageFilters.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.PageId + '\t' + x.PageName + '\t' + x.displayName + '\t' + x.TableName + '\t' + x.ObjectName + '\t' + x.ObjectType + '\t' + x.FilterType + '\t' + x.HiddenFilter + '\t' + x.LockedFilter + '\t' + x.AppliedFilterVersion + '\t' + ReportDate + newline);
-    }
-    foreach (var x in VisualFilters.ToList())
-    {
-        sb_VisualFilters.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.PageName + '\t' + x.PageId + '\t' + x.VisualId + '\t' + x.TableName + '\t' + x.ObjectName + '\t' + x.ObjectType + '\t' + x.FilterType + '\t' + x.HiddenFilter + '\t' + x.LockedFilter + '\t' + x.AppliedFilterVersion + '\t' + x.displayName + '\t' + ReportDate + newline);
-    }
-    foreach (var x in VisualObjects.ToList())
-    {
-        sb_VisualObjects.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.PageName + '\t' + x.PageId + '\t' + x.VisualId + '\t' + x.VisualType + '\t' + x.AppliedFilterVersion + '\t' + x.CustomVisualFlag + '\t' + x.TableName + '\t' + x.ObjectName + '\t' + x.ObjectType + '\t' + x.Source + '\t' + x.displayName + '\t' + ReportDate + newline);
-    }
-    foreach (var x in Bookmarks.ToList())
-    {
-        sb_Bookmarks.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.Name + '\t' + x.Id + '\t' + x.PageName + '\t' + x.PageId + '\t' + x.VisualId + '\t' + x.VisualHiddenFlag + '\t' + ReportDate + newline);
-    }
-    foreach (var x in Pages.ToList())
-    {
-        sb_Pages.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.Id + '\t' + x.Name + '\t' + x.Number + '\t' + x.Width + '\t' + x.Height + '\t' + x.HiddenFlag + '\t' + x.VisualCount + '\t' + x.BackgroundImage + '\t' + x.WallpaperImage + '\t' + x.Type + '\t' + ReportDate + newline);
-    }
-    foreach (var x in Visuals.ToList())
-    {
-        sb_Visuals.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.PageName + '\t' + x.PageId + '\t' + x.Id + '\t' + x.Name + '\t' + x.Type + '\t' + x.CustomVisualFlag + '\t' + x.HiddenFlag + '\t' + x.X + '\t' + x.Y + '\t' + x.Z + '\t' + x.Width + '\t' + x.Height + '\t' + x.ObjectCount + '\t' + x.ShowItemsNoDataFlag + '\t' + x.SlicerType + '\t' + x.ParentGroup + '\t' + ReportDate + newline);
-    }
-    foreach (var x in Connections.ToList())
-    {
-        sb_Connections.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.ServerName + '\t' + x.Type + '\t' + ReportDate + newline);
-    }
-    foreach (var x in VisualInteractions.ToList())
-    {
-        sb_VisualInteractions.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.PageName + '\t' + x.PageId + '\t' + x.SourceVisualID + '\t' + x.TargetVisualID + '\t' + x.TypeID + '\t' + x.Type + '\t' + ReportDate +    newline);
-    }
-    foreach (var m in ReportLevelMeasures.ToList())
-    {
-        sb_ReportLevelMeasures.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + m.TableName + '\t' + m.ObjectName + '\t' + m.ObjectType + '\t' + m.Expression + '\t' + m.HiddenFlag + '\t' + m.FormatString + '\t' + ReportDate + newline);
-    }
+        sb_CustomVisuals.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.Name + '\t' + ReportDate + newline);
 
+    foreach (var x in ReportFilters.ToList())
+        sb_ReportFilters.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.displayName + '\t' + x.TableName + '\t' + x.ObjectName + '\t' + x.ObjectType + '\t' + x.FilterType + '\t' + x.HiddenFilter + '\t' + x.LockedFilter + '\t' + x.AppliedFilterVersion + '\t' + ReportDate + newline);
+
+    foreach (var x in PageFilters.ToList())
+        sb_PageFilters.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.PageId + '\t' + x.PageName + '\t' + x.displayName + '\t' + x.TableName + '\t' + x.ObjectName + '\t' + x.ObjectType + '\t' + x.FilterType + '\t' + x.HiddenFilter + '\t' + x.LockedFilter + '\t' + x.AppliedFilterVersion + '\t' + ReportDate + newline);
+
+    foreach (var x in VisualFilters.ToList())
+        sb_VisualFilters.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.PageName + '\t' + x.PageId + '\t' + x.VisualId + '\t' + x.TableName + '\t' + x.ObjectName + '\t' + x.ObjectType + '\t' + x.FilterType + '\t' + x.HiddenFilter + '\t' + x.LockedFilter + '\t' + x.AppliedFilterVersion + '\t' + x.displayName + '\t' + ReportDate + newline);
+
+    foreach (var x in VisualObjects.ToList())
+        sb_VisualObjects.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.PageName + '\t' + x.PageId + '\t' + x.VisualId + '\t' + x.VisualType + '\t' + x.AppliedFilterVersion + '\t' + x.CustomVisualFlag + '\t' + x.TableName + '\t' + x.ObjectName + '\t' + x.ObjectType + '\t' + x.Source + '\t' + x.displayName + '\t' + ReportDate + newline);
+
+    foreach (var x in Bookmarks.ToList())
+        sb_Bookmarks.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.Name + '\t' + x.Id + '\t' + x.PageName + '\t' + x.PageId + '\t' + x.VisualId + '\t' + x.VisualHiddenFlag + '\t' + ReportDate + newline);
+
+    foreach (var x in Pages.ToList())
+        sb_Pages.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.Id + '\t' + x.Name + '\t' + x.Number + '\t' + x.Width + '\t' + x.Height + '\t' + x.HiddenFlag + '\t' + x.VisualCount + '\t' + x.BackgroundImage + '\t' + x.WallpaperImage + '\t' + x.Type + '\t' + ReportDate + newline);
+
+    foreach (var x in Visuals.ToList())
+        sb_Visuals.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.PageName + '\t' + x.PageId + '\t' + x.Id + '\t' + x.Name + '\t' + x.Type + '\t' + x.CustomVisualFlag + '\t' + x.HiddenFlag + '\t' + x.X + '\t' + x.Y + '\t' + x.Z + '\t' + x.Width + '\t' + x.Height + '\t' + x.ObjectCount + '\t' + x.ShowItemsNoDataFlag + '\t' + x.SlicerType + '\t' + x.ParentGroup + '\t' + ReportDate + newline);
+
+    foreach (var x in Connections.ToList())
+        sb_Connections.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.ServerName + '\t' + x.Type + '\t' + ReportDate + newline);
+
+    foreach (var x in VisualInteractions.ToList())
+        sb_VisualInteractions.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.PageName + '\t' + x.PageId + '\t' + x.SourceVisualID + '\t' + x.TargetVisualID + '\t' + x.TypeID + '\t' + x.Type + '\t' + ReportDate + newline);
+
+    foreach (var m in ReportLevelMeasures.ToList())
+        sb_ReportLevelMeasures.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + m.TableName + '\t' + m.ObjectName + '\t' + m.ObjectType + '\t' + m.Expression + '\t' + m.HiddenFlag + '\t' + m.FormatString + '\t' + ReportDate + newline);
 }
 
-// Save to text files or print out results
+// === Save rows only: append to existing TXT files ===
 if (saveToFile)
 {    
-    System.IO.File.WriteAllText(pbiFolderName+@"\"+"CustomVisuals.txt", sb_CustomVisuals.ToString());
-    System.IO.File.WriteAllText(pbiFolderName+@"\"+"ReportFilters.txt", sb_ReportFilters.ToString());
-    System.IO.File.WriteAllText(pbiFolderName+@"\"+"PageFilters.txt", sb_PageFilters.ToString());
-    System.IO.File.WriteAllText(pbiFolderName+@"\"+"VisualFilters.txt", sb_VisualFilters.ToString());
-    System.IO.File.WriteAllText(pbiFolderName+@"\"+"VisualObjects.txt", sb_VisualObjects.ToString());
-    System.IO.File.WriteAllText(pbiFolderName+@"\"+"Visuals.txt", sb_Visuals.ToString());
-    System.IO.File.WriteAllText(pbiFolderName+@"\"+"Bookmarks.txt", sb_Bookmarks.ToString());
-    System.IO.File.WriteAllText(pbiFolderName+@"\"+"Pages.txt", sb_Pages.ToString());
-    System.IO.File.WriteAllText(pbiFolderName+@"\"+"Connections.txt", sb_Connections.ToString());
-    System.IO.File.WriteAllText(pbiFolderName+@"\"+"VisualInteractions.txt", sb_VisualInteractions.ToString());
-    System.IO.File.WriteAllText(pbiFolderName+@"\"+"ReportLevelMeasures.txt", sb_ReportLevelMeasures.ToString());
+    File.AppendAllText(Path.Combine(pbiFolderName, "CustomVisuals.txt"), sb_CustomVisuals.ToString());
+    File.AppendAllText(Path.Combine(pbiFolderName, "ReportFilters.txt"), sb_ReportFilters.ToString());
+    File.AppendAllText(Path.Combine(pbiFolderName, "PageFilters.txt"), sb_PageFilters.ToString());
+    File.AppendAllText(Path.Combine(pbiFolderName, "VisualFilters.txt"), sb_VisualFilters.ToString());
+    File.AppendAllText(Path.Combine(pbiFolderName, "VisualObjects.txt"), sb_VisualObjects.ToString());
+    File.AppendAllText(Path.Combine(pbiFolderName, "Visuals.txt"), sb_Visuals.ToString());
+    File.AppendAllText(Path.Combine(pbiFolderName, "Bookmarks.txt"), sb_Bookmarks.ToString());
+    File.AppendAllText(Path.Combine(pbiFolderName, "Pages.txt"), sb_Pages.ToString());
+    File.AppendAllText(Path.Combine(pbiFolderName, "Connections.txt"), sb_Connections.ToString());
+    File.AppendAllText(Path.Combine(pbiFolderName, "VisualInteractions.txt"), sb_VisualInteractions.ToString());
+    File.AppendAllText(Path.Combine(pbiFolderName, "ReportLevelMeasures.txt"), sb_ReportLevelMeasures.ToString());
 }
 else
 {
@@ -3358,3 +3345,4 @@ public class ReportLevelMeasures
 
 static void _() { // Comment out this line if using Tabular Editor 3
  
+
