@@ -71,38 +71,17 @@ if (singleFile && addPersp)
 
 List<string> FileList = new List<string>();
 
-var sb_CustomVisuals = new System.Text.StringBuilder();
-sb_CustomVisuals.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "Name" + '\t' + "ReportDate" + newline);
-
-var sb_ReportFilters = new System.Text.StringBuilder();
-sb_ReportFilters.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "DisplayName" + '\t' + "TableName" + '\t' + "ObjectName" + '\t' + "ObjectType" + '\t' + "FilterType"  + '\t' + "HiddenFilter"  + '\t' + "LockedFilter"  + '\t' + "AppliedFilterVersion"  + '\t' + "ReportDate" + newline);
-
-var sb_VisualObjects = new System.Text.StringBuilder();
-sb_VisualObjects.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "PageName" + '\t' + "PageId" + '\t' + "VisualId" + '\t' + "VisualType" + '\t' + "AppliedFilterVersion" + '\t' + "CustomVisualFlag" + '\t' + "TableName" + '\t' + "ObjectName" + '\t' + "ObjectType" + '\t' + "Source" + '\t' + "DisplayName" + '\t' + "ReportDate" + newline);
-
-var sb_VisualFilters = new System.Text.StringBuilder();
-sb_VisualFilters.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "PageName" + '\t' + "PageId" + '\t' + "VisualId" + '\t' + "TableName" + '\t' + "ObjectName" + '\t' + "ObjectType" + '\t' + "FilterType" + '\t' + "HiddenFilter"  + '\t' + "LockedFilter"  + '\t' + "AppliedFilterVersion"  + '\t' + "DisplayName" + '\t' + "ReportDate" + newline);
-
-var sb_PageFilters = new System.Text.StringBuilder();
-sb_PageFilters.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "PageId" + '\t' + "PageName" + '\t' + "DisplayName" + '\t' + "TableName" + '\t' + "ObjectName" + '\t' + "ObjectType" + '\t' + "FilterType" + '\t' + "HiddenFilter"  + '\t' + "LockedFilter"  + '\t' + "AppliedFilterVersion"  + '\t' + "ReportDate" + newline);
-
-var sb_Bookmarks = new System.Text.StringBuilder();
-sb_Bookmarks.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "Name" + '\t' + "Id" + '\t' + "PageName" + '\t' +"PageId" + '\t' + "VisualId" + '\t' + "VisualHiddenFlag" + '\t' + "ReportDate" + newline);
-
-var sb_Pages = new System.Text.StringBuilder();
-sb_Pages.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "Id" + '\t' + "Name" + '\t' + "Number" + '\t' + "Width" + '\t' + "Height" + '\t' + "HiddenFlag" + '\t' + "VisualCount" + '\t' + "BackgroundImage" + '\t' + "WallpaperImage" + '\t' + "Type" + '\t' + "ReportDate" + newline);
-
-var sb_Visuals = new System.Text.StringBuilder();
-sb_Visuals.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "PageName" + '\t' + "PageId" + '\t' + "Id" + '\t' + "Name" + '\t' + "Type" + '\t' + "CustomVisualFlag" + '\t' + "HiddenFlag" + '\t' + "X" + '\t' + "Y" + '\t' + "Z" + '\t' + "Width" + '\t' + "Height" + '\t' + "ObjectCount" + '\t' + "ShowItemsNoDataFlag" + '\t' + "SlicerType" + '\t' + "ParentGroup" + '\t' + "ReportDate" + newline);
-
-var sb_Connections = new System.Text.StringBuilder();
-sb_Connections.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "ServerName" + '\t' + "Type" + '\t' + "ReportDate" + newline);
-
-var sb_VisualInteractions = new System.Text.StringBuilder();
-sb_VisualInteractions.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "PageName" + '\t' + "PageId" + '\t' + "SourceVisualID" + '\t' + "TargetVisualID" + '\t' + "TypeID" + '\t' + "Type" + '\t' + "ReportDate" + newline);
-
+var sb_CustomVisuals       = new System.Text.StringBuilder();
+var sb_ReportFilters       = new System.Text.StringBuilder();
+var sb_VisualObjects       = new System.Text.StringBuilder();
+var sb_VisualFilters       = new System.Text.StringBuilder();
+var sb_PageFilters         = new System.Text.StringBuilder();
+var sb_Bookmarks           = new System.Text.StringBuilder();
+var sb_Pages               = new System.Text.StringBuilder();
+var sb_Visuals             = new System.Text.StringBuilder();
+var sb_Connections         = new System.Text.StringBuilder();
+var sb_VisualInteractions  = new System.Text.StringBuilder();
 var sb_ReportLevelMeasures = new System.Text.StringBuilder();
-sb_ReportLevelMeasures.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "TableName" + '\t' + "ObjectName" + '\t' + "ObjectType" + '\t' + "Expression" + '\t' + "HiddenFlag" + '\t' + "FormatString" + '\t' + "ReportDate" + newline);
 
 if (pbiFile.Length > 0 && pbiFolderName.Length == 0)
 {
@@ -3345,4 +3324,5 @@ public class ReportLevelMeasures
 
 static void _() { // Comment out this line if using Tabular Editor 3
  
+
 
