@@ -1050,8 +1050,7 @@ if ($latestDateFolder) {
 }
 
 foreach ($txtFile in (Get-ChildItem -Path $newDateFolder -Filter *.txt)) {
-    $rawName = [System.IO.Path]::GetFileNameWithoutExtension($txtFile.FullName)
-    $worksheetName = $rawName -replace '-PBIR$', ''  # Strip -PBIR from worksheet name
+    $worksheetName = [System.IO.Path]::GetFileNameWithoutExtension($txtFile.FullName)
     
     # Read raw lines without automatically trimming leading or trailing spaces
     $lines = Get-Content -Path $txtFile.FullName -Encoding UTF8
