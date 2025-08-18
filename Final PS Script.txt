@@ -1049,25 +1049,51 @@ if ($latestDateFolder) {
     Write-Error "No valid dated folders found in 'Report Backups'."
 }
 
-foreach ($txtFile in (Get-ChildItem -Path $newDateFolder -Filter *.txt)) {
-    $worksheetName = [System.IO.Path]::GetFileNameWithoutExtension($txtFile.FullName)
-    
-    # Read raw lines without automatically trimming leading or trailing spaces
-    $lines = Get-Content -Path $txtFile.FullName -Encoding UTF8
-    $headers = $lines[0] -split "`t"
-    $data = $lines[1..($lines.Count - 1)] | ForEach-Object {
-        $values = $_ -split "`t", -1  # -1 keeps empty trailing fields and preserves spaces
-        $obj = @{}
-        for ($i = 0; $i -lt $headers.Length; $i++) {
-            $obj[$headers[$i]] = $values[$i]
+foreach ($g in $groups) {
+    $baseName      = $g.Name
+    $worksheetName = Get-ExcelSheetName $baseName
+
+    # Identify standard and PBIR variants (uppercase only)
+    $stdFile  = $g.Group | Where-Object { $_.BaseName -notmatch '-PBIR$' } | Select-Object -First 1
+    $pbirFile = $g.Group | Where-Object { $_.BaseName -match    '-PBIR$' } | Select-Object -First 1
+
+    # Pick a file to read headers from (headers are the same)
+    $headerFile = $stdFile
+    if (-not $headerFile) { $headerFile = $pbirFile }
+    if (-not $headerFile) { continue }
+
+    # Read headers (first line only)
+    $headerLine = (Get-Content -Path $headerFile.FullName -Encoding UTF8 -TotalCount 1)
+    $headers    = $headerLine -split "`t"
+
+    # Build a DataTable with those headers
+    $dt = New-Object System.Data.DataTable
+    foreach ($h in $headers) { [void]$dt.Columns.Add($h) }
+
+    # Local function to add rows from a file (skips the header line)
+    function Add-RowsFromFile([System.IO.FileInfo]$file, [System.Data.DataTable]$table, [string[]]$hdrs) {
+        if (-not $file) { return }
+        $lines = Get-Content -Path $file.FullName -Encoding UTF8
+        if ($null -eq $lines -or $lines.Count -le 1) { return }
+        for ($i = 1; $i -lt $lines.Count; $i++) {
+            $values = $lines[$i] -split "`t", -1
+            $row = $table.NewRow()
+            for ($c = 0; $c -lt $hdrs.Length; $c++) {
+                $row[$hdrs[$c]] = if ($c -lt $values.Length) { $values[$c] } else { $null }
+            }
+            $table.Rows.Add($row) | Out-Null
         }
-        [PSCustomObject]$obj
     }
 
+    # Append rows from both variants
+    Add-RowsFromFile $stdFile  $dt $headers
+    Add-RowsFromFile $pbirFile $dt $headers
+
+    # Export to Excel
     if ($excelExists) {
-        $data | Export-Excel -Path $outputExcelFile -WorksheetName $worksheetName -AutoNameRange -Append
+        Export-Excel -Path $outputExcelFile -WorksheetName $worksheetName -AutoNameRange -Append -InputObject $dt
     } else {
-        $data | Export-Excel -Path $outputExcelFile -WorksheetName $worksheetName -AutoNameRange
+        Export-Excel -Path $outputExcelFile -WorksheetName $worksheetName -AutoNameRange -InputObject $dt
         $excelExists = $true
     }
 }
