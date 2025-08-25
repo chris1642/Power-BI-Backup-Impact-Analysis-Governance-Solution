@@ -12,13 +12,6 @@ $Script4Path = "$baseFolderPath\Config\Measure Dependency Extract Script.csx"
 $TabularEditor2Path = "$baseFolderPath\Config\TabularEditor\TabularEditor.exe"
 
 
-# Enter Workspace ID between quotation marks if you only want script to run in 1 or 2 workspaces. Leave BOTH empty if you want to loop through all.
-
-$SpecificWorkspaceID1 = ""  # Replace with your actual workspace ID or leave empty and the script will loop through every workspace
-
-$SpecificWorkspaceID2 = ""  # Replace with your actual workspace ID or leave empty and the script will loop through every workspace
-
-
 # Check for PBI Tools folder and extract if necessary
 $PBIToolsFolderPath = Join-Path -Path $baseFolderPath\Config -ChildPath "PBI Tools"
 $PBIToolsZipPattern = "pbi-tools*.zip"
@@ -167,6 +160,121 @@ function Rename-Properties {
     return $newObject
 }
 
+function Show-WorkspacePicker {
+    param(
+        [Parameter(Mandatory)]
+        [array]$Workspaces # array of PSCustomObjects with id + name
+    )
+
+    Add-Type -AssemblyName System.Windows.Forms
+    Add-Type -AssemblyName System.Drawing
+
+    # Form
+    $form                  = New-Object System.Windows.Forms.Form
+    $form.Text             = "Select Workspaces"
+    $form.StartPosition    = 'CenterScreen'
+    $form.Size             = New-Object System.Drawing.Size(520,540)
+    $form.TopMost          = $true
+
+    # Instruction label
+    $lbl                   = New-Object System.Windows.Forms.Label
+    $lbl.Text              = "Select the workspaces to run against:"
+    $lbl.AutoSize          = $true
+    $lbl.Location          = New-Object System.Drawing.Point(12,12)
+    $form.Controls.Add($lbl)
+
+    # CheckedListBox
+    $clb                   = New-Object System.Windows.Forms.CheckedListBox
+    $clb.Location          = New-Object System.Drawing.Point(12,40)
+    $clb.Size              = New-Object System.Drawing.Size(480,380)
+    $clb.CheckOnClick      = $true
+    $clb.Sorted            = $true
+
+    # Populate items
+    foreach ($ws in $Workspaces) {
+        $display = "{0} ({1})" -f $ws.name, $ws.id
+        [void]$clb.Items.Add([pscustomobject]@{ Display=$display; Id=$ws.id; Name=$ws.name })
+    }
+    $clb.DisplayMember = 'Display'
+    $form.Controls.Add($clb)
+
+    # "Select All" checkbox
+    $chkAll               = New-Object System.Windows.Forms.CheckBox
+    $chkAll.Text          = "Select All"
+    $chkAll.AutoSize      = $true
+    $chkAll.Location      = New-Object System.Drawing.Point(12,430)
+    $chkAll.Add_CheckedChanged({
+        for ($i=0; $i -lt $clb.Items.Count; $i++) {
+            $clb.SetItemChecked($i, $chkAll.Checked)
+        }
+    })
+    $form.Controls.Add($chkAll)
+
+    # "Include My Workspace" checkbox
+    $chkMy                = New-Object System.Windows.Forms.CheckBox
+    $chkMy.Text           = "Include 'My Workspace'"
+    $chkMy.AutoSize       = $true
+    $chkMy.Location       = New-Object System.Drawing.Point(120,430)
+    $chkMy.Checked        = $false
+    $form.Controls.Add($chkMy)
+
+    # OK button
+    $okBtn                = New-Object System.Windows.Forms.Button
+    $okBtn.Text           = "OK"
+    $okBtn.Width          = 100
+    $okBtn.Location       = New-Object System.Drawing.Point(286,470)
+    $okBtn.Add_Click({
+        $form.Tag = 'OK'
+        $form.Close()
+    })
+    $form.Controls.Add($okBtn)
+
+    # Cancel button
+    $cancelBtn            = New-Object System.Windows.Forms.Button
+    $cancelBtn.Text       = "Cancel"
+    $cancelBtn.Width      = 100
+    $cancelBtn.Location   = New-Object System.Drawing.Point(392,470)
+    $cancelBtn.Add_Click({
+        $form.Tag = 'Cancel'
+        $form.Close()
+    })
+    $form.Controls.Add($cancelBtn)
+
+    # --- Timer: auto-close after 25 seconds ---
+    $timer = New-Object System.Windows.Forms.Timer
+    $timer.Interval = 25000   # 25 seconds
+    $timer.Add_Tick({
+        $timer.Stop()
+        $form.Tag = 'Timeout'
+        $form.Close()
+    })
+    $timer.Start()
+
+    [void]$form.ShowDialog()
+
+    # Gather selected
+    $selectedIds = @()
+    foreach ($item in $clb.CheckedItems) {
+        $selectedIds += $item.Id
+    }
+
+    if ($form.Tag -eq 'Cancel') {
+        throw "User cancelled workspace selection."
+    }
+    elseif ($form.Tag -eq 'Timeout' -or $chkAll.Checked -or $selectedIds.Count -eq 0) {
+        # Default to all AND include My Workspace
+        $selectedIds = $Workspaces.id
+        $chkMy.Checked = $true
+    }
+
+    return [pscustomobject]@{
+        SelectedWorkspaceIds = $selectedIds
+        IncludeMyWorkspace   = $chkMy.Checked
+    }
+}
+
+
+
 # Define renaming maps for each type of object
 $workspaceRenameMap = @{
     "id" = "WorkspaceId";
@@ -302,24 +410,33 @@ $workspacesUrl = "https://api.powerbi.com/v1.0/myorg/groups"
 $workspacesResponse = Invoke-PowerBIRestMethod -Method GET -Url $workspacesUrl | ConvertFrom-Json
 $workspacesInfo = @()
 
+# --- Try WinForms picker; fallback if GUI not available ---
+try {
+    $selection = Show-WorkspacePicker -Workspaces $workspacesResponse.value
+}
+catch {
+    Write-Warning "WinForms not available. Defaulting to ALL workspaces and INCLUDING My Workspace."
+    $selection = [pscustomobject]@{
+        SelectedWorkspaceIds = $workspacesResponse.value.id
+        IncludeMyWorkspace   = $true
+    }
+}
+
+# Build filtered workspaces
+$selectedWorkspaceIds = @($selection.SelectedWorkspaceIds)
+
+if (-not $selectedWorkspaceIds -or $selectedWorkspaceIds.Count -eq 0) {
+    throw "No workspaces selected."
+}
+
 foreach ($workspace in $workspacesResponse.value) {
-    # Check if we should use specific workspace IDs for filtering
-# If only SpecificWorkspaceID1 is provided, filter on that alone
-if ($SpecificWorkspaceID1 -and -not $SpecificWorkspaceID2 -and $workspace.id -ne $SpecificWorkspaceID1) {
-    continue
-}
-# If only SpecificWorkspaceID2 is provided, filter on that alone
-elseif ($SpecificWorkspaceID2 -and -not $SpecificWorkspaceID1 -and $workspace.id -ne $SpecificWorkspaceID2) {
-    continue
-}
-# If both workspace IDs are provided, filter based on either ID
-elseif ($SpecificWorkspaceID1 -and $SpecificWorkspaceID2 -and 
-        ($workspace.id -ne $SpecificWorkspaceID1 -and $workspace.id -ne $SpecificWorkspaceID2)) {
-    continue
-}
-    # Add the workspace to workspacesInfo if it passes the checks
+    if ($selectedWorkspaceIds -notcontains $workspace.id) { continue }
     $workspacesInfo += Rename-Properties -object $workspace -renameMap $workspaceRenameMap
 }
+
+# Flag for later "My Workspace" section
+$IncludeMyWorkspace = $selection.IncludeMyWorkspace
+
 
 # Initialize collections for all necessary information
 $fabricItemsInfo = @()
@@ -610,8 +727,13 @@ foreach ($workspace in $workspacesInfo) {
 
 #### Start of 'My Workspace' detail extract ####
 
-# Check if either variable is filled out, if so, skip this section
-if (-not $SpecificWorkspaceID1 -and -not $SpecificWorkspaceID2) {
+# Only include "My Workspace" if user ticked it in the UI
+if ($IncludeMyWorkspace) {
+    # process "My Workspace"
+    ...
+} else {
+    Write-Host "Skipping 'My Workspace' (user did not select it)."
+}
 
 # Define "My Workspace" constants
 $myWorkspaceId = "My Workspace"
@@ -743,10 +865,7 @@ foreach ($dataset in $datasetsInfo | Where-Object { $_.WorkspaceId -eq $myWorksp
         $datasetRefreshHistory += $renamedRefreshRecord
 	    }
 	}
-    } else {
-	Write-Host "Skipping 'My Workspace' processing because Specific Workspace ID is provided."
-}
-
+    
 
 # Export all collections to Excel
 if (Test-Path $excelFile) {
