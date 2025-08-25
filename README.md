@@ -96,6 +96,14 @@ Follow these 4 simple steps to get started:
 ---
 ## Features
 
+### ✨ Recently Added Features
+
+- **Unused Model Objects** → Identify model fields/measures not used in any visuals, measures, or relationships.  
+- **Broken Visuals (with Page Links)** → See all broken visuals/filters and jump directly to the impacted report page.  
+- **Report-Level Measures Inventory** → Surface report-only measures with full DAX and usage details.
+  
+---
+
 ### 1. Workspace and Power BI Environment Metadata Extraction
 - Leverages Power BI REST API to gather information about Power BI workspaces, datasets, reports, report pages, and apps.
 - Exports the extracted metadata into a structured Excel workbook with separate worksheets for each entity.
