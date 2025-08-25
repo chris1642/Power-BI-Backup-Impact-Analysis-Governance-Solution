@@ -258,15 +258,6 @@ if (File.Exists(connPath))
 
     Connections.Add(new Connection { ServerName = svName, ModelID = ModelID, Type = connType, ReportID = ReportID });        
 }
-    
-    //Delete folders
-    try
-    {
-        Directory.Delete(folderName + ReportName,true);
-    }
-    catch
-    {
-    }
 
     // Custom Visuals
     try
@@ -3153,6 +3144,18 @@ if (createPersp)
     }
 }
 
+    //Delete folders
+try
+{
+    foreach (string dir in Directory.GetDirectories(baseFolderPath))
+    {
+        Directory.Delete(dir, true); // true = recursive (delete all contents)
+    }
+}
+catch (Exception ex)
+{
+}
+
 // Extra closing bracket for classes
 } // Comment out this line if using Tabular Editor 3
 
@@ -3324,5 +3327,6 @@ public class ReportLevelMeasures
 
 static void _() { // Comment out this line if using Tabular Editor 3
  
+
 
 
