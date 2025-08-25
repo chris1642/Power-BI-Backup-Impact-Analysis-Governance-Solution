@@ -3147,7 +3147,7 @@ if (createPersp)
     //Delete folders
 try
 {
-    foreach (string dir in Directory.GetDirectories(baseFolderPath))
+    foreach (string dir in Directory.GetDirectories(pbiFolderName))
     {
         Directory.Delete(dir, true); // true = recursive (delete all contents)
     }
@@ -3327,6 +3327,7 @@ public class ReportLevelMeasures
 
 static void _() { // Comment out this line if using Tabular Editor 3
  
+
 
 
 
