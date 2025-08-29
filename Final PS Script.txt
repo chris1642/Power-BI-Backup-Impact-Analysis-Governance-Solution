@@ -170,27 +170,26 @@ function Show-WorkspacePicker {
     Add-Type -AssemblyName System.Drawing
 
     # Form
-    $form                  = New-Object System.Windows.Forms.Form
-    $form.Text             = "Select Workspaces"
-    $form.StartPosition    = 'CenterScreen'
-    $form.Size             = New-Object System.Drawing.Size(520,540)
-    $form.TopMost          = $true
+    $form               = New-Object System.Windows.Forms.Form
+    $form.Text          = "Select Workspaces"
+    $form.StartPosition = 'CenterScreen'
+    $form.Size          = New-Object System.Drawing.Size(520,540)
+    $form.TopMost       = $true
 
     # Instruction label
-    $lbl                   = New-Object System.Windows.Forms.Label
-    $lbl.Text              = "Select the workspaces to run against:"
-    $lbl.AutoSize          = $true
-    $lbl.Location          = New-Object System.Drawing.Point(12,12)
+    $lbl                = New-Object System.Windows.Forms.Label
+    $lbl.Text           = "Select the workspaces to run against:"
+    $lbl.AutoSize       = $true
+    $lbl.Location       = New-Object System.Drawing.Point(12,12)
     $form.Controls.Add($lbl)
 
     # CheckedListBox
-    $clb                   = New-Object System.Windows.Forms.CheckedListBox
-    $clb.Location          = New-Object System.Drawing.Point(12,40)
-    $clb.Size              = New-Object System.Drawing.Size(480,380)
-    $clb.CheckOnClick      = $true
-    $clb.Sorted            = $true
+    $clb                = New-Object System.Windows.Forms.CheckedListBox
+    $clb.Location       = New-Object System.Drawing.Point(12,40)
+    $clb.Size           = New-Object System.Drawing.Size(480,380)
+    $clb.CheckOnClick   = $true
+    $clb.Sorted         = $true
 
-    # Populate items
     foreach ($ws in $Workspaces) {
         $display = "{0} ({1})" -f $ws.name, $ws.id
         [void]$clb.Items.Add([pscustomobject]@{ Display=$display; Id=$ws.id; Name=$ws.name })
@@ -199,10 +198,10 @@ function Show-WorkspacePicker {
     $form.Controls.Add($clb)
 
     # "Select All" checkbox
-    $chkAll               = New-Object System.Windows.Forms.CheckBox
-    $chkAll.Text          = "Select All"
-    $chkAll.AutoSize      = $true
-    $chkAll.Location      = New-Object System.Drawing.Point(12,430)
+    $chkAll            = New-Object System.Windows.Forms.CheckBox
+    $chkAll.Text       = "Select All"
+    $chkAll.AutoSize   = $true
+    $chkAll.Location   = New-Object System.Drawing.Point(12,430)
     $chkAll.Add_CheckedChanged({
         for ($i=0; $i -lt $clb.Items.Count; $i++) {
             $clb.SetItemChecked($i, $chkAll.Checked)
@@ -211,18 +210,18 @@ function Show-WorkspacePicker {
     $form.Controls.Add($chkAll)
 
     # "Include My Workspace" checkbox
-    $chkMy                = New-Object System.Windows.Forms.CheckBox
-    $chkMy.Text           = "Include 'My Workspace'"
-    $chkMy.AutoSize       = $true
-    $chkMy.Location       = New-Object System.Drawing.Point(120,430)
-    $chkMy.Checked        = $false
+    $chkMy             = New-Object System.Windows.Forms.CheckBox
+    $chkMy.Text        = "Include 'My Workspace'"
+    $chkMy.AutoSize    = $true
+    $chkMy.Location    = New-Object System.Drawing.Point(120,430)
+    $chkMy.Checked     = $false
     $form.Controls.Add($chkMy)
 
     # OK button
-    $okBtn                = New-Object System.Windows.Forms.Button
-    $okBtn.Text           = "OK"
-    $okBtn.Width          = 100
-    $okBtn.Location       = New-Object System.Drawing.Point(286,470)
+    $okBtn             = New-Object System.Windows.Forms.Button
+    $okBtn.Text        = "OK"
+    $okBtn.Width       = 100
+    $okBtn.Location    = New-Object System.Drawing.Point(286,470)
     $okBtn.Add_Click({
         $form.Tag = 'OK'
         $form.Close()
@@ -230,19 +229,19 @@ function Show-WorkspacePicker {
     $form.Controls.Add($okBtn)
 
     # Cancel button
-    $cancelBtn            = New-Object System.Windows.Forms.Button
-    $cancelBtn.Text       = "Cancel"
-    $cancelBtn.Width      = 100
-    $cancelBtn.Location   = New-Object System.Drawing.Point(392,470)
+    $cancelBtn         = New-Object System.Windows.Forms.Button
+    $cancelBtn.Text    = "Cancel"
+    $cancelBtn.Width   = 100
+    $cancelBtn.Location= New-Object System.Drawing.Point(392,470)
     $cancelBtn.Add_Click({
         $form.Tag = 'Cancel'
         $form.Close()
     })
     $form.Controls.Add($cancelBtn)
 
-    # --- Timer: auto-close after 25 seconds ---
+    # Timer (auto-close after 25s)
     $timer = New-Object System.Windows.Forms.Timer
-    $timer.Interval = 25000   # 25 seconds
+    $timer.Interval = 25000
     $timer.Add_Tick({
         $timer.Stop()
         $form.Tag = 'Timeout'
@@ -252,7 +251,7 @@ function Show-WorkspacePicker {
 
     [void]$form.ShowDialog()
 
-    # Gather selected
+    # Gather selections
     $selectedIds = @()
     foreach ($item in $clb.CheckedItems) {
         $selectedIds += $item.Id
@@ -261,15 +260,21 @@ function Show-WorkspacePicker {
     if ($form.Tag -eq 'Cancel') {
         throw "User cancelled workspace selection."
     }
-    elseif ($form.Tag -eq 'Timeout' -or $chkAll.Checked -or $selectedIds.Count -eq 0) {
-        # Default to all AND include My Workspace
+
+    $timedOut = ($form.Tag -eq 'Timeout')
+
+    # If nothing selected (or you want to keep your previous behavior), default to all
+    if ($selectedIds.Count -eq 0) {
         $selectedIds = $Workspaces.id
-        $chkMy.Checked = $true
     }
+
+    # Include My Workspace only if checked… except on timeout, then force include
+    $includeMy = if ($timedOut) { $true } else { $chkMy.Checked }
 
     return [pscustomobject]@{
         SelectedWorkspaceIds = $selectedIds
-        IncludeMyWorkspace   = $chkMy.Checked
+        IncludeMyWorkspace   = $includeMy
+        TimedOut             = $timedOut
     }
 }
 
@@ -727,144 +732,119 @@ foreach ($workspace in $workspacesInfo) {
 
 #### Start of 'My Workspace' detail extract ####
 
-# Only include "My Workspace" if user ticked it in the UI
-if ($IncludeMyWorkspace) {
-    # process "My Workspace"
-    ...
-} else {
-    Write-Host "Skipping 'My Workspace' (user did not select it)."
-}
+if ($IncludeMyWorkspace -or ($selection -and $selection.TimedOut)) {
 
-# Define "My Workspace" constants
-$myWorkspaceId = "My Workspace"
-$myWorkspaceName = "My Workspace"
+    # Define "My Workspace" constants
+    $myWorkspaceId = "My Workspace"
+    $myWorkspaceName = "My Workspace"
 
-# Manually add "My Workspace" breakdown to workspacesInfo
-$myWorkspaceDetails = [PSCustomObject]@{
-    WorkspaceId                 = $myWorkspaceId
-    WorkspaceName               = $myWorkspaceName
-    WorkspaceType               = "Workspace"
-    WorkspaceIsReadOnly         = $false
-    WorkspaceIsOnDedicatedCapacity = $false
-}
-$workspacesInfo += $myWorkspaceDetails
+    # Manually add "My Workspace" breakdown to workspacesInfo
+    $myWorkspaceDetails = [PSCustomObject]@{
+        WorkspaceId                      = $myWorkspaceId
+        WorkspaceName                    = $myWorkspaceName
+        WorkspaceType                    = "Workspace"
+        WorkspaceIsReadOnly              = $false
+        WorkspaceIsOnDedicatedCapacity   = $false
+    }
+    $workspacesInfo += $myWorkspaceDetails
 
-# Fetch datasets from "My Workspace"
-$myWorkspaceDatasetsUrl = "https://api.powerbi.com/v1.0/myorg/datasets"
-$myWorkspaceDatasets = Invoke-PowerBIRestMethod -Method GET -Url $myWorkspaceDatasetsUrl | ConvertFrom-Json
+    # Fetch datasets from "My Workspace"
+    $myWorkspaceDatasetsUrl = "https://api.powerbi.com/v1.0/myorg/datasets"
+    $myWorkspaceDatasets = Invoke-PowerBIRestMethod -Method GET -Url $myWorkspaceDatasetsUrl | ConvertFrom-Json
+    foreach ($dataset in $myWorkspaceDatasets.value) {
+        $renamedDataset = Rename-Properties -object $dataset -renameMap $datasetRenameMap
+        $renamedDataset | Add-Member -NotePropertyName "WorkspaceId" -NotePropertyValue $myWorkspaceId -Force
+        $renamedDataset | Add-Member -NotePropertyName "WorkspaceName" -NotePropertyValue $myWorkspaceName -Force
+        $datasetNameLookup[$dataset.id] = $dataset.name
+        $datasetsInfo += $renamedDataset
 
-foreach ($dataset in $myWorkspaceDatasets.value) {
-    $renamedDataset = Rename-Properties -object $dataset -renameMap $datasetRenameMap
-    $renamedDataset | Add-Member -NotePropertyName "WorkspaceId" -NotePropertyValue $myWorkspaceId -Force
-    $renamedDataset | Add-Member -NotePropertyName "WorkspaceName" -NotePropertyValue $myWorkspaceName -Force
-
-    # Store the DatasetId and DatasetName in the lookup table
-    $datasetNameLookup[$dataset.id] = $dataset.name
-    $datasetsInfo += $renamedDataset
-
-    # Fetch dataset sources
-    $datasourcesUrl = "https://api.powerbi.com/v1.0/myorg/datasets/$($dataset.id)/datasources"
-    $datasources = Invoke-PowerBIRestMethod -Method GET -Url $datasourcesUrl | ConvertFrom-Json
-
-    foreach ($datasource in $datasources.value) {
-        $renamedDatasource = Rename-Properties -object $datasource -renameMap $datasetDatasourceRenameMap
-        $renamedDatasource | Add-Member -NotePropertyName "WorkspaceId" -NotePropertyValue $myWorkspaceId -Force
-        $renamedDatasource | Add-Member -NotePropertyName "WorkspaceName" -NotePropertyValue $myWorkspaceName -Force
-        $renamedDatasource | Add-Member -NotePropertyName "DatasetId" -NotePropertyValue $dataset.id -Force
-        $renamedDatasource | Add-Member -NotePropertyName "DatasetName" -NotePropertyValue $dataset.name -Force
-        if ($datasource.connectionDetails) {
-            $renamedDatasource.DatasetDatasourceConnectionDetails = $datasource.connectionDetails | ConvertTo-Json -Compress
+        $datasourcesUrl = "https://api.powerbi.com/v1.0/myorg/datasets/$($dataset.id)/datasources"
+        $datasources = Invoke-PowerBIRestMethod -Method GET -Url $datasourcesUrl | ConvertFrom-Json
+        foreach ($datasource in $datasources.value) {
+            $renamedDatasource = Rename-Properties -object $datasource -renameMap $datasetDatasourceRenameMap
+            $renamedDatasource | Add-Member -NotePropertyName "WorkspaceId" -NotePropertyValue $myWorkspaceId -Force
+            $renamedDatasource | Add-Member -NotePropertyName "WorkspaceName" -NotePropertyValue $myWorkspaceName -Force
+            $renamedDatasource | Add-Member -NotePropertyName "DatasetId" -NotePropertyValue $dataset.id -Force
+            $renamedDatasource | Add-Member -NotePropertyName "DatasetName" -NotePropertyValue $dataset.name -Force
+            if ($datasource.connectionDetails) {
+                $renamedDatasource.DatasetDatasourceConnectionDetails = $datasource.connectionDetails | ConvertTo-Json -Compress
+            }
+            $datasetSourcesInfo += $renamedDatasource
         }
-        $datasetSourcesInfo += $renamedDatasource
     }
+
+    # Fetch reports from "My Workspace"
+    $myWorkspaceReportsUrl = "https://api.powerbi.com/v1.0/myorg/reports"
+    $myWorkspaceReports = Invoke-PowerBIRestMethod -Method GET -Url $myWorkspaceReportsUrl | ConvertFrom-Json
+
+    $sharedReportExists = $false
+    foreach ($report in $myWorkspaceReports.value) {
+        # Skip if already captured elsewhere (workspace/app)
+        if ($appReportIds.ContainsKey($report.id) -or $reportIds.ContainsKey($report.id) -or $originalReportObjectIds.ContainsKey($report.id)) {
+            continue
+        }
+
+        if ($report.isOwnedByMe -eq $false) {
+            $workspaceIdValue = "Shared Reports (No Workspace Access)"
+            $workspaceNameValue = "Shared Reports (No Workspace Access)"
+            $sharedReportExists = $true
+        } else {
+            $workspaceIdValue = $myWorkspaceId
+            $workspaceNameValue = $myWorkspaceName
+        }
+
+        $renamedReport = Rename-Properties -object $report -renameMap $reportRenameMap
+        $renamedReport | Add-Member -NotePropertyName "WorkspaceId" -NotePropertyValue $workspaceIdValue -Force
+        $renamedReport | Add-Member -NotePropertyName "WorkspaceName" -NotePropertyValue $workspaceNameValue -Force
+
+        $datasetId = $report.datasetId
+        if ($datasetId -and $datasetNameLookup.ContainsKey($datasetId)) {
+            $renamedReport | Add-Member -NotePropertyName "DatasetName" -NotePropertyValue $datasetNameLookup[$datasetId] -Force
+        } else {
+            $renamedReport | Add-Member -NotePropertyName "DatasetName" -NotePropertyValue "Unknown Dataset" -Force
+        }
+        $reportsInfo += $renamedReport
+
+        $pagesUrl = "https://api.powerbi.com/v1.0/myorg/reports/$($report.id)/pages"
+        $pages = Invoke-PowerBIRestMethod -Method GET -Url $pagesUrl | ConvertFrom-Json
+        foreach ($page in $pages.value) {
+            $renamedPage = Rename-Properties -object $page -renameMap $pageRenameMap
+            $renamedPage | Add-Member -NotePropertyName "WorkspaceId" -NotePropertyValue $workspaceIdValue -Force
+            $renamedPage | Add-Member -NotePropertyName "WorkspaceName" -NotePropertyValue $workspaceNameValue -Force
+            $renamedPage | Add-Member -NotePropertyName "ReportId" -NotePropertyValue $report.id -Force
+            $renamedPage | Add-Member -NotePropertyName "ReportName" -NotePropertyValue $report.name -Force
+            $reportPagesInfo += $renamedPage
+        }
+    }
+
+    if ($sharedReportExists) {
+        $sharedWorkspaceDetails = [PSCustomObject]@{
+            WorkspaceId                    = "Shared Reports (No Workspace Access)"
+            WorkspaceName                  = "Shared Reports (No Workspace Access)"
+            WorkspaceType                  = "Workspace"
+            WorkspaceIsReadOnly            = $false
+            WorkspaceIsOnDedicatedCapacity = $false
+        }
+        $workspacesInfo += $sharedWorkspaceDetails
+    }
+
+    # Dataset refresh history for My Workspace
+    foreach ($dataset in $datasetsInfo | Where-Object { $_.WorkspaceId -eq $myWorkspaceId }) {
+        $refreshHistoryUrl = "https://api.powerbi.com/v1.0/myorg/datasets/$($dataset.DatasetId)/refreshes"
+        $refreshHistoryResponse = Invoke-PowerBIRestMethod -Method GET -Url $refreshHistoryUrl | ConvertFrom-Json
+        foreach ($refresh in $refreshHistoryResponse.value) {
+            $renamedRefreshRecord = Rename-Properties -object $refresh -renameMap $datasetRefreshRenameMap
+            $renamedRefreshRecord | Add-Member -NotePropertyName "WorkspaceId" -NotePropertyValue $myWorkspaceId -Force
+            $renamedRefreshRecord | Add-Member -NotePropertyName "WorkspaceName" -NotePropertyValue $myWorkspaceName -Force
+            $renamedRefreshRecord | Add-Member -NotePropertyName "DatasetId" -NotePropertyValue $dataset.DatasetId -Force
+            $renamedRefreshRecord | Add-Member -NotePropertyName "DatasetName" -NotePropertyValue $dataset.DatasetName -Force
+            $datasetRefreshHistory += $renamedRefreshRecord
+        }
+    }
+
+} else {
+    Write-Host "Skipping 'My Workspace' (user did not select it and no timeout)."
 }
-
-# Fetch reports from "My Workspace"
-$myWorkspaceReportsUrl = "https://api.powerbi.com/v1.0/myorg/reports"
-$myWorkspaceReports = Invoke-PowerBIRestMethod -Method GET -Url $myWorkspaceReportsUrl | ConvertFrom-Json
-
-# Flag to track if any shared report exists
-$sharedReportExists = $false
-
-foreach ($report in $myWorkspaceReports.value) {
-    # Skip reports that exist in either the Report list or the App Report list
-    if ($appReportIds.ContainsKey($report.id) -or $reportIds.ContainsKey($report.id) -or $originalReportObjectIds.ContainsKey($report.id)) {
-        continue
-    }
-
-    # Check if the report is owned by me
-    if ($report.isOwnedByMe -eq $false) {
-        $workspaceIdValue = "Shared Reports (No Workspace Access)"
-        $workspaceNameValue = "Shared Reports (No Workspace Access)"
-        $sharedReportExists = $true  # Set flag if a shared report is found
-    } else {
-        $workspaceIdValue = $myWorkspaceId
-        $workspaceNameValue = $myWorkspaceName
-    }
-
-    $renamedReport = Rename-Properties -object $report -renameMap $reportRenameMap
-    $renamedReport | Add-Member -NotePropertyName "WorkspaceId" -NotePropertyValue $workspaceIdValue -Force
-    $renamedReport | Add-Member -NotePropertyName "WorkspaceName" -NotePropertyValue $workspaceNameValue -Force
-
-    # Retrieve and add the correct DatasetName from the lookup table if DatasetId exists
-    $datasetId = $report.datasetId
-    if ($datasetId -and $datasetNameLookup.ContainsKey($datasetId)) {
-        $renamedReport | Add-Member -NotePropertyName "DatasetName" -NotePropertyValue $datasetNameLookup[$datasetId] -Force
-    } else {
-        $renamedReport | Add-Member -NotePropertyName "DatasetName" -NotePropertyValue "Unknown Dataset" -Force
-    }
-
-    $reportsInfo += $renamedReport
-
-    # Fetch report pages
-    $pagesUrl = "https://api.powerbi.com/v1.0/myorg/reports/$($report.id)/pages"
-    $pages = Invoke-PowerBIRestMethod -Method GET -Url $pagesUrl | ConvertFrom-Json
-    foreach ($page in $pages.value) {
-        $renamedPage = Rename-Properties -object $page -renameMap $pageRenameMap
-        $renamedPage | Add-Member -NotePropertyName "WorkspaceId" -NotePropertyValue $workspaceIdValue -Force
-        $renamedPage | Add-Member -NotePropertyName "WorkspaceName" -NotePropertyValue $workspaceNameValue -Force
-        $renamedPage | Add-Member -NotePropertyName "ReportId" -NotePropertyValue $report.id -Force
-        $renamedPage | Add-Member -NotePropertyName "ReportName" -NotePropertyValue $report.name -Force
-        $reportPagesInfo += $renamedPage
-    }
-}
-
-# After processing all reports, add a single row to workspacesInfo if at least one shared report exists
-
-if ($sharedReportExists) {
-    # Define "Shared Reports (My Workspace)" constants
-    $sharedWorkspaceId = "Shared Reports (No Workspace Access)"
-    $sharedWorkspaceName = "Shared Reports (No Workspace Access)"
-
-    # Add one entry to workspacesInfo for all shared reports
-    $sharedWorkspaceDetails = [PSCustomObject]@{
-        WorkspaceId                 = $sharedWorkspaceId
-        WorkspaceName               = $sharedWorkspaceName
-        WorkspaceType               = "Workspace"
-        WorkspaceIsReadOnly         = $false
-        WorkspaceIsOnDedicatedCapacity = $false
-    }
-    $workspacesInfo += $sharedWorkspaceDetails
-}
-
-
-
-# Add refresh history for each dataset in "My Workspace"
-foreach ($dataset in $datasetsInfo | Where-Object { $_.WorkspaceId -eq $myWorkspaceId }) {
-    $refreshHistoryUrl = "https://api.powerbi.com/v1.0/myorg/datasets/$($dataset.DatasetId)/refreshes"
-    $refreshHistoryResponse = Invoke-PowerBIRestMethod -Method GET -Url $refreshHistoryUrl | ConvertFrom-Json
-
-    foreach ($refresh in $refreshHistoryResponse.value) {
-        # Rename properties based on the map and dynamically include dataset context
-        $renamedRefreshRecord = Rename-Properties -object $refresh -renameMap $datasetRefreshRenameMap
-        $renamedRefreshRecord | Add-Member -NotePropertyName "WorkspaceId" -NotePropertyValue $myWorkspaceId -Force
-        $renamedRefreshRecord | Add-Member -NotePropertyName "WorkspaceName" -NotePropertyValue $myWorkspaceName -Force
-        $renamedRefreshRecord | Add-Member -NotePropertyName "DatasetId" -NotePropertyValue $dataset.DatasetId -Force
-        $renamedRefreshRecord | Add-Member -NotePropertyName "DatasetName" -NotePropertyValue $dataset.DatasetName -Force
-
-        $datasetRefreshHistory += $renamedRefreshRecord
-	    }
-	}
     
 
 # Export all collections to Excel
