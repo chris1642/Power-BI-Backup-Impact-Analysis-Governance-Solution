@@ -32,48 +32,45 @@ You’ve got **two ways** to get started:
 ### 🟢 Option 1 — One-Click Auto Run (Recommended)  
 Always up-to-date and the easiest way to get started.  
 
-➡️ [**Download & Run One-Click Auto Run**](https://github.com/chris1642/Local-Power-BI-Impact-Analysis-Governance/releases/download/v1.0/LocalPowerBIGovernanceAutoInstallandRun.bat)
+➡️ [**Download & Run One-Click Auto Run**](https://github.com/chris1642/Power-BI-Backup-Impact-Analysis-Governance-Solution/releases/download/v1.0/PowerBIGovernanceAutoInstallandRun.bat)  
 
 This automatically:  
 1. Pulls the latest repo from GitHub
 2. Places it into `C:\Power BI Backups`
-3. Runs the **Local Final PS Script**  
-4. Opens the **Local Power BI Governance Model** at the end  
+3. Runs the **Final PS Script**  
+4. Opens the **Power BI Governance Model** at the end  
 
-> 💡 **Tip:** Once downloaded, simply re-run this locally anytime to keep your **governance details up-to-date** *and* take advantage of the **newest features**.  
+> 💡 **Tip:** Once downloaded, simply re-run this locally anytime to keep your **backups** and **governance details up-to-date** *and* take advantage of the **newest features**.  
 
 > ⚠️ If security policies block the batch file, follow the manual steps below instead.
 
 
-📂 **All outputs and the final Local Power BI Governance Model will be saved to:** `C:\Power BI Backups`
+📂 **All backups and the final Power BI Governance Model will be saved to:** `C:\Power BI Backups`
 
 
 ---
-
 
 ### 🟡 Option 2 — Manual Setup  
 
-#### ✅ Step 1: Create Folder
-> Make a folder at `C:\Power BI Backups`
+#### ✅ Step 1: Create Folder  
+Make a folder at:  `C:\Power BI Backups`  
 
-#### ✅ Step 2: Download Repo files
-> Place all repo files into the created folder  
+#### ✅ Step 2: Add Files  
+Download all repo files and place them into the newly-created `C:\Power BI Backups` folder.  
 
-#### ✅ Step 3: Add your Reports/Models to 'Local Reports and Models' folder  
-> Place all the reports/models you're looking to analyze within the 'Local Reports and Models' folder.  
+#### ✅ Step 3: Run Script  
+Open PowerShell and run the Final PS Script. You can:  
+- Copy/paste the full script, or  
+- Rename `Final PS Script.txt` → `Final PS Script.ps1` and run directly  
 
-#### ✅ Step 4: Run Script — open PowerShell and run the Final PS Script  
-> You can:  
-> - Copy/paste the full script  
-> - Or rename it from `.txt` to `.ps1` and run it directly  
-
-#### ✅ Step 5: Open the Power BI File — let it refresh, then save as `.pbix`  
-> Open: `Local Power BI Governance Model.pbit`  
+#### ✅ Step 4: Open the Power BI File  
+Open:  
+`Power BI Governance Model.pbit`  
+→ Let it refresh, then save as `.pbix`  
 
 ---
 
-🎉 That’s it — enjoy! 🎉  
-
+🎉 That’s it — enjoy! 🎉
 
 
 
