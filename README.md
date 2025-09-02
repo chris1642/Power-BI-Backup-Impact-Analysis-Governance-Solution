@@ -34,14 +34,17 @@ Always up-to-date and the easiest way to get started.
 
 ➡️ [**Download & Run One-Click Auto Run**](https://github.com/chris1642/Power-BI-Backup-Impact-Analysis-Governance-Solution/releases/download/v1.0/PowerBIGovernanceAutoInstallandRun.bat)  
 
-This will automatically:  
-1. Pull the latest repo from GitHub  
-2. Place it into `C:\Power BI Backups`  
-3. Run the **Final PS Script**  
-4. Open the **Power BI Governance Model** at the end  
+This automatically:  
+1. Pulls the latest repo from GitHub
+2. Places it into `C:\Power BI Backups`
+3. Runs the **Final PS Script**  
+4. Opens the **Power BI Governance Model** at the end  
 
-> 💡 **Tip:** Just re-run this anytime to grab the newest version.  
+> 💡 **Tip:** Once downloaded, simply re-run this locally anytime to grab the newest version.  
 > ⚠️ If security policies block the batch file, follow the manual steps below instead.  
+
+📂 **All backups and the final Power BI Governance Model will be saved to:**  `C:\Power BI Backups`
+
 
 ---
 
