@@ -713,7 +713,7 @@ Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow Refresh History e
 # Loop through all workspaces to fetch Fabric Items (excluding Reports and Semantic Models)
 foreach ($workspace in $workspacesInfo) {
 
-Write-Output "Workspace [$($workspace.WorkspaceName)] Fabric Item extraction process started."
+Write-Output "Workspace [$($workspace.WorkspaceName)] Fabric Item metadata extraction process started."
 
     $workspaceId = $workspace.WorkspaceId
     $workspaceName = $workspace.WorkspaceName
@@ -738,7 +738,7 @@ Write-Output "Workspace [$($workspace.WorkspaceName)] Fabric Item extraction pro
         Write-Warning "Failed to fetch Fabric items for Workspace ID: $workspaceId. $_"
     }
 
-Write-Output "Workspace [$($workspace.WorkspaceName)] Fabric Item extraction process completed."
+Write-Output "Workspace [$($workspace.WorkspaceName)] Fabric Item metdadata extraction process completed."
 
 }
 
