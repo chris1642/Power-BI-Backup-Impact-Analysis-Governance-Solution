@@ -23,41 +23,51 @@ This provides a quick and automated way to identify where and how specific field
 
      .
 
-## 🚀 Quick Start Instructions
+## 🚀 Quick Start Instructions  
 
-Follow these 4 simple steps to get started:
+You’ve got **two ways** to get started:  
 
+---
 
+### 🟢 Option 1 — One-Click Auto Run (Recommended)  
+Always up-to-date and the easiest way to get started.  
 
-#### ✅ Step 1: Create Folder — *make a folder at `C:\Power BI Backups`*
+➡️ [**Download & Run One-Click Auto Run**](https://github.com/chris1642/Power-BI-Backup-Impact-Analysis-Governance-Solution/releases/download/v1.0/PowerBIGovernanceAutoInstallandRun.bat)  
 
+This will automatically:  
+1. Pull the latest repo from GitHub  
+2. Place it into `C:\Power BI Backups`  
+3. Run the **Final PS Script**  
+4. Open the **Power BI Governance Model** at the end  
 
+> 💡 **Tip:** Just re-run this anytime to grab the newest version.  
+> ⚠️ If security policies block the batch file, follow the manual steps below instead.  
 
-#### ✅ Step 2: Add Files — *download all repo files and place into the created folder*  
-> 💡 *Using a different folder?*  
-> Make sure to update this on line 4 in the beginning of the Final PS Script:  
-> ```powershell
-> $baseFolderPath = "C:\Power BI Backups"
-> ```
+---
 
+### 🟡 Option 2 — Manual Setup  
 
+#### ✅ Step 1: Create Folder  
+Make a folder at:  `C:\Power BI Backups`  
 
-#### ✅ Step 3: Run Script — *open PowerShell and run the Final PS Script*  
-> You can:  
-> - Copy/paste the full script  
-> - Or rename it from `.txt` to `.ps1` and run it directly
+#### ✅ Step 2: Add Files  
+Download all repo files and place them into the newly-created `C:\Power BI Backups` folder.  
 
+#### ✅ Step 3: Run Script  
+Open PowerShell and run the Final PS Script. You can:  
+- Copy/paste the full script, or  
+- Rename `Final PS Script.txt` → `Final PS Script.ps1` and run directly  
 
+#### ✅ Step 4: Open the Power BI File  
+Open:  
+`Power BI Governance Model.pbit`  
+→ Let it refresh, then save as `.pbix`  
 
-
-#### ✅ Step 4: Open the Power BI File — *let it refresh, then save as `.pbix`*  
-> Open: `Power BI Governance Model.pbit`
-
-
-.
-.
+---
 
 🎉 That’s it — enjoy! 🎉
+
+
 
 
 
