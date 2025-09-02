@@ -138,6 +138,7 @@ $date = (Get-Date -UFormat "%Y-%m-%d")
 
 
 
+Write-Output "Beginning Power BI Environment Detail Extract Process"
 
 # Define the Information Extract Excel file path
 $excelFile = "$baseFolderPath\Power BI Environment Detail.xlsx"
@@ -867,7 +868,7 @@ $appsInfo | Export-Excel -Path $excelFile -WorksheetName "Apps" -AutoSize -Appen
 $reportsInAppInfo | Export-Excel -Path $excelFile -WorksheetName "AppReports" -AutoSize -Append
 
 Write-Host "Export completed. Data is saved to $excelFile"  
-
+Write-Output "Power BI Environment Detail Extraction Process Complete"
 
 
 
@@ -884,6 +885,7 @@ Write-Host "Export completed. Data is saved to $excelFile"
 
 
 
+Write-Output "Beginning Model Backup Process"
 
 # Loop through datasetsInfo collection to perform model export
 foreach ($dataset in $datasetsInfo) {
@@ -943,6 +945,7 @@ Model.Database.Name = `"$newModelDatabaseName`";
     }
 }
 
+Write-Output "Model Backup Process Complete"
 
 
 
@@ -958,6 +961,7 @@ Model.Database.Name = `"$newModelDatabaseName`";
 
 
 
+Write-Output "Beginning Report Backup Process"
 
 # Define the report backups path
 $reportBackupsPath = Join-Path -Path $baseFolderPath -ChildPath "Report Backups"
@@ -1103,6 +1107,7 @@ Remove-Item -Path "$tempDestinationRemovalPath\Temp" -Recurse -Force -ErrorActio
 Remove-Item -Path "$tempDestinationRemovalPath\localhost" -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item -Path "$baseFolderPath\localhost" -Recurse -Force -ErrorAction SilentlyContinue
 
+Write-Output "Report Backup Process Complete"
 
 
 
@@ -1117,6 +1122,7 @@ Remove-Item -Path "$baseFolderPath\localhost" -Recurse -Force -ErrorAction Silen
 
 
 
+Write-Output "Beginning Report Detail Extraction Process"
 
 # Start Tabular Editor process 1
 $p = Start-Process -FilePath "$TabularEditor2Path" -Wait -NoNewWindow -PassThru -WorkingDirectory $baseFolderPath -ArgumentList "`"$baseFolderPath\Config\Blank Model.bim`" -S `"$Script1Path`""
@@ -1194,6 +1200,8 @@ if (Test-Path -Path $newDateFolder) {
     Write-Output "Additional Subfolders in $newDateFolder do not exist"
 }
 
+Write-Output "Report Detail Extraction Process Complete"
+
 
 
 
@@ -1209,6 +1217,7 @@ if (Test-Path -Path $newDateFolder) {
 
 
 
+Write-Output "Beginning Model Detail Extraction Process"
 
 $latestModelDateFolder = Get-ChildItem -Path $modelBackupsPath -Directory |
     Where-Object { $_.Name -match '^\d{4}-\d{2}-\d{2}$' } |  # Filter for folders with a date pattern
@@ -1258,7 +1267,6 @@ foreach ($dataset in $datasetsInfo) {
 Write-Host "First model export and script run completed."
 
 
-
 #### Start of PowerShell Combining to Semantic Models Worksheet ####
 
 
@@ -1289,7 +1297,7 @@ foreach ($csvFile in (Get-ChildItem -Path $folderPath -Filter *.csv)) {
 $semanticModelsCsvData | Export-Excel -Path $outputExcelFile -WorksheetName "Semantic Models" -AutoNameRange
 
 Write-Output "CSV files combined into the 'Semantic Models' worksheet in $outputExcelFile"
-
+Write-Output "Model Detail Extraction Process Complete"
 
 
 
@@ -1297,6 +1305,7 @@ Write-Output "CSV files combined into the 'Semantic Models' worksheet in $output
 
 
 
+Write-Output "Beginning Measure Dependency Detail Extraction Process"
 
 # Loop through datasetsInfo collection to run the second model script
 foreach ($dataset in $datasetsInfo) {
@@ -1343,6 +1352,7 @@ $measureDependenciesCsvData | Export-Excel -Path $outputExcelFile -WorksheetName
 
 Write-Output "CSV files combined into the 'Measure Dependencies' worksheet in $outputExcelFile"
 
+Write-Output "Measure Dependency Detail Extraction Process Complete"
 
 
 
@@ -1358,6 +1368,7 @@ Write-Output "CSV files combined into the 'Measure Dependencies' worksheet in $o
 
 
 
+Write-Output "Beginning Dataflow Backup & Detail Extraction Process"
 
 # Define the dataflow backups path
 $dataflowBackupsPath = Join-Path -Path $baseFolderPath -ChildPath "Dataflow Backups"
@@ -1652,6 +1663,9 @@ $combinedData = $destinationData + $sourceData
 
 # Export the combined data to the destination file
 $combinedData | Export-Excel -Path $destinationFilePath -WorksheetName "Sheet1"
+
+Write-Output "Dataflow Backup & Detail Extraction Process Complete"
+
 
 # Stop the background job after script completion
 Stop-Job -Name "TokenRefreshJob"
