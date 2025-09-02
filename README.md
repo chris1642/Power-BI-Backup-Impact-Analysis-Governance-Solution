@@ -29,7 +29,7 @@ You’ve got **two ways** to get started:
 
 ---
 
-### 🟢 Option 1 — One-Click Auto Run (Recommended)  
+### 🟢 Option 1 — One-Click Tool (Recommended)  
 Always up-to-date and the easiest way to get started.  
 
 ➡️ [**Download One-Click Auto Update and Run**](https://github.com/chris1642/Power-BI-Backup-Impact-Analysis-Governance-Solution/releases/download/v1.0/PBIGovernance-UpdateAndRun.bat)  
