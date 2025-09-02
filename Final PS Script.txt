@@ -460,10 +460,12 @@ $dataflowNameLookup = @{}
 $datasetRefreshHistory = @()
 $dataflowRefreshHistory = @()
 
-Write-Output "Model and Model Sources Metadata Extract Process Started"
 
 # Loop through filtered workspaces
 foreach ($workspace in $workspacesInfo) {
+
+Write-Output "Workspace [$($workspace.WorkspaceName)] Report, Model, Model Source, and App metadata extract process started."
+
     # Fetch datasets
     $datasetsUrl = "https://api.powerbi.com/v1.0/myorg/groups/$($workspace.WorkspaceId)/datasets"
     $datasets = Invoke-PowerBIRestMethod -Method GET -Url $datasetsUrl | ConvertFrom-Json
@@ -493,10 +495,6 @@ foreach ($workspace in $workspacesInfo) {
             $datasetSourcesInfo += $renamedDatasource
         }
     }
-
-Write-Output "Model and Model Sources Metadata Extract Process Completed"
-
-Write-Output "Report and Report Page Metadata Extract Process Started"
 
     # Fetch reports
     $reportsUrl = "https://api.powerbi.com/v1.0/myorg/groups/$($workspace.WorkspaceId)/reports"
@@ -538,10 +536,6 @@ Write-Output "Report and Report Page Metadata Extract Process Started"
     }
 }
 
-Write-Output "Report and Report Page Metadata Extract Process Completed"
-
-Write-Output "Apps and App Reports Metadata Extract Process Started"
-
 # Fetch Apps and App Reports that are in filtered workspaces
 $appsUrl = "https://api.powerbi.com/v1.0/myorg/apps"
 $apps = Invoke-PowerBIRestMethod -Method GET -Url $appsUrl | ConvertFrom-Json
@@ -570,15 +564,14 @@ foreach ($app in $apps.value) {
             $originalReportObjectIds[$report.originalReportObjectId] = $true
         }
     }
+Write-Output "Workspace [$($workspace.WorkspaceName)] Report, Model, Model Source, and App metadata extract process completed."
 }
-
-Write-Output "Apps and App Reports Metadata Extract Process Completed"
-
-
-Write-Output "Model Refresh History Extract Process Started"
 
 # Fetch Refresh History for Datasets
 foreach ($workspace in $workspacesInfo) {
+
+Write-Output "Workspace [$($workspace.WorkspaceName)] Model Refresh History extract started."
+
     foreach ($dataset in $datasetsInfo | Where-Object { $_.WorkspaceId -eq $workspace.WorkspaceId }) {
         $refreshHistoryUrl = "https://api.powerbi.com/v1.0/myorg/groups/$($workspace.WorkspaceId)/datasets/$($dataset.DatasetId)/refreshes"
         $refreshHistoryResponse = Invoke-PowerBIRestMethod -Method GET -Url $refreshHistoryUrl | ConvertFrom-Json
@@ -593,15 +586,14 @@ foreach ($workspace in $workspacesInfo) {
             $datasetRefreshHistory += $renamedRefreshRecord
         }
     }
+Write-Output "Workspace [$($workspace.WorkspaceName)] Model Refresh History extract completed."
 }  
 
-Write-Output "Model Refresh History Extract Process Completed"
-
-
-Write-Output "Dataflow & Dataflow Sources Metadata Extract Process Started"
 
 # Fetch Dataflows for Workspaces
 foreach ($workspace in $workspacesInfo) {
+Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow and Dataflow Source metadata extract started."
+
     $dataflowsUrl = "https://api.powerbi.com/v1.0/myorg/groups/$($workspace.WorkspaceId)/dataflows"
     $dataflowsResponse = Invoke-PowerBIRestMethod -Method GET -Url $dataflowsUrl | ConvertFrom-Json
 
@@ -650,14 +642,14 @@ foreach ($workspace in $workspacesInfo) {
             }
         }
     }
+Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow and Dataflow source metadata extract completed."
 } 
 
-Write-Output "Dataflow & Dataflow Sources Metadata Extract Process Completed"
-
-Write-Output "Dataflow Lineage Metadata Extract Process Started"
 
 # Fetch Dataflow Lineage (Upstream Dataflows)
 foreach ($workspace in $workspacesInfo) {
+
+Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow Lineage metadata extract started."
         $dataflowLineageUrl = "https://api.powerbi.com/v1.0/myorg/groups/$($workspace.WorkspaceId)/datasets/upstreamDataflows"
         $dataflowLineageResponse = Invoke-PowerBIRestMethod -Method GET -Url $dataflowLineageUrl | ConvertFrom-Json
 
@@ -686,15 +678,12 @@ foreach ($workspace in $workspacesInfo) {
                 $dataflowLineage += $renamedDataflow
             }
         }
+Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow Lineage metadata extract completed."
     }
-
-
-Write-Output "Dataflow Metadata Extract Process Completed"
-
-Write-Output "Dataflow Refresh History Extract Process Started"
 
 # Fetch Dataflow Refresh History
 foreach ($workspace in $workspacesInfo) {
+Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow History extract started."
     foreach ($dataflow in $dataflowsInfo | Where-Object { $_.WorkspaceId -eq $workspace.WorkspaceId }) {
         $refreshHistoryUrl = "https://api.powerbi.com/v1.0/myorg/groups/$($workspace.WorkspaceId)/dataflows/$($dataflow.DataflowId)/transactions"
         $refreshHistoryResponse = Invoke-PowerBIRestMethod -Method GET -Url $refreshHistoryUrl | ConvertFrom-Json
@@ -719,14 +708,15 @@ foreach ($workspace in $workspacesInfo) {
             }
         }
     }
+Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow History extract completed."
+
 }
-
-Write-Output "Dataflow Refresh History Extract Process Completed"
-
-Write-Output "Fabric Item Metadata Extract Process Started"
 
 # Loop through all workspaces to fetch Fabric Items (excluding Reports and Semantic Models)
 foreach ($workspace in $workspacesInfo) {
+
+Write-Output "Workspace [$($workspace.WorkspaceName)] Fabric Item metadata extract started."
+
     $workspaceId = $workspace.WorkspaceId
     $workspaceName = $workspace.WorkspaceName
     $fabricItemsUrl = "https://api.fabric.microsoft.com/v1/workspaces/$workspaceId/items"
@@ -749,10 +739,9 @@ foreach ($workspace in $workspacesInfo) {
     } catch {
         Write-Warning "Failed to fetch Fabric items for Workspace ID: $workspaceId. $_"
     }
+Write-Output "Workspace [$($workspace.WorkspaceName)] Fabric item metadata extract completed."
+
 }
-
-
-Write-Output "Fabric Item Metadata Extract Process Completed"
 
 
 
