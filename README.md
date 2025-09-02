@@ -53,20 +53,19 @@ This automatically:
 ### 🟡 Option 2 — Manual Setup  
 
 #### ✅ Step 1: Create Folder  
-Make a folder at:  `C:\Power BI Backups`  
+> Make a folder at:  `C:\Power BI Backups`  
 
 #### ✅ Step 2: Add Files  
-Download all repo files and place them into the newly-created `C:\Power BI Backups` folder.  
+> Download all repo files and place them into the newly-created `C:\Power BI Backups` folder.  
 
 #### ✅ Step 3: Run Script  
-Open PowerShell and run the Final PS Script. You can:  
-- Copy/paste the full script, or  
-- Rename `Final PS Script.txt` → `Final PS Script.ps1` and run directly  
+> Open PowerShell and run the Final PS Script. You can:  
+> - Copy/paste the full script, or  
+> - Rename `Final PS Script.txt` → `Final PS Script.ps1` and run directly  
 
 #### ✅ Step 4: Open the Power BI File  
-Open:  
-`Power BI Governance Model.pbit`  
-→ Let it refresh, then save as `.pbix`  
+> Open: `Power BI Governance Model.pbit`  
+> → Let it refresh, then save as `.pbix`  
 
 ---
 
