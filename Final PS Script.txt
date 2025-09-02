@@ -496,7 +496,7 @@ foreach ($workspace in $workspacesInfo) {
 
 Write-Output "Model and Model Sources Metadata Extract Process Completed"
 
-Write-Output "Report Metadata Extract Process Started"
+Write-Output "Report and Report Page Metadata Extract Process Started"
 
     # Fetch reports
     $reportsUrl = "https://api.powerbi.com/v1.0/myorg/groups/$($workspace.WorkspaceId)/reports"
@@ -521,11 +521,6 @@ Write-Output "Report Metadata Extract Process Started"
 
         $reportsInfo += $renamedReport
 
-Write-Output "Report Metadata Extract Process Completed"
-
-Write-Output "Report Pages Metadata Extract Process Started"
-
-
         # Fetch report pages
         $pagesUrl = "https://api.powerbi.com/v1.0/myorg/groups/$($workspace.WorkspaceId)/reports/$($report.id)/pages"
         $pages = Invoke-PowerBIRestMethod -Method GET -Url $pagesUrl | ConvertFrom-Json
@@ -543,8 +538,7 @@ Write-Output "Report Pages Metadata Extract Process Started"
     }
 }
 
-Write-Output "Report Pages Metadata Extract Process Completed"
-
+Write-Output "Report and Report Page Metadata Extract Process Completed"
 
 Write-Output "Apps and App Reports Metadata Extract Process Started"
 
@@ -661,8 +655,6 @@ foreach ($workspace in $workspacesInfo) {
 Write-Output "Dataflow & Dataflow Sources Metadata Extract Process Completed"
 
 Write-Output "Dataflow Lineage Metadata Extract Process Started"
-
-
 
 # Fetch Dataflow Lineage (Upstream Dataflows)
 foreach ($workspace in $workspacesInfo) {
