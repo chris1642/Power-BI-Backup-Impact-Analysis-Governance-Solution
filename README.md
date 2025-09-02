@@ -2,8 +2,8 @@
 ## This all-in-one solution is designed to be ran by ANYONE. 
 - Everything within the script is limited to your access within the Power BI environment.
 - All computer requirements are at the user level and do not require admin privileges.
-- There are ZERO pre-reqs. It's as simple as downloading this repo into C:\Power BI Backups, opening Powershell, and running the included 'Final PS Script'
-
+- There are ZERO pre-reqs. A once-click solution is offered that stays updated with the latest features.
+- 
 *Have specific Reports and/or Models downloaded you want to analyze? Don't have direct access to the Workspace but have the PBIX? Check out the local version here: https://github.com/chris1642/Local-Power-BI-Impact-Analysis-Governance*
 
 
