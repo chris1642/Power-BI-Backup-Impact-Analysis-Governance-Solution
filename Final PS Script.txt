@@ -464,7 +464,7 @@ $dataflowRefreshHistory = @()
 # Loop through filtered workspaces
 foreach ($workspace in $workspacesInfo) {
 
-Write-Output "Workspace [$($workspace.WorkspaceName)] Report, Model, Model Source, and App metadata extract process started."
+Write-Output "Workspace [$($workspace.WorkspaceName)] Report & Model metadata extraction process started."
 
     # Fetch datasets
     $datasetsUrl = "https://api.powerbi.com/v1.0/myorg/groups/$($workspace.WorkspaceId)/datasets"
@@ -534,7 +534,7 @@ Write-Output "Workspace [$($workspace.WorkspaceName)] Report, Model, Model Sourc
             $reportIds[$report.id] = $true
         }
     }
-Write-Output "Workspace [$($workspace.WorkspaceName)] Report, Model, and Model Source metadata extract process completed."
+Write-Output "Workspace [$($workspace.WorkspaceName)] Report & Model metadata extraction process completed."
 }
 
 # Fetch Apps and App Reports that are in filtered workspaces
@@ -570,7 +570,7 @@ foreach ($app in $apps.value) {
 # Fetch Refresh History for Datasets
 foreach ($workspace in $workspacesInfo) {
 
-Write-Output "Workspace [$($workspace.WorkspaceName)] Model Refresh History extract started."
+Write-Output "Workspace [$($workspace.WorkspaceName)] Model Refresh History extraction process started."
 
     foreach ($dataset in $datasetsInfo | Where-Object { $_.WorkspaceId -eq $workspace.WorkspaceId }) {
         $refreshHistoryUrl = "https://api.powerbi.com/v1.0/myorg/groups/$($workspace.WorkspaceId)/datasets/$($dataset.DatasetId)/refreshes"
@@ -586,13 +586,14 @@ Write-Output "Workspace [$($workspace.WorkspaceName)] Model Refresh History extr
             $datasetRefreshHistory += $renamedRefreshRecord
         }
     }
-Write-Output "Workspace [$($workspace.WorkspaceName)] Model Refresh History extract completed."
+Write-Output "Workspace [$($workspace.WorkspaceName)] Model Refresh History extraction process completed."
 }  
 
 
 # Fetch Dataflows for Workspaces
 foreach ($workspace in $workspacesInfo) {
-Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow and Dataflow Source metadata extract started."
+
+Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow metadata extraction process started."
 
     $dataflowsUrl = "https://api.powerbi.com/v1.0/myorg/groups/$($workspace.WorkspaceId)/dataflows"
     $dataflowsResponse = Invoke-PowerBIRestMethod -Method GET -Url $dataflowsUrl | ConvertFrom-Json
@@ -642,14 +643,13 @@ Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow and Dataflow Sour
             }
         }
     }
-Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow and Dataflow source metadata extract completed."
+Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow metadata extraction process started."
 } 
 
 
 # Fetch Dataflow Lineage (Upstream Dataflows)
 foreach ($workspace in $workspacesInfo) {
 
-Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow Lineage metadata extract started."
         $dataflowLineageUrl = "https://api.powerbi.com/v1.0/myorg/groups/$($workspace.WorkspaceId)/datasets/upstreamDataflows"
         $dataflowLineageResponse = Invoke-PowerBIRestMethod -Method GET -Url $dataflowLineageUrl | ConvertFrom-Json
 
@@ -678,12 +678,11 @@ Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow Lineage metadata 
                 $dataflowLineage += $renamedDataflow
             }
         }
-Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow Lineage metadata extract completed."
     }
 
 # Fetch Dataflow Refresh History
 foreach ($workspace in $workspacesInfo) {
-Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow History extract started."
+Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow Refresh History extraction process started."
     foreach ($dataflow in $dataflowsInfo | Where-Object { $_.WorkspaceId -eq $workspace.WorkspaceId }) {
         $refreshHistoryUrl = "https://api.powerbi.com/v1.0/myorg/groups/$($workspace.WorkspaceId)/dataflows/$($dataflow.DataflowId)/transactions"
         $refreshHistoryResponse = Invoke-PowerBIRestMethod -Method GET -Url $refreshHistoryUrl | ConvertFrom-Json
@@ -708,14 +707,13 @@ Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow History extract s
             }
         }
     }
-Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow History extract completed."
-
+Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow Refresh History extraction process completed."
 }
 
 # Loop through all workspaces to fetch Fabric Items (excluding Reports and Semantic Models)
 foreach ($workspace in $workspacesInfo) {
 
-Write-Output "Workspace [$($workspace.WorkspaceName)] Fabric Item metadata extract started."
+Write-Output "Workspace [$($workspace.WorkspaceName)] Fabric Item extraction process started."
 
     $workspaceId = $workspace.WorkspaceId
     $workspaceName = $workspace.WorkspaceName
@@ -739,7 +737,8 @@ Write-Output "Workspace [$($workspace.WorkspaceName)] Fabric Item metadata extra
     } catch {
         Write-Warning "Failed to fetch Fabric items for Workspace ID: $workspaceId. $_"
     }
-Write-Output "Workspace [$($workspace.WorkspaceName)] Fabric item metadata extract completed."
+
+Write-Output "Workspace [$($workspace.WorkspaceName)] Fabric Item extraction process completed."
 
 }
 
