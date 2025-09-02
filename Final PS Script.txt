@@ -534,6 +534,7 @@ Write-Output "Workspace [$($workspace.WorkspaceName)] Report, Model, Model Sourc
             $reportIds[$report.id] = $true
         }
     }
+Write-Output "Workspace [$($workspace.WorkspaceName)] Report, Model, and Model Source metadata extract process completed."
 }
 
 # Fetch Apps and App Reports that are in filtered workspaces
@@ -564,7 +565,6 @@ foreach ($app in $apps.value) {
             $originalReportObjectIds[$report.originalReportObjectId] = $true
         }
     }
-Write-Output "Workspace [$($workspace.WorkspaceName)] Report, Model, Model Source, and App metadata extract process completed."
 }
 
 # Fetch Refresh History for Datasets
