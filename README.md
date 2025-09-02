@@ -40,10 +40,12 @@ This automatically:
 3. Runs the **Final PS Script**  
 4. Opens the **Power BI Governance Model** at the end  
 
-> 💡 **Tip:** Once downloaded, simply re-run this locally anytime to grab the newest version.  
-> ⚠️ If security policies block the batch file, follow the manual steps below instead.  
+> 💡 **Tip:** Once downloaded, simply re-run this locally anytime to keep your **backups** and **governance details up-to-date** *and* take advantage of the **newest features**.  
 
-📂 **All backups and the final Power BI Governance Model will be saved to:**  `C:\Power BI Backups`
+> ⚠️ If security policies block the batch file, follow the manual steps below instead.
+
+
+📂 **All backups and the final Power BI Governance Model will be saved to:** `C:\Power BI Backups`
 
 
 ---
