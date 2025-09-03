@@ -951,21 +951,19 @@ foreach ($dataset in $datasetsInfo) {
 Model.Database.Name = `"$newModelDatabaseName`";
 "@
 
-        # Save the C# script to a temporary file
-$userTemp = [System.IO.Path]::Combine($env:USERPROFILE, "AppData", "Local", "Temp")
-$tempScriptPath = [System.IO.Path]::Combine($userTemp, [System.IO.Path]::GetRandomFileName())
-$tempScriptPath = [System.IO.Path]::ChangeExtension($tempScriptPath, ".cs")
-$tempScriptPath1 = [System.IO.Path]::GetFullPath($tempScriptPath)  # Ensure fully resolved path
-Set-Content -Path $tempScriptPath1 -Value $csharpScript
+        # Save the C# script to a temporary file	
+	$tempScriptPath = Join-Path $env:TEMP "TabularEditor_RenameModel.cs"
+	Set-Content -Path $tempScriptPath -Value $csharpScript -Encoding UTF8
+
 
         # Construct the argument list for the model export with renaming
-        $modelExportArgs = "`"Provider=MSOLAP;Data Source=powerbi://api.powerbi.com/v1.0/myorg/$workspaceName;Password=$(Get-CurrentAccessToken)`" $datasetId -S `"$tempScriptPath1`" -B `"$folderPath\$cleanDatasetWorkspaceName ~ $cleanDatasetName.bim`""
+        $modelExportArgs = "`"Provider=MSOLAP;Data Source=powerbi://api.powerbi.com/v1.0/myorg/$workspaceName;Password=$(Get-CurrentAccessToken)`" $datasetId -S `"$tempScriptPath`" -B `"$folderPath\$cleanDatasetWorkspaceName ~ $cleanDatasetName.bim`""
         
         # Start the Tabular Editor process for model export and renaming
         Start-Process -FilePath "$TabularEditor2Path" -Wait -NoNewWindow -PassThru -ArgumentList $modelExportArgs
 
         # Clean up the temporary script file
-        Remove-Item -Path $tempScriptPath1
+        Remove-Item -Path $tempScriptPath
     }
 }
 
