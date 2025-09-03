@@ -46,10 +46,10 @@ if (-not (Test-Path -Path $TabularEditorFolderPath)) {
         [System.IO.Compression.ZipFile]::ExtractToDirectory($zipFile.FullName, $TabularEditorFolderPath)
         Write-Output "Extracted $($zipFile.Name) to $TabularEditorFolderPath"
     } else {
-        Write-Output "No zip file matching the pattern $TabularEditorZipPattern found in $baseFolderPath\Config"
+        Write-Host "No zip file matching the pattern $TabularEditorZipPattern found in $baseFolderPath\Config"
     }
 } else {
-    Write-Output "Tabular Editor folder already exists at $TabularEditorFolderPath"
+    Write-Host "Tabular Editor folder already exists at $TabularEditorFolderPath"
 }
 
 
@@ -60,7 +60,7 @@ if ($existingPath -notlike "*$PBIToolsFolderPath*") {
     [System.Environment]::SetEnvironmentVariable("PATH", $env:PATH, [System.EnvironmentVariableTarget]::User)
     Write-Output "Added $PBIToolsFolderPath to the PATH environment variable."
 } else {
-    Write-Output "$PBIToolsFolderPath is already in the PATH environment variable."
+    Write-Host "$PBIToolsFolderPath is already in the PATH environment variable."
 }
 
 # Temporarily set execution policy to Bypass for this session
@@ -138,6 +138,7 @@ $date = (Get-Date -UFormat "%Y-%m-%d")
 
 
 
+Write-Output "Power BI Environment Detail Extract Process Started"
 
 # Define the Information Extract Excel file path
 $excelFile = "$baseFolderPath\Power BI Environment Detail.xlsx"
@@ -459,8 +460,12 @@ $dataflowNameLookup = @{}
 $datasetRefreshHistory = @()
 $dataflowRefreshHistory = @()
 
+
 # Loop through filtered workspaces
 foreach ($workspace in $workspacesInfo) {
+
+Write-Output "Workspace [$($workspace.WorkspaceName)] Report & Model metadata extraction process started."
+
     # Fetch datasets
     $datasetsUrl = "https://api.powerbi.com/v1.0/myorg/groups/$($workspace.WorkspaceId)/datasets"
     $datasets = Invoke-PowerBIRestMethod -Method GET -Url $datasetsUrl | ConvertFrom-Json
@@ -529,6 +534,7 @@ foreach ($workspace in $workspacesInfo) {
             $reportIds[$report.id] = $true
         }
     }
+Write-Output "Workspace [$($workspace.WorkspaceName)] Report & Model metadata extraction process completed."
 }
 
 # Fetch Apps and App Reports that are in filtered workspaces
@@ -561,9 +567,11 @@ foreach ($app in $apps.value) {
     }
 }
 
-
 # Fetch Refresh History for Datasets
 foreach ($workspace in $workspacesInfo) {
+
+Write-Output "Workspace [$($workspace.WorkspaceName)] Model Refresh History extraction process started."
+
     foreach ($dataset in $datasetsInfo | Where-Object { $_.WorkspaceId -eq $workspace.WorkspaceId }) {
         $refreshHistoryUrl = "https://api.powerbi.com/v1.0/myorg/groups/$($workspace.WorkspaceId)/datasets/$($dataset.DatasetId)/refreshes"
         $refreshHistoryResponse = Invoke-PowerBIRestMethod -Method GET -Url $refreshHistoryUrl | ConvertFrom-Json
@@ -578,11 +586,15 @@ foreach ($workspace in $workspacesInfo) {
             $datasetRefreshHistory += $renamedRefreshRecord
         }
     }
+Write-Output "Workspace [$($workspace.WorkspaceName)] Model Refresh History extraction process completed."
 }  
 
 
 # Fetch Dataflows for Workspaces
 foreach ($workspace in $workspacesInfo) {
+
+Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow metadata extraction process started."
+
     $dataflowsUrl = "https://api.powerbi.com/v1.0/myorg/groups/$($workspace.WorkspaceId)/dataflows"
     $dataflowsResponse = Invoke-PowerBIRestMethod -Method GET -Url $dataflowsUrl | ConvertFrom-Json
 
@@ -631,10 +643,13 @@ foreach ($workspace in $workspacesInfo) {
             }
         }
     }
+Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow metadata extraction process started."
 } 
+
 
 # Fetch Dataflow Lineage (Upstream Dataflows)
 foreach ($workspace in $workspacesInfo) {
+
         $dataflowLineageUrl = "https://api.powerbi.com/v1.0/myorg/groups/$($workspace.WorkspaceId)/datasets/upstreamDataflows"
         $dataflowLineageResponse = Invoke-PowerBIRestMethod -Method GET -Url $dataflowLineageUrl | ConvertFrom-Json
 
@@ -665,9 +680,9 @@ foreach ($workspace in $workspacesInfo) {
         }
     }
 
-
 # Fetch Dataflow Refresh History
 foreach ($workspace in $workspacesInfo) {
+Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow Refresh History extraction process started."
     foreach ($dataflow in $dataflowsInfo | Where-Object { $_.WorkspaceId -eq $workspace.WorkspaceId }) {
         $refreshHistoryUrl = "https://api.powerbi.com/v1.0/myorg/groups/$($workspace.WorkspaceId)/dataflows/$($dataflow.DataflowId)/transactions"
         $refreshHistoryResponse = Invoke-PowerBIRestMethod -Method GET -Url $refreshHistoryUrl | ConvertFrom-Json
@@ -692,11 +707,14 @@ foreach ($workspace in $workspacesInfo) {
             }
         }
     }
+Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow Refresh History extraction process completed."
 }
-
 
 # Loop through all workspaces to fetch Fabric Items (excluding Reports and Semantic Models)
 foreach ($workspace in $workspacesInfo) {
+
+Write-Output "Workspace [$($workspace.WorkspaceName)] Fabric Item metadata extraction process started."
+
     $workspaceId = $workspace.WorkspaceId
     $workspaceName = $workspace.WorkspaceName
     $fabricItemsUrl = "https://api.fabric.microsoft.com/v1/workspaces/$workspaceId/items"
@@ -719,6 +737,9 @@ foreach ($workspace in $workspacesInfo) {
     } catch {
         Write-Warning "Failed to fetch Fabric items for Workspace ID: $workspaceId. $_"
     }
+
+Write-Output "Workspace [$($workspace.WorkspaceName)] Fabric Item metdadata extraction process completed."
+
 }
 
 
@@ -726,8 +747,7 @@ foreach ($workspace in $workspacesInfo) {
 
 
 
-
-
+Write-Output "My Workspace Metadata Extract Process Started"
 
 
 #### Start of 'My Workspace' detail extract ####
@@ -846,6 +866,8 @@ if ($IncludeMyWorkspace -or ($selection -and $selection.TimedOut)) {
     Write-Host "Skipping 'My Workspace' (user did not select it and no timeout)."
 }
     
+Write-Output "My Workspace Metadata Extract Process Completed"
+
 
 # Export all collections to Excel
 if (Test-Path $excelFile) {
@@ -868,6 +890,7 @@ $reportsInAppInfo | Export-Excel -Path $excelFile -WorksheetName "AppReports" -A
 
 Write-Host "Export completed. Data is saved to $excelFile"  
 
+Write-Output "Power BI Environment Detail Extract Process Completed. Excel output saved to $excelFile"
 
 
 
@@ -884,6 +907,7 @@ Write-Host "Export completed. Data is saved to $excelFile"
 
 
 
+Write-Output "Model Backup Process Started"
 
 # Loop through datasetsInfo collection to perform model export
 foreach ($dataset in $datasetsInfo) {
@@ -943,6 +967,7 @@ Model.Database.Name = `"$newModelDatabaseName`";
     }
 }
 
+Write-Output "Model Backup Process Completed"
 
 
 
@@ -958,6 +983,7 @@ Model.Database.Name = `"$newModelDatabaseName`";
 
 
 
+Write-Output "Report Backup Process Started"
 
 # Define the report backups path
 $reportBackupsPath = Join-Path -Path $baseFolderPath -ChildPath "Report Backups"
@@ -1040,7 +1066,7 @@ foreach ($workspace in $workspacesInfo) {
             Remove-Item $filepath -Force
         }
 
-        Write-Output "Exporting $cleanWorkspaceName ~ $cleanReportName"
+        Write-Host "Exporting $cleanWorkspaceName ~ $cleanReportName"
 
         # Export based on Workspace Type
         if ($workspace.WorkspaceIsOnDedicatedCapacity -eq $false) {
@@ -1053,7 +1079,7 @@ foreach ($workspace in $workspacesInfo) {
 
         # Only process model extraction for Pro Workspaces
         if ($workspace.WorkspaceIsOnDedicatedCapacity -eq $false) {
-            Write-Output "Extracting $cleanWorkspaceName ~ $cleanReportName"
+            Write-Host "Extracting $cleanWorkspaceName ~ $cleanReportName"
             pbi-tools extract $filepath -extractFolder $extractFolder -modelSerialization Raw
 
             $driveLetter = "Q:"
@@ -1062,7 +1088,7 @@ foreach ($workspace in $workspacesInfo) {
             if (Test-Path $driveLetter) { subst $driveLetter /D }
 
             $substCommand = "subst $driveLetter $quotedExtractFolder"
-            Write-Output "Running command: $substCommand"
+            Write-Host "Running command: $substCommand"
             cmd.exe /c $substCommand
 
             if (-not (Test-Path $driveLetter)) {
@@ -1070,7 +1096,7 @@ foreach ($workspace in $workspacesInfo) {
                 continue
             }
 
-            Write-Output "Generating .bim for $cleanWorkspaceName ~ $cleanReportName using $driveLetter"
+            Write-Host "Generating .bim for $cleanWorkspaceName ~ $cleanReportName using $driveLetter"
             pbi-tools generate-bim $driveLetter -transforms RemovePBIDataSourceVersion
 
             $bimFilesGenerated = Get-ChildItem -Path $extractFolder -Filter *.bim
@@ -1079,14 +1105,14 @@ foreach ($workspace in $workspacesInfo) {
                 $newBimPath = Join-Path -Path $tempExtractFolder -ChildPath $newBimName
 
                 Move-Item -Path $bimFile.FullName -Destination $newBimPath -Force
-                Write-Output "Moved .bim file to $newBimPath"
+                Write-Host "Moved .bim file to $newBimPath"
             }
 
             subst $driveLetter /D
         }
     }
 
-    Write-Output "$cleanWorkspaceName Reports exported and processed"
+    Write-Host "$cleanWorkspaceName Reports exported and processed"
 }
 
 # Move .bim files to the Model backups path and clean up temp folder
@@ -1103,6 +1129,7 @@ Remove-Item -Path "$tempDestinationRemovalPath\Temp" -Recurse -Force -ErrorActio
 Remove-Item -Path "$tempDestinationRemovalPath\localhost" -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item -Path "$baseFolderPath\localhost" -Recurse -Force -ErrorAction SilentlyContinue
 
+Write-Output "Report Backup Process Completed"
 
 
 
@@ -1117,6 +1144,7 @@ Remove-Item -Path "$baseFolderPath\localhost" -Recurse -Force -ErrorAction Silen
 
 
 
+Write-Output "Report Detail Extraction Process Started"
 
 # Start Tabular Editor process 1
 $p = Start-Process -FilePath "$TabularEditor2Path" -Wait -NoNewWindow -PassThru -WorkingDirectory $baseFolderPath -ArgumentList "`"$baseFolderPath\Config\Blank Model.bim`" -S `"$Script1Path`""
@@ -1143,7 +1171,7 @@ $latestDateFolder = Get-ChildItem -Path $reportBackupsPath -Directory |
 
 if ($latestDateFolder) {
     $newDateFolder = $latestDateFolder.FullName
-    Write-Output "Using the latest dated folder: $newDateFolder"
+    Write-Host "Using the latest dated folder: $newDateFolder"
 } else {
     Write-Error "No valid dated folders found in 'Report Backups'."
 }
@@ -1173,7 +1201,7 @@ foreach ($txtFile in (Get-ChildItem -Path $newDateFolder -Filter *.txt)) {
 
 
 
-Write-Output "TXT files appended to $outputExcelFile"
+Write-Host "TXT files appended to $outputExcelFile"
 
 
 
@@ -1189,10 +1217,12 @@ if (Test-Path -Path $newDateFolder) {
         Remove-Item -Path $subfolder.FullName -Recurse -Force
     }
 
-    Write-Output "Additional Subfolders in $newDateFolder deleted"
+    Write-Host "Additional Subfolders in $newDateFolder deleted"
 } else {
-    Write-Output "Additional Subfolders in $newDateFolder do not exist"
+    Write-Host "Additional Subfolders in $newDateFolder do not exist"
 }
+
+Write-Output "Report Detail Extraction Process Completed. Excel output saved to $outputExcelFile"
 
 
 
@@ -1209,6 +1239,7 @@ if (Test-Path -Path $newDateFolder) {
 
 
 
+Write-Output "Model Detail Extraction Process Started"
 
 $latestModelDateFolder = Get-ChildItem -Path $modelBackupsPath -Directory |
     Where-Object { $_.Name -match '^\d{4}-\d{2}-\d{2}$' } |  # Filter for folders with a date pattern
@@ -1218,7 +1249,7 @@ $latestModelDateFolder = Get-ChildItem -Path $modelBackupsPath -Directory |
 if ($latestModelDateFolder) {
     # Override $folderPath with the latest-dated folder
     $folderPath = $latestModelDateFolder.FullName
-    Write-Output "Using the latest dated folder: $folderPath"
+    Write-Host "Using the latest dated folder: $folderPath"
 } else {
     # Throw an error if no valid dated folders are found
     Write-Error "No valid dated folders found in 'Model Backups'."
@@ -1258,7 +1289,6 @@ foreach ($dataset in $datasetsInfo) {
 Write-Host "First model export and script run completed."
 
 
-
 #### Start of PowerShell Combining to Semantic Models Worksheet ####
 
 
@@ -1288,8 +1318,8 @@ foreach ($csvFile in (Get-ChildItem -Path $folderPath -Filter *.csv)) {
 # Create a new Excel file with the data in the "Semantic Models" worksheet
 $semanticModelsCsvData | Export-Excel -Path $outputExcelFile -WorksheetName "Semantic Models" -AutoNameRange
 
-Write-Output "CSV files combined into the 'Semantic Models' worksheet in $outputExcelFile"
-
+Write-Host "CSV files combined into the 'Semantic Models' worksheet in $outputExcelFile"
+Write-Output "Model Detail Extraction Process Completed"
 
 
 
@@ -1297,6 +1327,7 @@ Write-Output "CSV files combined into the 'Semantic Models' worksheet in $output
 
 
 
+Write-Output "Measure Dependency Detail Extraction Process Started"
 
 # Loop through datasetsInfo collection to run the second model script
 foreach ($dataset in $datasetsInfo) {
@@ -1341,8 +1372,9 @@ foreach ($csvFile in (Get-ChildItem -Path $folderPath -Filter *.csv)) {
 # Append data to the existing Excel file in the "Measure Dependencies" worksheet
 $measureDependenciesCsvData | Export-Excel -Path $outputExcelFile -WorksheetName "Measure Dependencies" -AutoNameRange -Append
 
-Write-Output "CSV files combined into the 'Measure Dependencies' worksheet in $outputExcelFile"
+Write-Host "CSV files combined into the 'Measure Dependencies' worksheet in $outputExcelFile"
 
+Write-Output "Measure Dependency Detail Extraction Process Completed. Excel output saved to $outputExcelFile"
 
 
 
@@ -1358,6 +1390,7 @@ Write-Output "CSV files combined into the 'Measure Dependencies' worksheet in $o
 
 
 
+Write-Output "Dataflow Backup and Detail Extraction Process Started"
 
 # Define the dataflow backups path
 $dataflowBackupsPath = Join-Path -Path $baseFolderPath -ChildPath "Dataflow Backups"
@@ -1386,7 +1419,7 @@ $latestDataflowDateFolder = Get-ChildItem -Path $dataflowBackupsPath -Directory 
 if ($latestDataflowDateFolder) {
     # Override $baseOutputFilePath with the latest-dated folder
     $folderPath = $latestDataflowDateFolder.FullName
-    Write-Output "Using the latest dated folder: $baseOutputFilePath"
+    Write-Host "Using the latest dated folder: $baseOutputFilePath"
 } else {
     # Throw an error if no valid dated folders are found
     Write-Error "No valid dated folders found in 'Dataflow Backups'."
@@ -1622,7 +1655,7 @@ if ($combinedDataTable.Rows.Count -eq 0) {
 
 # Export the combined DataTable to an Excel file
 $combinedDataTable | Export-Excel -Path $combinedExcelOutputPath -AutoSize
-Write-Output "Data exported to $combinedExcelOutputPath"
+Write-Host "Data exported to $combinedExcelOutputPath"
 
 # Combine files if both are there
 $fileName = "Dataflow Detail.xlsx"
@@ -1653,13 +1686,16 @@ $combinedData = $destinationData + $sourceData
 # Export the combined data to the destination file
 $combinedData | Export-Excel -Path $destinationFilePath -WorksheetName "Sheet1"
 
+Write-Output "Dataflow Backup and Detail Extraction Process Completed. Excel output saved to $combinedExcelOutputPath"
+
+
 # Stop the background job after script completion
 Stop-Job -Name "TokenRefreshJob"
 Remove-Job -Name "TokenRefreshJob"
 
-Write-Output "Excel files processed and combined successfully."
+Write-Output "All Excel files processed and combined successfully."
 
 $scriptEndTime = Get-Date
 $elapsedTime = New-TimeSpan -Start $scriptStartTime -End $scriptEndTime
-Write-Host "Total Elapsed Time: $($elapsedTime.Hours)h $($elapsedTime.Minutes)m $($elapsedTime.Seconds)s"
+Write-Output "Total Elapsed Time: $($elapsedTime.Hours)h $($elapsedTime.Minutes)m $($elapsedTime.Seconds)s"
  
