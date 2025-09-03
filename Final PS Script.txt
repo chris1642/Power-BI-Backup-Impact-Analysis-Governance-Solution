@@ -952,9 +952,9 @@ Model.Database.Name = `"$newModelDatabaseName`";
 "@
 
         # Save the C# script to a temporary file
-        $tempScriptPath = [System.IO.Path]::GetTempFileName()
-        $tempScriptPath = [System.IO.Path]::ChangeExtension($tempScriptPath, ".cs")
-        Set-Content -Path $tempScriptPath -Value $csharpScript
+$tempScriptPath = [System.IO.Path]::Combine($env:TEMP, [System.IO.Path]::GetRandomFileName())
+$tempScriptPath = [System.IO.Path]::ChangeExtension($tempScriptPath, ".cs")
+Set-Content -Path $tempScriptPath -Value $csharpScript
 
         # Construct the argument list for the model export with renaming
         $modelExportArgs = "`"Provider=MSOLAP;Data Source=powerbi://api.powerbi.com/v1.0/myorg/$workspaceName;Password=$(Get-CurrentAccessToken)`" $datasetId -S `"$tempScriptPath`" -B `"$folderPath\$cleanDatasetWorkspaceName ~ $cleanDatasetName.bim`""
