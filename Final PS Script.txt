@@ -952,7 +952,8 @@ Model.Database.Name = `"$newModelDatabaseName`";
 "@
 
         # Save the C# script to a temporary file
-$tempScriptPath = [System.IO.Path]::Combine($env:TEMP, [System.IO.Path]::GetRandomFileName())
+$userTemp = Join-Path $env:USERPROFILE "AppData\Local\Temp"
+$tempScriptPath = [System.IO.Path]::Combine($userTemp, [System.IO.Path]::GetRandomFileName())
 $tempScriptPath = [System.IO.Path]::ChangeExtension($tempScriptPath, ".cs")
 Set-Content -Path $tempScriptPath -Value $csharpScript
 
