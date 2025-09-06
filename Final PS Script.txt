@@ -63,6 +63,8 @@ if ($existingPath -notlike "*$PBIToolsFolderPath*") {
     Write-Host "$PBIToolsFolderPath is already in the PATH environment variable."
 }
 
+$pbiToolsPath = Join-Path -Path $baseFolderPath -ChildPath "Config\PBI Tools\pbi-tools.exe"
+
 # Temporarily set execution policy to Bypass for this session
 if ((Get-ExecutionPolicy) -ne 'Bypass') {
     Write-Host "Temporarily setting Execution Policy to Bypass for this session..."
@@ -1080,7 +1082,7 @@ foreach ($workspace in $workspacesInfo) {
         # Only process model extraction for Pro Workspaces
         if ($workspace.WorkspaceIsOnDedicatedCapacity -eq $false) {
             Write-Host "Extracting $cleanWorkspaceName ~ $cleanReportName"
-            pbi-tools extract $filepath -extractFolder $extractFolder -modelSerialization Raw
+            & $pbiToolsPath extract $filepath -extractFolder $extractFolder -modelSerialization Raw
 
             $driveLetter = "Q:"
             $quotedExtractFolder = "`"$extractFolder`""
@@ -1097,7 +1099,7 @@ foreach ($workspace in $workspacesInfo) {
             }
 
             Write-Host "Generating .bim for $cleanWorkspaceName ~ $cleanReportName using $driveLetter"
-            pbi-tools generate-bim $driveLetter -transforms RemovePBIDataSourceVersion
+            &  generate-bim $driveLetter -transforms RemovePBIDataSourceVersion
 
             $bimFilesGenerated = Get-ChildItem -Path $extractFolder -Filter *.bim
             foreach ($bimFile in $bimFilesGenerated) {
