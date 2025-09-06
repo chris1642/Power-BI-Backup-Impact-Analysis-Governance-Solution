@@ -1099,7 +1099,7 @@ foreach ($workspace in $workspacesInfo) {
             }
 
             Write-Host "Generating .bim for $cleanWorkspaceName ~ $cleanReportName using $driveLetter"
-            &  generate-bim $driveLetter -transforms RemovePBIDataSourceVersion
+            & $pbiToolsPath generate-bim $driveLetter -transforms RemovePBIDataSourceVersion
 
             $bimFilesGenerated = Get-ChildItem -Path $extractFolder -Filter *.bim
             foreach ($bimFile in $bimFilesGenerated) {
