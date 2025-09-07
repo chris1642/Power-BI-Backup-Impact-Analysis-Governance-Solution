@@ -1113,25 +1113,49 @@ foreach ($workspace in $workspacesInfo) {
             subst $driveLetter /D
         }
     }
-
-    Write-Host "$cleanWorkspaceName Reports exported and processed"
 }
 
-# Move .bim files to the Model backups path and clean up temp folder
+# --- Process and Move .bim files ---
+# Path to Tabular Editor executable
+$TabularEditor2Path = "$baseFolderPath\Config\TabularEditor\TabularEditor.exe"
+
 $bimFiles = Get-ChildItem -Path $tempExtractFolder -Recurse -Filter *.bim
 foreach ($bimFile in $bimFiles) {
+    $fileName = [System.IO.Path]::GetFileNameWithoutExtension($bimFile.Name)
+
+    # Build temporary C# script
+    $csharpScript = @"
+Model.Database.Name = "$fileName";
+Model.Database.ID = "$fileName";
+"@
+
+    # Save script to temp
+    $tempScriptPath = Join-Path $env:TEMP "TabularEditor_RenameProModel.cs"
+    Set-Content -Path $tempScriptPath -Value $csharpScript -Encoding UTF8
+
+    # Run Tabular Editor CLI to update BIM
+    $args = "`"$($bimFile.FullName)`" -S `"$tempScriptPath`" -B `"$($bimFile.FullName)`""
+    Start-Process -FilePath $TabularEditor2Path -Wait -NoNewWindow -ArgumentList $args
+
+    # Remove temp script
+    Remove-Item -Path $tempScriptPath -Force
+
+    # Move updated BIM to backup folder
     $destinationPath = Join-Path -Path $folderPath -ChildPath $bimFile.Name
     Move-Item -Path $bimFile.FullName -Destination $destinationPath -Force
+
+    Write-Host "Updated and moved $fileName.bim"
 }
 
+# --- Cleanup Temporary Folders ---
 $tempDestinationRemovalPath = "$baseFolderPath\Config"
 
-# Clean up temporary folders
 Remove-Item -Path "$tempDestinationRemovalPath\Temp" -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item -Path "$tempDestinationRemovalPath\localhost" -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item -Path "$baseFolderPath\localhost" -Recurse -Force -ErrorAction SilentlyContinue
 
 Write-Output "Report Backup Process Completed"
+
 
 
 
