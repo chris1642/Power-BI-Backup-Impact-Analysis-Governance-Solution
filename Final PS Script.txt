@@ -52,17 +52,6 @@ if (-not (Test-Path -Path $TabularEditorFolderPath)) {
     Write-Host "Tabular Editor folder already exists at $TabularEditorFolderPath"
 }
 
-
-# Add the PBI Tools folder to the PATH environment variable only if it's not already there
-$existingPath = [System.Environment]::GetEnvironmentVariable("PATH", [System.EnvironmentVariableTarget]::User)
-if ($existingPath -notlike "*$PBIToolsFolderPath*") {
-    $env:PATH += ";$PBIToolsFolderPath"
-    [System.Environment]::SetEnvironmentVariable("PATH", $env:PATH, [System.EnvironmentVariableTarget]::User)
-    Write-Output "Added $PBIToolsFolderPath to the PATH environment variable."
-} else {
-    Write-Host "$PBIToolsFolderPath is already in the PATH environment variable."
-}
-
 $pbiToolsPath = Join-Path -Path $baseFolderPath -ChildPath "Config\PBI Tools\pbi-tools.exe"
 
 # Temporarily set execution policy to Bypass for this session
