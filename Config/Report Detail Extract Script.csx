@@ -2831,84 +2831,56 @@ try
 
 try
 {
-    // Parse top-level config JSON
     string configEnd = (string)json["config"];
     string formattedconfigEndJson = Newtonsoft.Json.Linq.JToken.Parse(configEnd).ToString();
     dynamic configEndJson = Newtonsoft.Json.Linq.JObject.Parse(formattedconfigEndJson);
-
-    // Build a map of PageId -> PageName from the sections array
-    var pageNameById = new Dictionary<string, string>();
-    try
+    
+    // Helper: add one row for a bookmark leaf (has explorationState)
+    Action<Newtonsoft.Json.Linq.JToken> addLeaf = (node) =>
     {
-        foreach (var sec in configEndJson["sections"])
-        {
-            // Sections have a "name" (the section/page id) and "displayName" (user-facing page name)
-            string sid = (string)sec["name"];
-            string sdn = (string)sec["displayName"];
-            if (!string.IsNullOrEmpty(sid))
-            {
-                pageNameById[sid] = sdn ?? "";
-            }
-        }
-    }
-    catch { }
-
-    // Walk all bookmarks (including grouped ones: iterate both root bookmarks and children)
-    foreach (var bk in configEndJson["bookmarks"])
-    {
-        // Bookmarks can be groups with "children" or leaf nodes with "explorationState"
         try
         {
-            // If this is a group, iterate children
+            if (node["explorationState"] == null)
+                return;
+                
+            string bName = (string)node["displayName"];
+            string bId = (string)node["name"];
+            string rptPageId = (string)node["explorationState"]["activeSection"];
+            
+            // Get page name from existing Pages collection
+            string pageName = "";
+            var page = Pages.FirstOrDefault(p => p.Id == rptPageId);
+            if (page != null)
+                pageName = page.Name;
+                
+            Bookmarks.Add(new Bookmark
+            {
+                Id = bId,
+                Name = bName,
+                PageId = rptPageId,
+                PageName = pageName,  // Remove this line if your class doesn't have PageName
+                VisualId = "",
+                VisualHiddenFlag = false
+            });
+        }
+        catch { }
+    };
+    
+    // Walk the bookmarks array at report level (handle groups and leaves)
+    foreach (var bk in configEndJson["bookmarks"])
+    {
+        try
+        {
             if (bk["children"] != null)
             {
                 foreach (var child in bk["children"])
                 {
-                    try
-                    {
-                        string bName     = (string)child["displayName"];
-                        string bId       = (string)child["name"];
-                        string rptPageId = (string)child["explorationState"]["activeSection"];
-
-                        // Lookup page name from our map (fallback empty string)
-                        string pageName = "";
-                        if (rptPageId != null && pageNameById.ContainsKey(rptPageId))
-                            pageName = pageNameById[rptPageId];
-
-                        // One row per bookmark
-                        Bookmarks.Add(new Bookmark
-                        {
-                            Id               = bId,
-                            Name             = bName,
-                            PageId           = rptPageId,
-                            PageName         = pageName,
-                            VisualId         = "",
-                            VisualHiddenFlag = false
-                        });
-                    }
-                    catch { }
+                    addLeaf(child);
                 }
             }
             else
             {
-                // Leaf bookmark at root
-                string bName     = (string)bk["displayName"];
-                string bId       = (string)bk["name"];
-                string rptPageId = (string)bk["explorationState"]["activeSection"];
-
-                string pageName = "";
-                if (rptPageId != null && pageNameById.ContainsKey(rptPageId))
-                    pageName = pageNameById[rptPageId];
-
-                Bookmarks.Add(new Bookmark
-                {
-                    Id               = bId,
-                    Name             = bName,
-                    PageId           = rptPageId,
-                    PageName         = pageName,
-                    VisualId         = "",
-                    VisualHiddenFlag = false
-                });
+                addLeaf(bk); // standalone bookmark
             }
         }
         catch { }
@@ -3349,6 +3321,7 @@ public class ReportLevelMeasures
 
 static void _() { // Comment out this line if using Tabular Editor 3
  
+
 
 
 
