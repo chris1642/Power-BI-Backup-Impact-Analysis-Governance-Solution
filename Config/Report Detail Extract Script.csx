@@ -2829,72 +2829,94 @@ try
 
 
 
+try
+{
+    // Parse top-level config JSON
+    string configEnd = (string)json["config"];
+    string formattedconfigEndJson = Newtonsoft.Json.Linq.JToken.Parse(configEnd).ToString();
+    dynamic configEndJson = Newtonsoft.Json.Linq.JObject.Parse(formattedconfigEndJson);
+
+    // Build a map of PageId -> PageName from the sections array
+    var pageNameById = new Dictionary<string, string>();
     try
     {
-        string configEnd = (string)json["config"];
-        string formattedconfigEndJson = Newtonsoft.Json.Linq.JToken.Parse(configEnd).ToString();
-        dynamic configEndJson = Newtonsoft.Json.Linq.JObject.Parse(formattedconfigEndJson);
-
-        foreach (var o in configEndJson["bookmarks"].Children())
+        foreach (var sec in configEndJson["sections"])
         {
-            string bName = o["displayName"];
-            string bId = o["name"];
-            string rptPageId = o["explorationState"]["activeSection"];
-                    
-            try
+            // Sections have a "name" (the section/page id) and "displayName" (user-facing page name)
+            string sid = (string)sec["name"];
+            string sdn = (string)sec["displayName"];
+            if (!string.IsNullOrEmpty(sid))
             {
-                foreach (var v in Visuals.Where(a => a.PageName == Pages.Where(z => z.Id == rptPageId).FirstOrDefault().Name).ToList())
-                {
-                    string vizId = v.Id;
-                    bool hm = false;
-                    try
-                    {  
-                        string vT = (string)o["explorationState"]["sections"][rptPageId]["visualContainers"][vizId]["singleVisual"]["visualType"];    
-                        
-                        // visualContainers
-                        try
-                        {
-                            string mode = (string)o["explorationState"]["sections"][rptPageId]["visualContainers"][vizId]["singleVisual"]["display"]["mode"];
-                            if (mode == "hidden")
-                            {
-                                hm = true;
-                            }
-                        }
-                        catch
-                        {
-                        }                                                
-                        
-                        Bookmarks.Add(new Bookmark {Id = bId, Name = bName, PageId = rptPageId, VisualId = vizId, VisualHiddenFlag = hm});
-                    }
-                    catch
-                    {
-                    }
-
-                    // visualContainerGroups
-                    try
-                    {
-                        bool mode = (bool)o["explorationState"]["sections"][rptPageId]["visualContainerGroups"][vizId]["isHidden"];
-                        
-                        if (mode)
-                        {
-                            hm = true;
-                        }
-                        
-                        Bookmarks.Add(new Bookmark {Id = bId, Name = bName, PageId = rptPageId, VisualId = vizId, VisualHiddenFlag = hm});
-                    }
-                    catch
-                    {
-                    }
-                }
+                pageNameById[sid] = sdn ?? "";
             }
-            catch
-            {
-            } 
         }
     }
-    catch
+    catch { }
+
+    // Walk all bookmarks (including grouped ones: iterate both root bookmarks and children)
+    foreach (var bk in configEndJson["bookmarks"])
     {
+        // Bookmarks can be groups with "children" or leaf nodes with "explorationState"
+        try
+        {
+            // If this is a group, iterate children
+            if (bk["children"] != null)
+            {
+                foreach (var child in bk["children"])
+                {
+                    try
+                    {
+                        string bName     = (string)child["displayName"];
+                        string bId       = (string)child["name"];
+                        string rptPageId = (string)child["explorationState"]["activeSection"];
+
+                        // Lookup page name from our map (fallback empty string)
+                        string pageName = "";
+                        if (rptPageId != null && pageNameById.ContainsKey(rptPageId))
+                            pageName = pageNameById[rptPageId];
+
+                        // One row per bookmark
+                        Bookmarks.Add(new Bookmark
+                        {
+                            Id               = bId,
+                            Name             = bName,
+                            PageId           = rptPageId,
+                            PageName         = pageName,
+                            VisualId         = "",
+                            VisualHiddenFlag = false
+                        });
+                    }
+                    catch { }
+                }
+            }
+            else
+            {
+                // Leaf bookmark at root
+                string bName     = (string)bk["displayName"];
+                string bId       = (string)bk["name"];
+                string rptPageId = (string)bk["explorationState"]["activeSection"];
+
+                string pageName = "";
+                if (rptPageId != null && pageNameById.ContainsKey(rptPageId))
+                    pageName = pageNameById[rptPageId];
+
+                Bookmarks.Add(new Bookmark
+                {
+                    Id               = bId,
+                    Name             = bName,
+                    PageId           = rptPageId,
+                    PageName         = pageName,
+                    VisualId         = "",
+                    VisualHiddenFlag = false
+                });
+            }
+        }
+        catch { }
     }
+}
+catch
+{
+}
 
     // Update for Visual Groups
     foreach (var x in Visuals.ToList())
@@ -3327,6 +3349,7 @@ public class ReportLevelMeasures
 
 static void _() { // Comment out this line if using Tabular Editor 3
  
+
 
 
 
