@@ -24,6 +24,12 @@ if (-not (Test-Path $configFolder)) {
 
 $ErrorActionPreference="SilentlyContinue"; $WarningPreference="SilentlyContinue"
 
+# Temporarily set execution policy to Bypass for this session
+if ((Get-ExecutionPolicy) -ne 'Bypass') {
+    Write-Host "Temporarily setting Execution Policy to Bypass for this session..."
+    Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+}
+
 # =============================
 # Download latest pbi-tools
 # =============================
@@ -95,11 +101,6 @@ if ($zipFile) {
 
 $pbiToolsPath = Join-Path -Path $baseFolderPath -ChildPath "Config\PBI Tools\pbi-tools.exe"
 
-# Temporarily set execution policy to Bypass for this session
-if ((Get-ExecutionPolicy) -ne 'Bypass') {
-    Write-Host "Temporarily setting Execution Policy to Bypass for this session..."
-    Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
-}
 
 # Ensure required modules are installed, and imports them. If import fails, error and exit early
 $requiredModules = @( 'ImportExcel', 'MicrosoftPowerBIMgmt' )
