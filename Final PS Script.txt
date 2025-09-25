@@ -44,7 +44,7 @@ if ($pbiAsset -and $pbiAsset.browser_download_url) {
 # =============================
 Download latest Tabular Editor 2 Portable
 # =============================
-$teZip = Join-Path $configFolder "tabulareditor.zip"
+$teZip = Join-Path $configFolder "TabularEditor.zip"
 $teDownloadUrl = "https://github.com/TabularEditor/TabularEditor/releases/latest/download/TabularEditor.Portable.zip"
 
 Write-Host "[INFO] Downloading latest Tabular Editor 2 Portable..."
