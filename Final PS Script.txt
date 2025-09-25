@@ -27,7 +27,7 @@ $ErrorActionPreference="SilentlyContinue"; $WarningPreference="SilentlyContinue"
 # =============================
 # Download latest pbi-tools
 # =============================
-$pbiToolsZip = Join-Path $configFolder "pbi-tools.zip"
+$pbiToolsZip = Join-Path $configFolder "PBI Tools.zip"
 
 Write-Host "[INFO] Fetching latest pbi-tools release..."
 $pbiRelease = Invoke-RestMethod -Uri "https://api.github.com/repos/pbi-tools/pbi-tools/releases/latest"
