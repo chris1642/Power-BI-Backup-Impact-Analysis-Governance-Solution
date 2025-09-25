@@ -11,96 +11,54 @@ $Script3Path = "$baseFolderPath\Config\Model Detail Extract Script.csx"
 $Script4Path = "$baseFolderPath\Config\Measure Dependency Extract Script.csx"
 $TabularEditor2Path = "$baseFolderPath\Config\TabularEditor\TabularEditor.exe"
 
-# =============================
-# Config
-# =============================
-$baseFolderPath = "C:\Power BI Backups"
-$configFolder   = Join-Path $baseFolderPath "Config"
 
-# Ensure Config exists
-if (-not (Test-Path $configFolder)) {
-    New-Item -Path $configFolder -ItemType Directory -Force | Out-Null
+# Check for PBI Tools folder and extract if necessary
+$PBIToolsFolderPath = Join-Path -Path $baseFolderPath\Config -ChildPath "PBI Tools"
+$PBIToolsZipPattern = "pbi-tools*.zip"
+
+if (-not (Test-Path -Path $PBIToolsFolderPath)) {
+    # Check if there is any zip file matching the pattern
+    $zipFile = Get-ChildItem -Path $baseFolderPath\Config -Filter $PBIToolsZipPattern | Select-Object -First 1
+    if ($zipFile) {
+        # Create the PBI Tools folder
+        New-Item -Path $PBIToolsFolderPath -ItemType Directory -Force
+        # Extract the zip file contents into the PBI Tools folder
+        Add-Type -AssemblyName System.IO.Compression.FileSystem
+        [System.IO.Compression.ZipFile]::ExtractToDirectory($zipFile.FullName, $PBIToolsFolderPath)
+        Write-Output "Extracted $($zipFile.Name) to $PBIToolsFolderPath"
+    }
 }
 
 $ErrorActionPreference="SilentlyContinue"; $WarningPreference="SilentlyContinue"
+
+# Define the folder path and zip pattern for Tabular Editor
+$TabularEditorFolderPath = Join-Path -Path $baseFolderPath\Config -ChildPath "TabularEditor"
+$TabularEditorZipPattern = "TabularEditor*.zip"
+
+if (-not (Test-Path -Path $TabularEditorFolderPath)) {
+    # Check if there is any zip file matching the pattern
+    $zipFile = Get-ChildItem -Path $baseFolderPath\Config -Filter $TabularEditorZipPattern | Select-Object -First 1
+    if ($zipFile) {
+        # Create the Tabular Editor folder
+        New-Item -Path $TabularEditorFolderPath -ItemType Directory -Force
+        # Extract the zip file contents into the Tabular Editor folder
+        Add-Type -AssemblyName System.IO.Compression.FileSystem
+        [System.IO.Compression.ZipFile]::ExtractToDirectory($zipFile.FullName, $TabularEditorFolderPath)
+        Write-Output "Extracted $($zipFile.Name) to $TabularEditorFolderPath"
+    } else {
+        Write-Host "No zip file matching the pattern $TabularEditorZipPattern found in $baseFolderPath\Config"
+    }
+} else {
+    Write-Host "Tabular Editor folder already exists at $TabularEditorFolderPath"
+}
+
+$pbiToolsPath = Join-Path -Path $baseFolderPath -ChildPath "Config\PBI Tools\pbi-tools.exe"
 
 # Temporarily set execution policy to Bypass for this session
 if ((Get-ExecutionPolicy) -ne 'Bypass') {
     Write-Host "Temporarily setting Execution Policy to Bypass for this session..."
     Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 }
-
-# =============================
-# Download latest pbi-tools
-# =============================
-$pbiToolsZip = Join-Path $configFolder "PBI Tools.zip"
-
-Write-Host "[INFO] Fetching latest pbi-tools release..."
-$pbiRelease = Invoke-RestMethod -Uri "https://api.github.com/repos/pbi-tools/pbi-tools/releases/latest"
-$pbiAsset   = $pbiRelease.assets | Where-Object { $_.name -like "*.zip" } | Select-Object -First 1
-
-if ($pbiAsset -and $pbiAsset.browser_download_url) {
-    if (Test-Path $pbiToolsZip) { Remove-Item $pbiToolsZip -Force }
-    Invoke-WebRequest -Uri $pbiAsset.browser_download_url -OutFile $pbiToolsZip -UseBasicParsing
-    Write-Host "[INFO] Downloaded latest pbi-tools to $pbiToolsZip"
-} else {
-    Write-Warning "[WARN] Could not find a valid pbi-tools zip asset."
-}
-
-# =============================
-Download latest Tabular Editor 2 Portable
-# =============================
-$teZip = Join-Path $configFolder "TabularEditor.zip"
-$teDownloadUrl = "https://github.com/TabularEditor/TabularEditor/releases/latest/download/TabularEditor.Portable.zip"
-
-Write-Host "[INFO] Downloading latest Tabular Editor 2 Portable..."
-if (Test-Path $teZip) { Remove-Item $teZip -Force }
-Invoke-WebRequest -Uri $teDownloadUrl -OutFile $teZip -UseBasicParsing
-Write-Host "[INFO] Downloaded Tabular Editor 2 Portable to $teZip"
-
-# Define the folder path and zip pattern for PBI Tools
-$PBIToolsFolderPath = Join-Path -Path $baseFolderPath\Config -ChildPath "PBI Tools"
-$PBIToolsZipPattern = "PBI Tools*.zip"
-
-# Get the first matching zip file
-$zipFile = Get-ChildItem -Path $baseFolderPath\Config -Filter $PBIToolsZipPattern | Select-Object -First 1
-if ($zipFile) {
-    # Remove the folder if it already exists
-    if (Test-Path -Path $PBIToolsFolderPath) {
-        Remove-Item -Path $PBIToolsFolderPath -Recurse -Force
-    }
-
-    # Recreate the folder
-    New-Item -Path $PBIToolsFolderPath -ItemType Directory -Force | Out-Null
-
-    # Extract the zip file contents into the folder
-    Add-Type -AssemblyName System.IO.Compression.FileSystem
-    [System.IO.Compression.ZipFile]::ExtractToDirectory($zipFile.FullName, $PBIToolsFolderPath)
-    Write-Output "Extracted $($zipFile.Name) to $PBIToolsFolderPath"
-}
-
-# Repeat for Tabular Editor
-$TabularEditorFolderPath = Join-Path -Path $baseFolderPath\Config -ChildPath "TabularEditor"
-$TabularEditorZipPattern = "TabularEditor*.zip"
-
-$zipFile = Get-ChildItem -Path $baseFolderPath\Config -Filter $TabularEditorZipPattern | Select-Object -First 1
-if ($zipFile) {
-    if (Test-Path -Path $TabularEditorFolderPath) {
-        Remove-Item -Path $TabularEditorFolderPath -Recurse -Force
-    }
-
-    New-Item -Path $TabularEditorFolderPath -ItemType Directory -Force | Out-Null
-
-    Add-Type -AssemblyName System.IO.Compression.FileSystem
-    [System.IO.Compression.ZipFile]::ExtractToDirectory($zipFile.FullName, $TabularEditorFolderPath)
-    Write-Output "Extracted $($zipFile.Name) to $TabularEditorFolderPath"
-} else {
-    Write-Host "No zip file matching the pattern $TabularEditorZipPattern found in $baseFolderPath\Config"
-}
-
-
-$pbiToolsPath = Join-Path -Path $baseFolderPath -ChildPath "Config\PBI Tools\pbi-tools.exe"
-
 
 # Ensure required modules are installed, and imports them. If import fails, error and exit early
 $requiredModules = @( 'ImportExcel', 'MicrosoftPowerBIMgmt' )
