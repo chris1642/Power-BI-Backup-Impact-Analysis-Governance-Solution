@@ -53,8 +53,8 @@ Invoke-WebRequest -Uri $teDownloadUrl -OutFile $teZip -UseBasicParsing
 Write-Host "[INFO] Downloaded Tabular Editor 2 Portable to $teZip"
 
 # Define the folder path and zip pattern for PBI Tools
-$PBIToolsFolderPath = Join-Path -Path $baseFolderPath\Config -ChildPath "PBITools"
-$PBIToolsZipPattern = "PBITools*.zip"
+$PBIToolsFolderPath = Join-Path -Path $baseFolderPath\Config -ChildPath "PBI Tools"
+$PBIToolsZipPattern = "PBI Tools*.zip"
 
 # Get the first matching zip file
 $zipFile = Get-ChildItem -Path $baseFolderPath\Config -Filter $PBIToolsZipPattern | Select-Object -First 1
