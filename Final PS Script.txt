@@ -1110,39 +1110,55 @@ foreach ($workspace in $workspacesInfo) {
             Export-ReportUsingAPI -GroupId $workspaceId -ReportId $reportId -OutFilePath $filepath -DownloadType "LiveConnect"
         }
 
-        # Only process model extraction for Pro Workspaces
-        if ($workspace.WorkspaceIsOnDedicatedCapacity -eq $false) {
-            Write-Host "Extracting $cleanWorkspaceName ~ $cleanReportName"
-            & $pbiToolsPath extract $filepath -extractFolder $extractFolder -modelSerialization Raw
-
-            $driveLetter = "Q:"
-            $quotedExtractFolder = "`"$extractFolder`""
-
-            if (Test-Path $driveLetter) { subst $driveLetter /D }
-
-            $substCommand = "subst $driveLetter $quotedExtractFolder"
-            Write-Host "Running command: $substCommand"
-            cmd.exe /c $substCommand
-
-            if (-not (Test-Path $driveLetter)) {
-                Write-Error "Failed to map $extractFolder to $driveLetter"
-                continue
-            }
-
-            Write-Host "Generating .bim for $cleanWorkspaceName ~ $cleanReportName using $driveLetter"
-            & $pbiToolsPath generate-bim $driveLetter -transforms RemovePBIDataSourceVersion
-
-            $bimFilesGenerated = Get-ChildItem -Path $extractFolder -Filter *.bim
-            foreach ($bimFile in $bimFilesGenerated) {
-                $newBimName = "$cleanWorkspaceName ~ $cleanReportName.bim"
-                $newBimPath = Join-Path -Path $tempExtractFolder -ChildPath $newBimName
-
-                Move-Item -Path $bimFile.FullName -Destination $newBimPath -Force
-                Write-Host "Moved .bim file to $newBimPath"
-            }
-
-            subst $driveLetter /D
-        }
+		# Function: get first free drive letter (Z down to D)
+		function Get-FreeDriveLetter {
+		    $used = Get-PSDrive -PSProvider FileSystem | ForEach-Object { $_.Name }
+		    foreach ($letter in [char[]](90..68)) {  # Z..D
+		        if ($used -notcontains $letter) { return "${letter}:" }
+		    }
+		    throw "No free drive letters available."
+		}
+		
+		# Only process model extraction for Pro Workspaces
+		if ($workspace.WorkspaceIsOnDedicatedCapacity -eq $false) {
+		    Write-Host "Extracting $cleanWorkspaceName ~ $cleanReportName"
+		
+		    $driveLetter = Get-FreeDriveLetter
+		    $quotedExtractFolder = "`"$extractFolder`""
+		
+		    # ✅ Make sure the extract folder exists before subst
+		    if (-not (Test-Path $extractFolder)) {
+		        New-Item -ItemType Directory -Path $extractFolder -Force | Out-Null
+		    }
+		
+		    if (Test-Path $driveLetter) { subst $driveLetter /D }
+		
+		    $substCommand = "subst $driveLetter $quotedExtractFolder"
+		    Write-Host "Running command: $substCommand"
+		    cmd.exe /c $substCommand
+		
+		    if (-not (Test-Path $driveLetter)) {
+		        Write-Error "Failed to map $extractFolder to $driveLetter"
+		        continue
+		    }
+		
+		    # Extract into subst drive
+		    & $pbiToolsPath extract $filepath -extractFolder $driveLetter -modelSerialization Raw
+		
+		    Write-Host "Generating .bim for $cleanWorkspaceName ~ $cleanReportName using $driveLetter"
+		    & $pbiToolsPath generate-bim $driveLetter -transforms RemovePBIDataSourceVersion
+		
+		    $bimFilesGenerated = Get-ChildItem -Path $extractFolder -Filter *.bim
+		    foreach ($bimFile in $bimFilesGenerated) {
+		        $newBimName = "$cleanWorkspaceName ~ $cleanReportName.bim"
+		        $newBimPath = Join-Path -Path $tempExtractFolder -ChildPath $newBimName
+		
+		        Move-Item -Path $bimFile.FullName -Destination $newBimPath -Force
+		        Write-Host "Moved .bim file to $newBimPath"
+		    }
+		
+		    subst $driveLetter /D
+		}
     }
 }
 
