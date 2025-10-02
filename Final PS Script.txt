@@ -990,7 +990,7 @@ Model.Database.Name = `"$newModelDatabaseName`";
 
 
         # Construct the argument list for the model export with renaming
-        $modelExportArgs = "`"Provider=MSOLAP;Data Source=powerbi://api.powerbi.com/v1.0/myorg/$workspaceName;Password=$(Get-CurrentAccessToken)`" $datasetId -S `"$tempScriptPath`" -B `"$folderPath\$cleanDatasetWorkspaceName ~ $cleanDatasetName.bim`""
+        $modelExportArgs = "`"Provider=MSOLAP;Data Source=powerbi://api.powerbi.com/v1.0/myorg/$workspaceName;Password=$(Get-CurrentAccessToken)`" `$databaseName` -S `"$tempScriptPath`" -B `"$folderPath\$cleanDatasetWorkspaceName ~ $cleanDatasetName.bim`""
         
         # Start the Tabular Editor process for model export and renaming
         Start-Process -FilePath "$TabularEditor2Path" -Wait -NoNewWindow -PassThru -ArgumentList $modelExportArgs
