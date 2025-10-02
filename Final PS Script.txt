@@ -1067,58 +1067,62 @@ function Export-ReportUsingAPI {
     }
 }
 
-foreach ($workspace in $workspacesInfo) {
-    $workspaceName = $workspace.WorkspaceName
-    $workspaceId = $workspace.WorkspaceId
+	# -------------------
+	# Helper Function(s)
+	# -------------------
+	
+	# Function: get first free drive letter (Z down to D)
+	function Get-FreeDriveLetter {
+	    $used = Get-PSDrive -PSProvider FileSystem | ForEach-Object { $_.Name }
+	    foreach ($letter in [char[]](90..68)) {  # Z..Y..X.. down to D
+	        if ($used -notcontains $letter) { return "${letter}:" }
+	    }
+	    throw "No free drive letters available."
+	}
 
-    # Clean up workspace name
-    $cleanWorkspaceName = $workspaceName -replace '\[', '(' -replace '\]', ')'
-    $cleanWorkspaceName = $cleanWorkspaceName -replace "[^a-zA-Z0-9\(\)&,.-]", " "
-    $cleanWorkspaceName = $cleanWorkspaceName.TrimStart()
-
-    # Fetch reports from the existing list
-    $reports = $reportsInfo | Where-Object { $_.WorkspaceId -eq $workspaceId }
-
-    foreach ($report in $reports) {
-        $reportName = $report.ReportName
-        $reportId = $report.ReportId
-
-        # Clean up report name
-        $cleanReportName = $reportName -replace '\[', '(' -replace '\]', ')'
-        $cleanReportName = $cleanReportName -replace "[^a-zA-Z0-9\(\)&,.-]", " "
-        $cleanReportName = $cleanReportName.TrimStart()
-
-        # Determine file extension
-        $fileExtension = if ($report.WebUrl -like "*/rdlreports/*") { "rdl" } else { "pbix" }
-        $filename = "$cleanWorkspaceName ~ $cleanReportName.$fileExtension"
-        $filepath = Join-Path -Path $newDateFolder -ChildPath $filename
-        $extractFolder = Join-Path -Path $tempExtractFolder -ChildPath "$cleanWorkspaceName ~ $cleanReportName"
-
-        # Delete file if it already exists
-        if (Test-Path $filepath) {
-            Remove-Item $filepath -Force
-        }
-
-        Write-Host "Exporting $cleanWorkspaceName ~ $cleanReportName"
-
-        # Export based on Workspace Type
-        if ($workspace.WorkspaceIsOnDedicatedCapacity -eq $false) {
-            # Pro Workspace → IncludeModel
-            Export-ReportUsingAPI -GroupId $workspaceId -ReportId $reportId -OutFilePath $filepath -DownloadType "IncludeModel"
-        } else {
-            # Premium/Fabric Workspace → LiveConnect
-            Export-ReportUsingAPI -GroupId $workspaceId -ReportId $reportId -OutFilePath $filepath -DownloadType "LiveConnect"
-        }
-
-		# Function: get first free drive letter (Z down to D)
-		function Get-FreeDriveLetter {
-		    $used = Get-PSDrive -PSProvider FileSystem | ForEach-Object { $_.Name }
-		    foreach ($letter in [char[]](90..68)) {  # Z..D
-		        if ($used -notcontains $letter) { return "${letter}:" }
-		    }
-		    throw "No free drive letters available."
-		}
-		
+	foreach ($workspace in $workspacesInfo) {
+	    $workspaceName = $workspace.WorkspaceName
+	    $workspaceId = $workspace.WorkspaceId
+	
+	    # Clean up workspace name
+	    $cleanWorkspaceName = $workspaceName -replace '\[', '(' -replace '\]', ')'
+	    $cleanWorkspaceName = $cleanWorkspaceName -replace "[^a-zA-Z0-9\(\)&,.-]", " "
+	    $cleanWorkspaceName = $cleanWorkspaceName.TrimStart()
+	
+	    # Fetch reports from the existing list
+	    $reports = $reportsInfo | Where-Object { $_.WorkspaceId -eq $workspaceId }
+	
+	    foreach ($report in $reports) {
+	        $reportName = $report.ReportName
+	        $reportId = $report.ReportId
+	
+	        # Clean up report name
+	        $cleanReportName = $reportName -replace '\[', '(' -replace '\]', ')'
+	        $cleanReportName = $cleanReportName -replace "[^a-zA-Z0-9\(\)&,.-]", " "
+	        $cleanReportName = $cleanReportName.TrimStart()
+	
+	        # Determine file extension
+	        $fileExtension = if ($report.WebUrl -like "*/rdlreports/*") { "rdl" } else { "pbix" }
+	        $filename = "$cleanWorkspaceName ~ $cleanReportName.$fileExtension"
+	        $filepath = Join-Path -Path $newDateFolder -ChildPath $filename
+	        $extractFolder = Join-Path -Path $tempExtractFolder -ChildPath "$cleanWorkspaceName ~ $cleanReportName"
+	
+	        # Delete file if it already exists
+	        if (Test-Path $filepath) {
+	            Remove-Item $filepath -Force
+	        }
+	
+	        Write-Host "Exporting $cleanWorkspaceName ~ $cleanReportName"
+	
+	        # Export based on Workspace Type
+	        if ($workspace.WorkspaceIsOnDedicatedCapacity -eq $false) {
+	            # Pro Workspace → IncludeModel
+	            Export-ReportUsingAPI -GroupId $workspaceId -ReportId $reportId -OutFilePath $filepath -DownloadType "IncludeModel"
+	        } else {
+	            # Premium/Fabric Workspace → LiveConnect
+	            Export-ReportUsingAPI -GroupId $workspaceId -ReportId $reportId -OutFilePath $filepath -DownloadType "LiveConnect"
+	        }
+			
 		# Only process model extraction for Pro Workspaces
 		if ($workspace.WorkspaceIsOnDedicatedCapacity -eq $false) {
 		    Write-Host "Extracting $cleanWorkspaceName ~ $cleanReportName"
@@ -1142,24 +1146,28 @@ foreach ($workspace in $workspacesInfo) {
 		        continue
 		    }
 		
-		    # Extract into subst drive
-		    & $pbiToolsPath extract $filepath -extractFolder $driveLetter -modelSerialization Raw
+		    try {
+		        # Extract into subst drive
+		        & $pbiToolsPath extract $filepath -extractFolder $driveLetter -modelSerialization Raw
 		
-		    Write-Host "Generating .bim for $cleanWorkspaceName ~ $cleanReportName using $driveLetter"
-		    & $pbiToolsPath generate-bim $driveLetter -transforms RemovePBIDataSourceVersion
+		        Write-Host "Generating .bim for $cleanWorkspaceName ~ $cleanReportName using $driveLetter"
+		        & $pbiToolsPath generate-bim $driveLetter -transforms RemovePBIDataSourceVersion
 		
-		    $bimFilesGenerated = Get-ChildItem -Path $extractFolder -Filter *.bim
-		    foreach ($bimFile in $bimFilesGenerated) {
-		        $newBimName = "$cleanWorkspaceName ~ $cleanReportName.bim"
-		        $newBimPath = Join-Path -Path $tempExtractFolder -ChildPath $newBimName
+		        $bimFilesGenerated = Get-ChildItem -Path $extractFolder -Filter *.bim
+		        foreach ($bimFile in $bimFilesGenerated) {
+		            $newBimName = "$cleanWorkspaceName ~ $cleanReportName.bim"
+		            $newBimPath = Join-Path -Path $tempExtractFolder -ChildPath $newBimName
 		
-		        Move-Item -Path $bimFile.FullName -Destination $newBimPath -Force
-		        Write-Host "Moved .bim file to $newBimPath"
+		            Move-Item -Path $bimFile.FullName -Destination $newBimPath -Force
+		            Write-Host "Moved .bim file to $newBimPath"
+		        }
 		    }
-		
-		    subst $driveLetter /D
+		    finally {
+		        # ✅ Always clean up subst drive, even if extract/generate fails
+		        subst $driveLetter /D 2>$null
+		    }
 		}
-    }
+	}
 }
 
 # --- Process and Move .bim files ---
