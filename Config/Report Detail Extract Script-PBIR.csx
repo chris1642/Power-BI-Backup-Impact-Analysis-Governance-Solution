@@ -91,7 +91,33 @@ Func<Newtonsoft.Json.Linq.JToken, string[]> GetAllPossiblePaths = (node) =>
         "visual.query.Commands[0].queryState.Columns.projections",
         // FIX #1: include Data.projections (modern)
         "visual.prototypeQuery.queryState.Data.projections",
-        "visual.query.Commands[0].queryState.Data.projections"
+        "visual.query.Commands[0].queryState.Data.projections",
+        // Additional comprehensive paths
+        "visual.query.queryState.Axis.projections",
+        "visual.query.queryState.Color.projections",
+        "visual.query.queryState.Shape.projections",
+        "visual.query.queryState.Gradient.projections",
+        "visual.query.queryState.Image.projections",
+        "visual.prototypeQuery.queryState.Category.projections",
+        "visual.prototypeQuery.queryState.Series.projections",
+        "visual.prototypeQuery.queryState.Y.projections",
+        "visual.prototypeQuery.queryState.X.projections",
+        "visual.query.Commands[0].queryState.Category.projections",
+        "visual.query.Commands[0].queryState.Series.projections",
+        "config.singleVisual.prototypeQuery.Select",
+        "config.singleVisual.query.queryState.Values.projections",
+        "config.singleVisual.query.queryState.Rows.projections",
+        // Additional paths for custom visuals
+        "visual.prototypeQuery.Select",
+        "visual.query.Select",
+        "query.queryState.Values.projections",
+        "query.queryState.Rows.projections",
+        "query.queryState.Columns.projections",
+        "prototypeQuery.Select",
+        "prototypeQuery.queryState.Values.projections",
+        // Additional path for textFilter and similar custom visuals
+        "visual.query.queryState.field.projections",
+        "query.queryState.field.projections"
     });
     
     return paths.ToArray();
@@ -136,7 +162,21 @@ Func<Newtonsoft.Json.Linq.JToken, List<Newtonsoft.Json.Linq.JToken>> ExtractAllF
         "visual.query.Commands[0].where",
         "visual.query.Commands[0].having",
         "config.singleVisualGroup.filters",
-        "config.singleVisual.vcFilters"
+        "config.singleVisual.vcFilters",
+        "config.singleVisual.filters",
+        "config.filterConfig.filters",
+        "visual.query.filterClause",
+        "visual.prototypeQuery.filterClause",
+        // Additional paths for custom visuals
+        "query.where",
+        "query.having",
+        "prototypeQuery.where",
+        "prototypeQuery.having",
+        "vcFilters",
+        "visual.query.queryState.field.where",
+        "visual.query.queryState.field.having",
+        "query.queryState.field.where",
+        "query.queryState.field.having"
     };
     
     foreach (var path in filterPaths)
@@ -156,6 +196,28 @@ Func<Newtonsoft.Json.Linq.JToken, List<Newtonsoft.Json.Linq.JToken>> ExtractAllF
     }
     
     return allFilters;
+};
+
+Func<Newtonsoft.Json.Linq.JToken, Newtonsoft.Json.Linq.JToken> ExtractFieldFromCondition = (condition) =>
+{
+    try
+    {
+        // Try different nested structures
+        var paths = new[] {
+            "Condition.Comparison.Left",
+            "Condition.Not.Expression.Comparison.Left",
+            "Condition.And.Left.Comparison.Left",
+            "Condition.Or.Left.Comparison.Left"
+        };
+        
+        foreach (var path in paths)
+        {
+            var field = condition.SelectToken(path);
+            if (field != null) return field;
+        }
+    }
+    catch { }
+    return null;
 };
 
 string newline = Environment.NewLine;
@@ -375,7 +437,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                             }
                             else if (filter["field"]["HierarchyLevel"] != null)
                             {
-                                objectType = "HierarchyLevel";
+                                objectType = "Hierarchy";
                                 tableName = filter["field"]["HierarchyLevel"]["Expression"]["Hierarchy"]["Expression"]["SourceRef"]["Entity"].ToString();
                                 objectName = filter["field"]["HierarchyLevel"]["Level"].ToString();
                             }
@@ -727,7 +789,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                             }
                             else if (hierarchy != null)
                             {
-                                objectType = "HierarchyLevel";
+                                objectType = "Hierarchy";
                                 var expr = hierarchy["Expression"];
                                 var hierarchyNode = expr != null ? expr["Hierarchy"] : null;
                                 var innerExpr = hierarchyNode != null ? hierarchyNode["Expression"] : null;
@@ -749,7 +811,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                             }
                             else if (aggregation != null)
                             {
-                                objectType = "Aggregation";
+                                objectType = "Column";
                                 var expr = aggregation["Expression"];
                                 if (expr != null && expr["Column"] != null)
                                 {
@@ -760,7 +822,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                             }
                             else if (dateHierarchy != null)
                             {
-                                objectType = "DateHierarchy";
+                                objectType = "Column";
                                 var expr = dateHierarchy["Expression"];
                                 var sourceRef = expr != null && expr["SourceRef"] != null ? expr["SourceRef"] : null;
                                 tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
@@ -768,7 +830,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                             }
                             else if (selectColumn != null)
                             {
-                                objectType = "SelectColumn";
+                                objectType = "Column";
                                 var expr = selectColumn["Expression"];
                                 var sourceRef = expr != null ? expr["SourceRef"] : null;
                                 tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
@@ -776,7 +838,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                             }
                             else if (groupBy != null)
                             {
-                                objectType = "GroupBy";
+                                objectType = "Column";
                                 var expr = groupBy["Expression"];
                                 var sourceRef = expr != null ? expr["SourceRef"] : null;
                                 tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
@@ -918,6 +980,72 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                     }
                     catch { }
 
+                    // === Get additional visual properties ===
+                    bool showItemsNoData = false;
+                    string slicerType = "N/A";
+                    string parentGroup = "";
+                    bool hiddenFlag = false;
+                    int visualObjectCount = 0;
+                    
+                    try
+                    {
+                        var parentGroupToken = node["parentGroupName"];
+                        if (parentGroupToken != null)
+                        {
+                            parentGroup = parentGroupToken.ToString();
+                        }
+                    }
+                    catch { }
+                    
+                    try
+                    {
+                        var showAllRoles = node.SelectToken("visual.showAllRoles");
+                        if (showAllRoles != null && showAllRoles.Type == Newtonsoft.Json.Linq.JTokenType.Array && showAllRoles.HasValues)
+                        {
+                            string firstRole = showAllRoles[0].ToString();
+                            if (firstRole == "Values" || firstRole == "Rows" || firstRole == "Columns")
+                            {
+                                showItemsNoData = true;
+                            }
+                        }
+                    }
+                    catch { }
+                    
+                    try
+                    {
+                        if (visualType == "slicer")
+                        {
+                            var slicerMode = node.SelectToken("visual.objects.data[0].properties.mode.expr.Literal.Value");
+                            if (slicerMode != null)
+                            {
+                                string modeValue = slicerMode.ToString();
+                                if (modeValue == "'Basic'")
+                                {
+                                    slicerType = "List";
+                                }
+                                else if (modeValue == "'Dropdown'")
+                                {
+                                    slicerType = "Dropdown";
+                                }
+                            }
+                            else
+                            {
+                                slicerType = "List";
+                            }
+                        }
+                    }
+                    catch { }
+                    
+                    try
+                    {
+                        var displayMode = node.SelectToken("visual.display.mode");
+                        if (displayMode != null && displayMode.ToString() == "hidden")
+                        {
+                            hiddenFlag = true;
+                        }
+                    }
+                    catch { }
+
                     Visuals.Add(new Visual
                     {
                         Id = visualId,
@@ -928,16 +1056,16 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                         Z = string.IsNullOrEmpty(z) ? 0 : (int)double.Parse(z),
                         Width = string.IsNullOrEmpty(width) ? 0 : (int)double.Parse(width),
                         Height = string.IsNullOrEmpty(height) ? 0 : (int)double.Parse(height),
-                        HiddenFlag = false,
+                        HiddenFlag = hiddenFlag,
                         PageId = pageId,
                         PageName = pageName,
                         ReportID = reportId,
                         ModelID = modelId,
                         CustomVisualFlag = visualType.ToLower().StartsWith("custom"),
-                        ObjectCount = 0,
-                        ShowItemsNoDataFlag = false,
-                        SlicerType = "",
-                        ParentGroup = null,
+                        ObjectCount = visualObjectCount,
+                        ShowItemsNoDataFlag = showItemsNoData,
+                        SlicerType = slicerType,
+                        ParentGroup = string.IsNullOrEmpty(parentGroup) ? null : parentGroup,
                         ReportDate = reportDate
                     });
 
@@ -1044,7 +1172,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                     var entity = expr != null && expr["SourceRef"] != null ? expr["SourceRef"]["Entity"] : null;
                                     tableName = entity != null ? entity.ToString() : "";
                                     objectName = field["Column"]["Property"] != null ? field["Column"]["Property"].ToString() : "";
-                                    objectType = "column";
+                                    objectType = "Column";
                                 }
                                 else if (field["Measure"] != null)
                                 {
@@ -1052,7 +1180,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                     var entity = expr != null && expr["SourceRef"] != null ? expr["SourceRef"]["Entity"] : null;
                                     tableName = entity != null ? entity.ToString() : "";
                                     objectName = field["Measure"]["Property"] != null ? field["Measure"]["Property"].ToString() : "";
-                                    objectType = "measure";
+                                    objectType = "Measure";
                                 }
                                 else if (field["HierarchyLevel"] != null)
                                 {
@@ -1061,8 +1189,11 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                     var innerExpr = hierarchy != null ? hierarchy["Expression"] : null;
                                     var entity = innerExpr != null && innerExpr["SourceRef"] != null ? innerExpr["SourceRef"]["Entity"] : null;
                                     tableName = entity != null ? entity.ToString() : "";
-                                    objectName = field["HierarchyLevel"]["Level"] != null ? field["HierarchyLevel"]["Level"].ToString() : "";
-                                    objectType = "hierarchyLevel";
+                                    
+                                    string levelName = field["HierarchyLevel"]["Level"] != null ? field["HierarchyLevel"]["Level"].ToString() : "";
+                                    string hierName = hierarchy != null && hierarchy["Hierarchy"] != null ? hierarchy["Hierarchy"].ToString() : "";
+                                    objectName = !string.IsNullOrEmpty(hierName) && !string.IsNullOrEmpty(levelName) ? hierName + "." + levelName : levelName;
+                                    objectType = "Hierarchy";
                                 }
                                 else if (field["Aggregation"] != null)
                                 {
@@ -1072,7 +1203,14 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                         var sourceRef = expr["Column"]["Expression"]["SourceRef"];
                                         tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
                                         objectName = expr["Column"]["Property"] != null ? expr["Column"]["Property"].ToString() : "";
-                                        objectType = "aggregation";
+                                        objectType = "Column";
+                                    }
+                                    else if (expr != null && expr["Measure"] != null)
+                                    {
+                                        var sourceRef = expr["Measure"]["Expression"]["SourceRef"];
+                                        tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
+                                        objectName = expr["Measure"]["Property"] != null ? expr["Measure"]["Property"].ToString() : "";
+                                        objectType = "Measure";
                                     }
                                 }
                                 else if (field["DateHierarchy"] != null)
@@ -1081,28 +1219,203 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                     var sourceRef = expr != null && expr["SourceRef"] != null ? expr["SourceRef"] : null;
                                     tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
                                     objectName = field["DateHierarchy"]["Level"] != null ? field["DateHierarchy"]["Level"].ToString() : "";
-                                    objectType = "dateHierarchy";
+                                    objectType = "Column";
+                                }
+                                else if (field["SelectColumn"] != null)
+                                {
+                                    var expr = field["SelectColumn"]["Expression"];
+                                    var sourceRef = expr != null ? expr["SourceRef"] : null;
+                                    tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
+                                    objectName = field["SelectColumn"]["Property"] != null ? field["SelectColumn"]["Property"].ToString() : "";
+                                    objectType = "Column";
+                                }
+                                else if (field["GroupBy"] != null)
+                                {
+                                    var expr = field["GroupBy"]["Expression"];
+                                    var sourceRef = expr != null ? expr["SourceRef"] : null;
+                                    tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
+                                    objectName = field["GroupBy"]["Property"] != null ? field["GroupBy"]["Property"].ToString() : "";
+                                    objectType = "Column";
                                 }
                             }
 
-                            if (!string.IsNullOrEmpty(tableName) || !string.IsNullOrEmpty(objectName))
+                            // Always add the object, even if tableName or objectName is empty
+                            visualObjectCount++;
+                            VisualObjects.Add(new VisualObject {
+                                PageId = pageId,
+                                PageName = pageName,
+                                ReportID = reportId,
+                                ModelID = projectionModelId,
+                                VisualId = visualId,
+                                VisualType = visualType,
+                                AppliedFilterVersion = appliedFilterVersion,
+                                CustomVisualFlag = customFlag == "true",
+                                TableName = tableName,
+                                ObjectName = objectName,
+                                ObjectType = objectType,
+                                Source = source,
+                                displayName = displayName,
+                                ReportDate = reportDate
+                            });
+                        }
+                    }
+                    catch { }
+
+                    // === VISUAL OBJECTS FROM CONDITIONAL FORMATTING AND OBJECTS ===
+                    try
+                    {
+                        var visualObjects = node.SelectToken("visual.objects");
+                        if (visualObjects != null)
+                        {
+                            // Helper function to extract field info from expression
+                            Action<Newtonsoft.Json.Linq.JToken, string> processExpression = null;
+                            processExpression = delegate(Newtonsoft.Json.Linq.JToken expr, string sourceType)
                             {
-                                VisualObjects.Add(new VisualObject {
-                                    PageId = pageId,
-                                    PageName = pageName,
-                                    ReportID = reportId,
-                                    ModelID = projectionModelId,
-                                    VisualId = visualId,
-                                    VisualType = visualType,
-                                    AppliedFilterVersion = appliedFilterVersion,
-                                    CustomVisualFlag = customFlag == "true",
-                                    TableName = tableName,
-                                    ObjectName = objectName,
-                                    ObjectType = objectType,
-                                    Source = source,
-                                    displayName = displayName,
-                                    ReportDate = reportDate
-                                });
+                                if (expr == null) return;
+                                
+                                try
+                                {
+                                    string tableName = "";
+                                    string objectName = "";
+                                    string objectType = "";
+                                    
+                                    // Try different expression types
+                                    if (expr["Measure"] != null)
+                                    {
+                                        var measureExpr = expr["Measure"]["Expression"];
+                                        var sourceRef = measureExpr != null ? measureExpr["SourceRef"] : null;
+                                        tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
+                                        objectName = expr["Measure"]["Property"] != null ? expr["Measure"]["Property"].ToString() : "";
+                                        objectType = "Measure";
+                                    }
+                                    else if (expr["Column"] != null)
+                                    {
+                                        var columnExpr = expr["Column"]["Expression"];
+                                        var sourceRef = columnExpr != null ? columnExpr["SourceRef"] : null;
+                                        tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
+                                        objectName = expr["Column"]["Property"] != null ? expr["Column"]["Property"].ToString() : "";
+                                        objectType = "Column";
+                                    }
+                                    else if (expr["Aggregation"] != null)
+                                    {
+                                        var aggExpr = expr["Aggregation"]["Expression"];
+                                        if (aggExpr != null && aggExpr["Column"] != null)
+                                        {
+                                            var sourceRef = aggExpr["Column"]["Expression"] != null ? aggExpr["Column"]["Expression"]["SourceRef"] : null;
+                                            tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
+                                            objectName = aggExpr["Column"]["Property"] != null ? aggExpr["Column"]["Property"].ToString() : "";
+                                            objectType = "Column";
+                                        }
+                                        else if (aggExpr != null && aggExpr["Measure"] != null)
+                                        {
+                                            var sourceRef = aggExpr["Measure"]["Expression"] != null ? aggExpr["Measure"]["Expression"]["SourceRef"] : null;
+                                            tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
+                                            objectName = aggExpr["Measure"]["Property"] != null ? aggExpr["Measure"]["Property"].ToString() : "";
+                                            objectType = "Measure";
+                                        }
+                                    }
+                                    else if (expr["FillRule"] != null && expr["FillRule"]["Input"] != null)
+                                    {
+                                        processExpression(expr["FillRule"]["Input"], sourceType);
+                                        return;
+                                    }
+                                    else if (expr["Conditional"] != null && expr["Conditional"]["Cases"] != null)
+                                    {
+                                        var cases = expr["Conditional"]["Cases"];
+                                        if (cases.Type == Newtonsoft.Json.Linq.JTokenType.Array && cases.HasValues)
+                                        {
+                                            var firstCase = cases[0];
+                                            if (firstCase != null && firstCase["Condition"] != null)
+                                            {
+                                                var condition = firstCase["Condition"];
+                                                // Try to find Comparison.Left
+                                                var comparison = condition["Comparison"];
+                                                if (comparison == null && condition["And"] != null)
+                                                {
+                                                    comparison = condition["And"]["Left"] != null ? condition["And"]["Left"]["Comparison"] : null;
+                                                }
+                                                if (comparison != null && comparison["Left"] != null)
+                                                {
+                                                    processExpression(comparison["Left"], sourceType);
+                                                    return;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    
+                                    // Always add the object, even if tableName or objectName is empty
+                                    VisualObjects.Add(new VisualObject {
+                                        PageId = pageId,
+                                        PageName = pageName,
+                                        ReportID = reportId,
+                                        ModelID = modelId,
+                                        VisualId = visualId,
+                                        VisualType = visualType,
+                                        AppliedFilterVersion = "",
+                                        CustomVisualFlag = visualType.ToLower().StartsWith("custom"),
+                                        TableName = tableName,
+                                        ObjectName = objectName,
+                                        ObjectType = objectType,
+                                        Source = sourceType,
+                                        displayName = "",
+                                        ReportDate = reportDate
+                                    });
+                                }
+                                catch { }
+                            };
+                            
+                            // Check various object types for conditional formatting
+                            var objectTypes = new[] { "labels", "categoryAxis", "valueAxis", "title", "background", "border", "dropShadow", "values", "dataLabels" };
+                            foreach (var objType in objectTypes)
+                            {
+                                try
+                                {
+                                    var objects = visualObjects[objType];
+                                    if (objects != null && objects.Type == Newtonsoft.Json.Linq.JTokenType.Array)
+                                    {
+                                        foreach (var obj in objects)
+                                        {
+                                            if (obj["properties"] == null) continue;
+                                            
+                                            var properties = obj["properties"];
+                                            
+                                            // Check common property paths for expressions
+                                            var propertyPaths = new[] {
+                                                "color.solid.color.expr",
+                                                "fontColor.solid.color.expr",
+                                                "backColor.solid.color.expr",
+                                                "background.solid.color.expr",
+                                                "labelColor.solid.color.expr",
+                                                "titleColor.solid.color.expr",
+                                                "text.expr",
+                                                "webURL.expr",
+                                                "icon.value.expr"
+                                            };
+                                            
+                                            foreach (var propPath in propertyPaths)
+                                            {
+                                                try
+                                                {
+                                                    var expr = properties.SelectToken(propPath);
+                                                    if (expr != null)
+                                                    {
+                                                        string sourceLabel = objType;
+                                                        if (propPath.Contains("fontColor")) sourceLabel = objType + " (Font Color)";
+                                                        else if (propPath.Contains("backColor")) sourceLabel = objType + " (Back Color)";
+                                                        else if (propPath.Contains("background")) sourceLabel = objType + " (Background)";
+                                                        else if (propPath.Contains("text")) sourceLabel = objType + " (Text)";
+                                                        else if (propPath.Contains("webURL")) sourceLabel = objType + " (WebURL)";
+                                                        else if (propPath.Contains("icon")) sourceLabel = objType + " (Icon)";
+                                                        
+                                                        processExpression(expr, sourceLabel);
+                                                    }
+                                                }
+                                                catch { }
+                                            }
+                                        }
+                                    }
+                                }
+                                catch { }
                             }
                         }
                     }
@@ -1139,7 +1452,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                         ? sourceRef["Entity"].ToString()
                                         : "";
                                     objectName = column["Property"] != null ? column["Property"].ToString() : "";
-                                    objectType = "column";
+                                    objectType = "Column";
                                 }
                                 else if (hierarchy != null)
                                 {
@@ -1150,8 +1463,11 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                     tableName = sourceRef != null && sourceRef["Entity"] != null
                                         ? sourceRef["Entity"].ToString()
                                         : "";
-                                    objectName = hierarchy["Level"] != null ? hierarchy["Level"].ToString() : "";
-                                    objectType = "hierarchyLevel";
+                                    
+                                    string levelName = hierarchy["Level"] != null ? hierarchy["Level"].ToString() : "";
+                                    string hierName = hierarchyNode != null && hierarchyNode["Hierarchy"] != null ? hierarchyNode["Hierarchy"].ToString() : "";
+                                    objectName = !string.IsNullOrEmpty(hierName) && !string.IsNullOrEmpty(levelName) ? hierName + "." + levelName : levelName;
+                                    objectType = "Hierarchy";
                                 }
                                 else if (measure != null)
                                 {
@@ -1161,7 +1477,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                         ? sourceRef["Entity"].ToString()
                                         : "";
                                     objectName = measure["Property"] != null ? measure["Property"].ToString() : "";
-                                    objectType = "measure";
+                                    objectType = "Measure";
                                 }
                                 else if (field["Aggregation"] != null)
                                 {
@@ -1171,8 +1487,39 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                         var sourceRef = expr["Column"]["Expression"]["SourceRef"];
                                         tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
                                         objectName = expr["Column"]["Property"] != null ? expr["Column"]["Property"].ToString() : "";
-                                        objectType = "aggregation";
+                                        objectType = "Column";
                                     }
+                                    else if (expr != null && expr["Measure"] != null)
+                                    {
+                                        var sourceRef = expr["Measure"]["Expression"]["SourceRef"];
+                                        tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
+                                        objectName = expr["Measure"]["Property"] != null ? expr["Measure"]["Property"].ToString() : "";
+                                        objectType = "Measure";
+                                    }
+                                }
+                                else if (field["DateHierarchy"] != null)
+                                {
+                                    var expr = field["DateHierarchy"]["Expression"];
+                                    var sourceRef = expr != null && expr["SourceRef"] != null ? expr["SourceRef"] : null;
+                                    tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
+                                    objectName = field["DateHierarchy"]["Level"] != null ? field["DateHierarchy"]["Level"].ToString() : "";
+                                    objectType = "Column";
+                                }
+                                else if (field["SelectColumn"] != null)
+                                {
+                                    var expr = field["SelectColumn"]["Expression"];
+                                    var sourceRef = expr != null ? expr["SourceRef"] : null;
+                                    tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
+                                    objectName = field["SelectColumn"]["Property"] != null ? field["SelectColumn"]["Property"].ToString() : "";
+                                    objectType = "Column";
+                                }
+                                else if (field["GroupBy"] != null)
+                                {
+                                    var expr = field["GroupBy"]["Expression"];
+                                    var sourceRef = expr != null ? expr["SourceRef"] : null;
+                                    tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
+                                    objectName = field["GroupBy"]["Property"] != null ? field["GroupBy"]["Property"].ToString() : "";
+                                    objectType = "Column";
                                 }
                             }
 
@@ -1200,6 +1547,84 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                 displayName = displayName,
                                 ReportDate = reportDate
                             });
+                            
+                            // Also extract filters from the Where conditions
+                            try
+                            {
+                                var filterObj = filter["filter"];
+                                if (filterObj != null && filterObj["Where"] != null)
+                                {
+                                    var whereConditions = filterObj["Where"];
+                                    if (whereConditions.Type == Newtonsoft.Json.Linq.JTokenType.Array)
+                                    {
+                                        foreach (var condition in whereConditions)
+                                        {
+                                            // Extract fields from comparison conditions
+                                            var comparisonField = ExtractFieldFromCondition(condition);
+                                            if (comparisonField != null)
+                                            {
+                                                string condTableName = "";
+                                                string condObjectName = "";
+                                                string condObjectType = "";
+                                                
+                                                if (comparisonField["Column"] != null)
+                                                {
+                                                    var expr = comparisonField["Column"]["Expression"];
+                                                    var sourceRef = expr != null ? expr["SourceRef"] : null;
+                                                    condTableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
+                                                    condObjectName = comparisonField["Column"]["Property"] != null ? comparisonField["Column"]["Property"].ToString() : "";
+                                                    condObjectType = "Column";
+                                                }
+                                                else if (comparisonField["Measure"] != null)
+                                                {
+                                                    var expr = comparisonField["Measure"]["Expression"];
+                                                    var sourceRef = expr != null ? expr["SourceRef"] : null;
+                                                    condTableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
+                                                    condObjectName = comparisonField["Measure"]["Property"] != null ? comparisonField["Measure"]["Property"].ToString() : "";
+                                                    condObjectType = "Measure";
+                                                }
+                                                else if (comparisonField["Aggregation"] != null)
+                                                {
+                                                    var expr = comparisonField["Aggregation"]["Expression"];
+                                                    if (expr != null && expr["Column"] != null)
+                                                    {
+                                                        var sourceRef = expr["Column"]["Expression"]["SourceRef"];
+                                                        condTableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
+                                                        condObjectName = expr["Column"]["Property"] != null ? expr["Column"]["Property"].ToString() : "";
+                                                        condObjectType = "Column";
+                                                    }
+                                                    else if (expr != null && expr["Measure"] != null)
+                                                    {
+                                                        var sourceRef = expr["Measure"]["Expression"]["SourceRef"];
+                                                        condTableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
+                                                        condObjectName = expr["Measure"]["Property"] != null ? expr["Measure"]["Property"].ToString() : "";
+                                                        condObjectType = "Measure";
+                                                    }
+                                                }
+                                                
+                                                // Add this condition-based filter
+                                                VisualFilters.Add(new VisualFilter {
+                                                    PageId = pageId,
+                                                    PageName = pageName,
+                                                    ReportID = reportId,
+                                                    ModelID = modelId,
+                                                    VisualId = visualId,
+                                                    TableName = condTableName,
+                                                    ObjectName = condObjectName,
+                                                    ObjectType = condObjectType,
+                                                    FilterType = filterType,
+                                                    LockedFilter = locked,
+                                                    HiddenFilter = hidden,
+                                                    AppliedFilterVersion = version,
+                                                    displayName = displayName,
+                                                    ReportDate = reportDate
+                                                });
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            catch { }
                         }
                     }
                     catch { }
