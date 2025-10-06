@@ -942,6 +942,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                     string slicerType = "N/A";
                     string parentGroup = "";
                     bool hiddenFlag = false;
+                    int visualObjectCount = 0;
                     
                     try
                     {
@@ -1098,7 +1099,6 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                     }
 
                     // === VISUAL OBJECTS - ENHANCED FOR BETTER COVERAGE ===
-                    int visualObjectCount = 0;
                     try
                     {
                         var visual = node["visual"];
