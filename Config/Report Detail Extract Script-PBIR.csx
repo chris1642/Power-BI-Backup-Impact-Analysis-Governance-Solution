@@ -1210,26 +1210,24 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                 }
                             }
 
-                            if (!string.IsNullOrEmpty(tableName) || !string.IsNullOrEmpty(objectName))
-                            {
-                                visualObjectCount++;
-                                VisualObjects.Add(new VisualObject {
-                                    PageId = pageId,
-                                    PageName = pageName,
-                                    ReportID = reportId,
-                                    ModelID = projectionModelId,
-                                    VisualId = visualId,
-                                    VisualType = visualType,
-                                    AppliedFilterVersion = appliedFilterVersion,
-                                    CustomVisualFlag = customFlag == "true",
-                                    TableName = tableName,
-                                    ObjectName = objectName,
-                                    ObjectType = objectType,
-                                    Source = source,
-                                    displayName = displayName,
-                                    ReportDate = reportDate
-                                });
-                            }
+                            // Always add the object, even if tableName or objectName is empty
+                            visualObjectCount++;
+                            VisualObjects.Add(new VisualObject {
+                                PageId = pageId,
+                                PageName = pageName,
+                                ReportID = reportId,
+                                ModelID = projectionModelId,
+                                VisualId = visualId,
+                                VisualType = visualType,
+                                AppliedFilterVersion = appliedFilterVersion,
+                                CustomVisualFlag = customFlag == "true",
+                                TableName = tableName,
+                                ObjectName = objectName,
+                                ObjectType = objectType,
+                                Source = source,
+                                displayName = displayName,
+                                ReportDate = reportDate
+                            });
                         }
                     }
                     catch { }
@@ -1316,25 +1314,23 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                         }
                                     }
                                     
-                                    if (!string.IsNullOrEmpty(tableName) && !string.IsNullOrEmpty(objectName))
-                                    {
-                                        VisualObjects.Add(new VisualObject {
-                                            PageId = pageId,
-                                            PageName = pageName,
-                                            ReportID = reportId,
-                                            ModelID = modelId,
-                                            VisualId = visualId,
-                                            VisualType = visualType,
-                                            AppliedFilterVersion = "",
-                                            CustomVisualFlag = visualType.ToLower().StartsWith("custom"),
-                                            TableName = tableName,
-                                            ObjectName = objectName,
-                                            ObjectType = objectType,
-                                            Source = sourceType,
-                                            displayName = "",
-                                            ReportDate = reportDate
-                                        });
-                                    }
+                                    // Always add the object, even if tableName or objectName is empty
+                                    VisualObjects.Add(new VisualObject {
+                                        PageId = pageId,
+                                        PageName = pageName,
+                                        ReportID = reportId,
+                                        ModelID = modelId,
+                                        VisualId = visualId,
+                                        VisualType = visualType,
+                                        AppliedFilterVersion = "",
+                                        CustomVisualFlag = visualType.ToLower().StartsWith("custom"),
+                                        TableName = tableName,
+                                        ObjectName = objectName,
+                                        ObjectType = objectType,
+                                        Source = sourceType,
+                                        displayName = "",
+                                        ReportDate = reportDate
+                                    });
                                 }
                                 catch { }
                             };
