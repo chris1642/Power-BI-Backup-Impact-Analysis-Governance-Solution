@@ -91,7 +91,22 @@ Func<Newtonsoft.Json.Linq.JToken, string[]> GetAllPossiblePaths = (node) =>
         "visual.query.Commands[0].queryState.Columns.projections",
         // FIX #1: include Data.projections (modern)
         "visual.prototypeQuery.queryState.Data.projections",
-        "visual.query.Commands[0].queryState.Data.projections"
+        "visual.query.Commands[0].queryState.Data.projections",
+        // Additional comprehensive paths
+        "visual.query.queryState.Axis.projections",
+        "visual.query.queryState.Color.projections",
+        "visual.query.queryState.Shape.projections",
+        "visual.query.queryState.Gradient.projections",
+        "visual.query.queryState.Image.projections",
+        "visual.prototypeQuery.queryState.Category.projections",
+        "visual.prototypeQuery.queryState.Series.projections",
+        "visual.prototypeQuery.queryState.Y.projections",
+        "visual.prototypeQuery.queryState.X.projections",
+        "visual.query.Commands[0].queryState.Category.projections",
+        "visual.query.Commands[0].queryState.Series.projections",
+        "config.singleVisual.prototypeQuery.Select",
+        "config.singleVisual.query.queryState.Values.projections",
+        "config.singleVisual.query.queryState.Rows.projections"
     });
     
     return paths.ToArray();
@@ -136,7 +151,11 @@ Func<Newtonsoft.Json.Linq.JToken, List<Newtonsoft.Json.Linq.JToken>> ExtractAllF
         "visual.query.Commands[0].where",
         "visual.query.Commands[0].having",
         "config.singleVisualGroup.filters",
-        "config.singleVisual.vcFilters"
+        "config.singleVisual.vcFilters",
+        "config.singleVisual.filters",
+        "config.filterConfig.filters",
+        "visual.query.filterClause",
+        "visual.prototypeQuery.filterClause"
     };
     
     foreach (var path in filterPaths)
@@ -1083,6 +1102,22 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                     objectName = field["DateHierarchy"]["Level"] != null ? field["DateHierarchy"]["Level"].ToString() : "";
                                     objectType = "dateHierarchy";
                                 }
+                                else if (field["SelectColumn"] != null)
+                                {
+                                    var expr = field["SelectColumn"]["Expression"];
+                                    var sourceRef = expr != null ? expr["SourceRef"] : null;
+                                    tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
+                                    objectName = field["SelectColumn"]["Property"] != null ? field["SelectColumn"]["Property"].ToString() : "";
+                                    objectType = "selectColumn";
+                                }
+                                else if (field["GroupBy"] != null)
+                                {
+                                    var expr = field["GroupBy"]["Expression"];
+                                    var sourceRef = expr != null ? expr["SourceRef"] : null;
+                                    tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
+                                    objectName = field["GroupBy"]["Property"] != null ? field["GroupBy"]["Property"].ToString() : "";
+                                    objectType = "groupBy";
+                                }
                             }
 
                             if (!string.IsNullOrEmpty(tableName) || !string.IsNullOrEmpty(objectName))
@@ -1173,6 +1208,37 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                         objectName = expr["Column"]["Property"] != null ? expr["Column"]["Property"].ToString() : "";
                                         objectType = "aggregation";
                                     }
+                                    else if (expr != null && expr["Measure"] != null)
+                                    {
+                                        var sourceRef = expr["Measure"]["Expression"]["SourceRef"];
+                                        tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
+                                        objectName = expr["Measure"]["Property"] != null ? expr["Measure"]["Property"].ToString() : "";
+                                        objectType = "aggregation";
+                                    }
+                                }
+                                else if (field["DateHierarchy"] != null)
+                                {
+                                    var expr = field["DateHierarchy"]["Expression"];
+                                    var sourceRef = expr != null && expr["SourceRef"] != null ? expr["SourceRef"] : null;
+                                    tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
+                                    objectName = field["DateHierarchy"]["Level"] != null ? field["DateHierarchy"]["Level"].ToString() : "";
+                                    objectType = "dateHierarchy";
+                                }
+                                else if (field["SelectColumn"] != null)
+                                {
+                                    var expr = field["SelectColumn"]["Expression"];
+                                    var sourceRef = expr != null ? expr["SourceRef"] : null;
+                                    tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
+                                    objectName = field["SelectColumn"]["Property"] != null ? field["SelectColumn"]["Property"].ToString() : "";
+                                    objectType = "selectColumn";
+                                }
+                                else if (field["GroupBy"] != null)
+                                {
+                                    var expr = field["GroupBy"]["Expression"];
+                                    var sourceRef = expr != null ? expr["SourceRef"] : null;
+                                    tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
+                                    objectName = field["GroupBy"]["Property"] != null ? field["GroupBy"]["Property"].ToString() : "";
+                                    objectType = "groupBy";
                                 }
                             }
 
