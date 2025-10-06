@@ -1160,8 +1160,11 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                     var innerExpr = hierarchy != null ? hierarchy["Expression"] : null;
                                     var entity = innerExpr != null && innerExpr["SourceRef"] != null ? innerExpr["SourceRef"]["Entity"] : null;
                                     tableName = entity != null ? entity.ToString() : "";
-                                    objectName = field["HierarchyLevel"]["Level"] != null ? field["HierarchyLevel"]["Level"].ToString() : "";
-                                    objectType = "Level";
+                                    
+                                    string levelName = field["HierarchyLevel"]["Level"] != null ? field["HierarchyLevel"]["Level"].ToString() : "";
+                                    string hierName = hierarchy != null && hierarchy["Hierarchy"] != null ? hierarchy["Hierarchy"].ToString() : "";
+                                    objectName = !string.IsNullOrEmpty(hierName) && !string.IsNullOrEmpty(levelName) ? hierName + "." + levelName : levelName;
+                                    objectType = "Hierarchy";
                                 }
                                 else if (field["Aggregation"] != null)
                                 {
@@ -1435,8 +1438,11 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                     tableName = sourceRef != null && sourceRef["Entity"] != null
                                         ? sourceRef["Entity"].ToString()
                                         : "";
-                                    objectName = hierarchy["Level"] != null ? hierarchy["Level"].ToString() : "";
-                                    objectType = "Level";
+                                    
+                                    string levelName = hierarchy["Level"] != null ? hierarchy["Level"].ToString() : "";
+                                    string hierName = hierarchyNode != null && hierarchyNode["Hierarchy"] != null ? hierarchyNode["Hierarchy"].ToString() : "";
+                                    objectName = !string.IsNullOrEmpty(hierName) && !string.IsNullOrEmpty(levelName) ? hierName + "." + levelName : levelName;
+                                    objectType = "Hierarchy";
                                 }
                                 else if (measure != null)
                                 {
