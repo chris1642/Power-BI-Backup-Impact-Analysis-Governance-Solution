@@ -1217,7 +1217,8 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                         if (visualObjects != null)
                         {
                             // Helper function to extract field info from expression
-                            Action<Newtonsoft.Json.Linq.JToken, string> processExpression = delegate(Newtonsoft.Json.Linq.JToken expr, string sourceType)
+                            Action<Newtonsoft.Json.Linq.JToken, string> processExpression = null;
+                            processExpression = delegate(Newtonsoft.Json.Linq.JToken expr, string sourceType)
                             {
                                 if (expr == null) return;
                                 
