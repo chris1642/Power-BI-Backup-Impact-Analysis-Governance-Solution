@@ -106,7 +106,15 @@ Func<Newtonsoft.Json.Linq.JToken, string[]> GetAllPossiblePaths = (node) =>
         "visual.query.Commands[0].queryState.Series.projections",
         "config.singleVisual.prototypeQuery.Select",
         "config.singleVisual.query.queryState.Values.projections",
-        "config.singleVisual.query.queryState.Rows.projections"
+        "config.singleVisual.query.queryState.Rows.projections",
+        // Additional paths for custom visuals
+        "visual.prototypeQuery.Select",
+        "visual.query.Select",
+        "query.queryState.Values.projections",
+        "query.queryState.Rows.projections",
+        "query.queryState.Columns.projections",
+        "prototypeQuery.Select",
+        "prototypeQuery.queryState.Values.projections"
     });
     
     return paths.ToArray();
@@ -155,7 +163,13 @@ Func<Newtonsoft.Json.Linq.JToken, List<Newtonsoft.Json.Linq.JToken>> ExtractAllF
         "config.singleVisual.filters",
         "config.filterConfig.filters",
         "visual.query.filterClause",
-        "visual.prototypeQuery.filterClause"
+        "visual.prototypeQuery.filterClause",
+        // Additional paths for custom visuals
+        "query.where",
+        "query.having",
+        "prototypeQuery.where",
+        "prototypeQuery.having",
+        "vcFilters"
     };
     
     foreach (var path in filterPaths)
@@ -1147,7 +1161,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                     var entity = innerExpr != null && innerExpr["SourceRef"] != null ? innerExpr["SourceRef"]["Entity"] : null;
                                     tableName = entity != null ? entity.ToString() : "";
                                     objectName = field["HierarchyLevel"]["Level"] != null ? field["HierarchyLevel"]["Level"].ToString() : "";
-                                    objectType = "hierarchyLevel";
+                                    objectType = "Hierarchy";
                                 }
                                 else if (field["Aggregation"] != null)
                                 {
@@ -1157,7 +1171,14 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                         var sourceRef = expr["Column"]["Expression"]["SourceRef"];
                                         tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
                                         objectName = expr["Column"]["Property"] != null ? expr["Column"]["Property"].ToString() : "";
-                                        objectType = "aggregation";
+                                        objectType = "Column";
+                                    }
+                                    else if (expr != null && expr["Measure"] != null)
+                                    {
+                                        var sourceRef = expr["Measure"]["Expression"]["SourceRef"];
+                                        tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
+                                        objectName = expr["Measure"]["Property"] != null ? expr["Measure"]["Property"].ToString() : "";
+                                        objectType = "Measure";
                                     }
                                 }
                                 else if (field["DateHierarchy"] != null)
@@ -1415,7 +1436,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                         ? sourceRef["Entity"].ToString()
                                         : "";
                                     objectName = hierarchy["Level"] != null ? hierarchy["Level"].ToString() : "";
-                                    objectType = "hierarchyLevel";
+                                    objectType = "Hierarchy";
                                 }
                                 else if (measure != null)
                                 {
@@ -1435,14 +1456,14 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                         var sourceRef = expr["Column"]["Expression"]["SourceRef"];
                                         tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
                                         objectName = expr["Column"]["Property"] != null ? expr["Column"]["Property"].ToString() : "";
-                                        objectType = "aggregation";
+                                        objectType = "Column";
                                     }
                                     else if (expr != null && expr["Measure"] != null)
                                     {
                                         var sourceRef = expr["Measure"]["Expression"]["SourceRef"];
                                         tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
                                         objectName = expr["Measure"]["Property"] != null ? expr["Measure"]["Property"].ToString() : "";
-                                        objectType = "aggregation";
+                                        objectType = "Measure";
                                     }
                                 }
                                 else if (field["DateHierarchy"] != null)
