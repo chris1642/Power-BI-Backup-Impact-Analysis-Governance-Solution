@@ -198,6 +198,28 @@ Func<Newtonsoft.Json.Linq.JToken, List<Newtonsoft.Json.Linq.JToken>> ExtractAllF
     return allFilters;
 };
 
+Func<Newtonsoft.Json.Linq.JToken, Newtonsoft.Json.Linq.JToken> ExtractFieldFromCondition = (condition) =>
+{
+    try
+    {
+        // Try different nested structures
+        var paths = new[] {
+            "Condition.Comparison.Left",
+            "Condition.Not.Expression.Comparison.Left",
+            "Condition.And.Left.Comparison.Left",
+            "Condition.Or.Left.Comparison.Left"
+        };
+        
+        foreach (var path in paths)
+        {
+            var field = condition.SelectToken(path);
+            if (field != null) return field;
+        }
+    }
+    catch { }
+    return null;
+};
+
 string newline = Environment.NewLine;
 
 var sb_Connections = new System.Text.StringBuilder();
@@ -1525,6 +1547,84 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                 displayName = displayName,
                                 ReportDate = reportDate
                             });
+                            
+                            // Also extract filters from the Where conditions
+                            try
+                            {
+                                var filterObj = filter["filter"];
+                                if (filterObj != null && filterObj["Where"] != null)
+                                {
+                                    var whereConditions = filterObj["Where"];
+                                    if (whereConditions.Type == Newtonsoft.Json.Linq.JTokenType.Array)
+                                    {
+                                        foreach (var condition in whereConditions)
+                                        {
+                                            // Extract fields from comparison conditions
+                                            var comparisonField = ExtractFieldFromCondition(condition);
+                                            if (comparisonField != null)
+                                            {
+                                                string condTableName = "";
+                                                string condObjectName = "";
+                                                string condObjectType = "";
+                                                
+                                                if (comparisonField["Column"] != null)
+                                                {
+                                                    var expr = comparisonField["Column"]["Expression"];
+                                                    var sourceRef = expr != null ? expr["SourceRef"] : null;
+                                                    condTableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
+                                                    condObjectName = comparisonField["Column"]["Property"] != null ? comparisonField["Column"]["Property"].ToString() : "";
+                                                    condObjectType = "column";
+                                                }
+                                                else if (comparisonField["Measure"] != null)
+                                                {
+                                                    var expr = comparisonField["Measure"]["Expression"];
+                                                    var sourceRef = expr != null ? expr["SourceRef"] : null;
+                                                    condTableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
+                                                    condObjectName = comparisonField["Measure"]["Property"] != null ? comparisonField["Measure"]["Property"].ToString() : "";
+                                                    condObjectType = "measure";
+                                                }
+                                                else if (comparisonField["Aggregation"] != null)
+                                                {
+                                                    var expr = comparisonField["Aggregation"]["Expression"];
+                                                    if (expr != null && expr["Column"] != null)
+                                                    {
+                                                        var sourceRef = expr["Column"]["Expression"]["SourceRef"];
+                                                        condTableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
+                                                        condObjectName = expr["Column"]["Property"] != null ? expr["Column"]["Property"].ToString() : "";
+                                                        condObjectType = "Column";
+                                                    }
+                                                    else if (expr != null && expr["Measure"] != null)
+                                                    {
+                                                        var sourceRef = expr["Measure"]["Expression"]["SourceRef"];
+                                                        condTableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
+                                                        condObjectName = expr["Measure"]["Property"] != null ? expr["Measure"]["Property"].ToString() : "";
+                                                        condObjectType = "Measure";
+                                                    }
+                                                }
+                                                
+                                                // Add this condition-based filter
+                                                VisualFilters.Add(new VisualFilter {
+                                                    PageId = pageId,
+                                                    PageName = pageName,
+                                                    ReportID = reportId,
+                                                    ModelID = modelId,
+                                                    VisualId = visualId,
+                                                    TableName = condTableName,
+                                                    ObjectName = condObjectName,
+                                                    ObjectType = condObjectType,
+                                                    FilterType = filterType,
+                                                    LockedFilter = locked,
+                                                    HiddenFilter = hidden,
+                                                    AppliedFilterVersion = version,
+                                                    displayName = displayName,
+                                                    ReportDate = reportDate
+                                                });
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            catch { }
                         }
                     }
                     catch { }
