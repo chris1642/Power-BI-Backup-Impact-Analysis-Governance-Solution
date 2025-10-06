@@ -114,7 +114,10 @@ Func<Newtonsoft.Json.Linq.JToken, string[]> GetAllPossiblePaths = (node) =>
         "query.queryState.Rows.projections",
         "query.queryState.Columns.projections",
         "prototypeQuery.Select",
-        "prototypeQuery.queryState.Values.projections"
+        "prototypeQuery.queryState.Values.projections",
+        // Additional path for textFilter and similar custom visuals
+        "visual.query.queryState.field.projections",
+        "query.queryState.field.projections"
     });
     
     return paths.ToArray();
@@ -169,7 +172,11 @@ Func<Newtonsoft.Json.Linq.JToken, List<Newtonsoft.Json.Linq.JToken>> ExtractAllF
         "query.having",
         "prototypeQuery.where",
         "prototypeQuery.having",
-        "vcFilters"
+        "vcFilters",
+        "visual.query.queryState.field.where",
+        "visual.query.queryState.field.having",
+        "query.queryState.field.where",
+        "query.queryState.field.having"
     };
     
     foreach (var path in filterPaths)
