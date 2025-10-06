@@ -72,7 +72,11 @@ Func<Newtonsoft.Json.Linq.JToken, string[]> GetAllPossiblePaths = (node) =>
         "visual.query.queryState.Details.projections",
         "visual.query.queryState.Tooltips.projections",
         // FIX #1: include Data.projections (legacy)
-        "visual.query.queryState.Data.projections"
+        "visual.query.queryState.Data.projections",
+        // Gauge-specific paths
+        "visual.query.queryState.MaxValue.projections",
+        "visual.query.queryState.MinValue.projections",
+        "visual.query.queryState.TargetValue.projections"
     });
     
     // Modern paths - more comprehensive
@@ -102,8 +106,16 @@ Func<Newtonsoft.Json.Linq.JToken, string[]> GetAllPossiblePaths = (node) =>
         "visual.prototypeQuery.queryState.Series.projections",
         "visual.prototypeQuery.queryState.Y.projections",
         "visual.prototypeQuery.queryState.X.projections",
+        // Gauge-specific paths (prototypeQuery)
+        "visual.prototypeQuery.queryState.MaxValue.projections",
+        "visual.prototypeQuery.queryState.MinValue.projections",
+        "visual.prototypeQuery.queryState.TargetValue.projections",
         "visual.query.Commands[0].queryState.Category.projections",
         "visual.query.Commands[0].queryState.Series.projections",
+        // Gauge-specific paths (Commands)
+        "visual.query.Commands[0].queryState.MaxValue.projections",
+        "visual.query.Commands[0].queryState.MinValue.projections",
+        "visual.query.Commands[0].queryState.TargetValue.projections",
         "config.singleVisual.prototypeQuery.Select",
         "config.singleVisual.query.queryState.Values.projections",
         "config.singleVisual.query.queryState.Rows.projections",
