@@ -1161,7 +1161,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                     var entity = innerExpr != null && innerExpr["SourceRef"] != null ? innerExpr["SourceRef"]["Entity"] : null;
                                     tableName = entity != null ? entity.ToString() : "";
                                     objectName = field["HierarchyLevel"]["Level"] != null ? field["HierarchyLevel"]["Level"].ToString() : "";
-                                    objectType = "Hierarchy";
+                                    objectType = "Level";
                                 }
                                 else if (field["Aggregation"] != null)
                                 {
@@ -1436,7 +1436,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                         ? sourceRef["Entity"].ToString()
                                         : "";
                                     objectName = hierarchy["Level"] != null ? hierarchy["Level"].ToString() : "";
-                                    objectType = "Hierarchy";
+                                    objectType = "Level";
                                 }
                                 else if (measure != null)
                                 {
