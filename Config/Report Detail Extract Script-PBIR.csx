@@ -937,6 +937,71 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                     }
                     catch { }
 
+                    // === Get additional visual properties ===
+                    bool showItemsNoData = false;
+                    string slicerType = "N/A";
+                    string parentGroup = "";
+                    bool hiddenFlag = false;
+                    
+                    try
+                    {
+                        var parentGroupToken = node["parentGroupName"];
+                        if (parentGroupToken != null)
+                        {
+                            parentGroup = parentGroupToken.ToString();
+                        }
+                    }
+                    catch { }
+                    
+                    try
+                    {
+                        var showAllRoles = node.SelectToken("visual.showAllRoles");
+                        if (showAllRoles != null && showAllRoles.Type == Newtonsoft.Json.Linq.JTokenType.Array && showAllRoles.HasValues)
+                        {
+                            string firstRole = showAllRoles[0].ToString();
+                            if (firstRole == "Values" || firstRole == "Rows" || firstRole == "Columns")
+                            {
+                                showItemsNoData = true;
+                            }
+                        }
+                    }
+                    catch { }
+                    
+                    try
+                    {
+                        if (visualType == "slicer")
+                        {
+                            var slicerMode = node.SelectToken("visual.objects.data[0].properties.mode.expr.Literal.Value");
+                            if (slicerMode != null)
+                            {
+                                string modeValue = slicerMode.ToString();
+                                if (modeValue == "'Basic'")
+                                {
+                                    slicerType = "List";
+                                }
+                                else if (modeValue == "'Dropdown'")
+                                {
+                                    slicerType = "Dropdown";
+                                }
+                            }
+                            else
+                            {
+                                slicerType = "List";
+                            }
+                        }
+                    }
+                    catch { }
+                    
+                    try
+                    {
+                        var displayMode = node.SelectToken("visual.display.mode");
+                        if (displayMode != null && displayMode.ToString() == "hidden")
+                        {
+                            hiddenFlag = true;
+                        }
+                    }
+                    catch { }
+
                     Visuals.Add(new Visual
                     {
                         Id = visualId,
@@ -947,16 +1012,16 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                         Z = string.IsNullOrEmpty(z) ? 0 : (int)double.Parse(z),
                         Width = string.IsNullOrEmpty(width) ? 0 : (int)double.Parse(width),
                         Height = string.IsNullOrEmpty(height) ? 0 : (int)double.Parse(height),
-                        HiddenFlag = false,
+                        HiddenFlag = hiddenFlag,
                         PageId = pageId,
                         PageName = pageName,
                         ReportID = reportId,
                         ModelID = modelId,
                         CustomVisualFlag = visualType.ToLower().StartsWith("custom"),
-                        ObjectCount = 0,
-                        ShowItemsNoDataFlag = false,
-                        SlicerType = "",
-                        ParentGroup = null,
+                        ObjectCount = visualObjectCount,
+                        ShowItemsNoDataFlag = showItemsNoData,
+                        SlicerType = slicerType,
+                        ParentGroup = string.IsNullOrEmpty(parentGroup) ? null : parentGroup,
                         ReportDate = reportDate
                     });
 
@@ -1033,6 +1098,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                     }
 
                     // === VISUAL OBJECTS - ENHANCED FOR BETTER COVERAGE ===
+                    int visualObjectCount = 0;
                     try
                     {
                         var visual = node["visual"];
@@ -1122,6 +1188,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
 
                             if (!string.IsNullOrEmpty(tableName) || !string.IsNullOrEmpty(objectName))
                             {
+                                visualObjectCount++;
                                 VisualObjects.Add(new VisualObject {
                                     PageId = pageId,
                                     PageName = pageName,
