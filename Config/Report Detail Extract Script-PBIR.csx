@@ -437,7 +437,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                             }
                             else if (filter["field"]["HierarchyLevel"] != null)
                             {
-                                objectType = "HierarchyLevel";
+                                objectType = "Hierarchy";
                                 tableName = filter["field"]["HierarchyLevel"]["Expression"]["Hierarchy"]["Expression"]["SourceRef"]["Entity"].ToString();
                                 objectName = filter["field"]["HierarchyLevel"]["Level"].ToString();
                             }
@@ -789,7 +789,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                             }
                             else if (hierarchy != null)
                             {
-                                objectType = "HierarchyLevel";
+                                objectType = "Hierarchy";
                                 var expr = hierarchy["Expression"];
                                 var hierarchyNode = expr != null ? expr["Hierarchy"] : null;
                                 var innerExpr = hierarchyNode != null ? hierarchyNode["Expression"] : null;
@@ -811,7 +811,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                             }
                             else if (aggregation != null)
                             {
-                                objectType = "Aggregation";
+                                objectType = "Column";
                                 var expr = aggregation["Expression"];
                                 if (expr != null && expr["Column"] != null)
                                 {
@@ -822,7 +822,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                             }
                             else if (dateHierarchy != null)
                             {
-                                objectType = "DateHierarchy";
+                                objectType = "Column";
                                 var expr = dateHierarchy["Expression"];
                                 var sourceRef = expr != null && expr["SourceRef"] != null ? expr["SourceRef"] : null;
                                 tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
@@ -830,7 +830,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                             }
                             else if (selectColumn != null)
                             {
-                                objectType = "SelectColumn";
+                                objectType = "Column";
                                 var expr = selectColumn["Expression"];
                                 var sourceRef = expr != null ? expr["SourceRef"] : null;
                                 tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
@@ -838,7 +838,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                             }
                             else if (groupBy != null)
                             {
-                                objectType = "GroupBy";
+                                objectType = "Column";
                                 var expr = groupBy["Expression"];
                                 var sourceRef = expr != null ? expr["SourceRef"] : null;
                                 tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
@@ -1172,7 +1172,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                     var entity = expr != null && expr["SourceRef"] != null ? expr["SourceRef"]["Entity"] : null;
                                     tableName = entity != null ? entity.ToString() : "";
                                     objectName = field["Column"]["Property"] != null ? field["Column"]["Property"].ToString() : "";
-                                    objectType = "column";
+                                    objectType = "Column";
                                 }
                                 else if (field["Measure"] != null)
                                 {
@@ -1180,7 +1180,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                     var entity = expr != null && expr["SourceRef"] != null ? expr["SourceRef"]["Entity"] : null;
                                     tableName = entity != null ? entity.ToString() : "";
                                     objectName = field["Measure"]["Property"] != null ? field["Measure"]["Property"].ToString() : "";
-                                    objectType = "measure";
+                                    objectType = "Measure";
                                 }
                                 else if (field["HierarchyLevel"] != null)
                                 {
@@ -1219,7 +1219,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                     var sourceRef = expr != null && expr["SourceRef"] != null ? expr["SourceRef"] : null;
                                     tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
                                     objectName = field["DateHierarchy"]["Level"] != null ? field["DateHierarchy"]["Level"].ToString() : "";
-                                    objectType = "dateHierarchy";
+                                    objectType = "Column";
                                 }
                                 else if (field["SelectColumn"] != null)
                                 {
@@ -1227,7 +1227,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                     var sourceRef = expr != null ? expr["SourceRef"] : null;
                                     tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
                                     objectName = field["SelectColumn"]["Property"] != null ? field["SelectColumn"]["Property"].ToString() : "";
-                                    objectType = "selectColumn";
+                                    objectType = "Column";
                                 }
                                 else if (field["GroupBy"] != null)
                                 {
@@ -1235,7 +1235,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                     var sourceRef = expr != null ? expr["SourceRef"] : null;
                                     tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
                                     objectName = field["GroupBy"]["Property"] != null ? field["GroupBy"]["Property"].ToString() : "";
-                                    objectType = "groupBy";
+                                    objectType = "Column";
                                 }
                             }
 
@@ -1452,7 +1452,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                         ? sourceRef["Entity"].ToString()
                                         : "";
                                     objectName = column["Property"] != null ? column["Property"].ToString() : "";
-                                    objectType = "column";
+                                    objectType = "Column";
                                 }
                                 else if (hierarchy != null)
                                 {
@@ -1477,7 +1477,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                         ? sourceRef["Entity"].ToString()
                                         : "";
                                     objectName = measure["Property"] != null ? measure["Property"].ToString() : "";
-                                    objectType = "measure";
+                                    objectType = "Measure";
                                 }
                                 else if (field["Aggregation"] != null)
                                 {
@@ -1503,7 +1503,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                     var sourceRef = expr != null && expr["SourceRef"] != null ? expr["SourceRef"] : null;
                                     tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
                                     objectName = field["DateHierarchy"]["Level"] != null ? field["DateHierarchy"]["Level"].ToString() : "";
-                                    objectType = "dateHierarchy";
+                                    objectType = "Column";
                                 }
                                 else if (field["SelectColumn"] != null)
                                 {
@@ -1511,7 +1511,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                     var sourceRef = expr != null ? expr["SourceRef"] : null;
                                     tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
                                     objectName = field["SelectColumn"]["Property"] != null ? field["SelectColumn"]["Property"].ToString() : "";
-                                    objectType = "selectColumn";
+                                    objectType = "Column";
                                 }
                                 else if (field["GroupBy"] != null)
                                 {
@@ -1519,7 +1519,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                     var sourceRef = expr != null ? expr["SourceRef"] : null;
                                     tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
                                     objectName = field["GroupBy"]["Property"] != null ? field["GroupBy"]["Property"].ToString() : "";
-                                    objectType = "groupBy";
+                                    objectType = "Column";
                                 }
                             }
 
@@ -1573,7 +1573,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                                     var sourceRef = expr != null ? expr["SourceRef"] : null;
                                                     condTableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
                                                     condObjectName = comparisonField["Column"]["Property"] != null ? comparisonField["Column"]["Property"].ToString() : "";
-                                                    condObjectType = "column";
+                                                    condObjectType = "Column";
                                                 }
                                                 else if (comparisonField["Measure"] != null)
                                                 {
@@ -1581,7 +1581,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                                     var sourceRef = expr != null ? expr["SourceRef"] : null;
                                                     condTableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
                                                     condObjectName = comparisonField["Measure"]["Property"] != null ? comparisonField["Measure"]["Property"].ToString() : "";
-                                                    condObjectType = "measure";
+                                                    condObjectType = "Measure";
                                                 }
                                                 else if (comparisonField["Aggregation"] != null)
                                                 {
