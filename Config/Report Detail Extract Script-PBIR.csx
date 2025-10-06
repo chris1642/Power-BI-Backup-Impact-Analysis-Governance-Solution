@@ -1143,6 +1143,167 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                     }
                     catch { }
 
+                    // === VISUAL OBJECTS FROM CONDITIONAL FORMATTING AND OBJECTS ===
+                    try
+                    {
+                        var visualObjects = node.SelectToken("visual.objects");
+                        if (visualObjects != null)
+                        {
+                            // Helper function to extract field info from expression
+                            Action<Newtonsoft.Json.Linq.JToken, string> processExpression = delegate(Newtonsoft.Json.Linq.JToken expr, string sourceType)
+                            {
+                                if (expr == null) return;
+                                
+                                try
+                                {
+                                    string tableName = "";
+                                    string objectName = "";
+                                    string objectType = "";
+                                    
+                                    // Try different expression types
+                                    if (expr["Measure"] != null)
+                                    {
+                                        var measureExpr = expr["Measure"]["Expression"];
+                                        var sourceRef = measureExpr != null ? measureExpr["SourceRef"] : null;
+                                        tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
+                                        objectName = expr["Measure"]["Property"] != null ? expr["Measure"]["Property"].ToString() : "";
+                                        objectType = "Measure";
+                                    }
+                                    else if (expr["Column"] != null)
+                                    {
+                                        var columnExpr = expr["Column"]["Expression"];
+                                        var sourceRef = columnExpr != null ? columnExpr["SourceRef"] : null;
+                                        tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
+                                        objectName = expr["Column"]["Property"] != null ? expr["Column"]["Property"].ToString() : "";
+                                        objectType = "Column";
+                                    }
+                                    else if (expr["Aggregation"] != null)
+                                    {
+                                        var aggExpr = expr["Aggregation"]["Expression"];
+                                        if (aggExpr != null && aggExpr["Column"] != null)
+                                        {
+                                            var sourceRef = aggExpr["Column"]["Expression"] != null ? aggExpr["Column"]["Expression"]["SourceRef"] : null;
+                                            tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
+                                            objectName = aggExpr["Column"]["Property"] != null ? aggExpr["Column"]["Property"].ToString() : "";
+                                            objectType = "Column";
+                                        }
+                                        else if (aggExpr != null && aggExpr["Measure"] != null)
+                                        {
+                                            var sourceRef = aggExpr["Measure"]["Expression"] != null ? aggExpr["Measure"]["Expression"]["SourceRef"] : null;
+                                            tableName = sourceRef != null && sourceRef["Entity"] != null ? sourceRef["Entity"].ToString() : "";
+                                            objectName = aggExpr["Measure"]["Property"] != null ? aggExpr["Measure"]["Property"].ToString() : "";
+                                            objectType = "Measure";
+                                        }
+                                    }
+                                    else if (expr["FillRule"] != null && expr["FillRule"]["Input"] != null)
+                                    {
+                                        processExpression(expr["FillRule"]["Input"], sourceType);
+                                        return;
+                                    }
+                                    else if (expr["Conditional"] != null && expr["Conditional"]["Cases"] != null)
+                                    {
+                                        var cases = expr["Conditional"]["Cases"];
+                                        if (cases.Type == Newtonsoft.Json.Linq.JTokenType.Array && cases.HasValues)
+                                        {
+                                            var firstCase = cases[0];
+                                            if (firstCase != null && firstCase["Condition"] != null)
+                                            {
+                                                var condition = firstCase["Condition"];
+                                                // Try to find Comparison.Left
+                                                var comparison = condition["Comparison"];
+                                                if (comparison == null && condition["And"] != null)
+                                                {
+                                                    comparison = condition["And"]["Left"] != null ? condition["And"]["Left"]["Comparison"] : null;
+                                                }
+                                                if (comparison != null && comparison["Left"] != null)
+                                                {
+                                                    processExpression(comparison["Left"], sourceType);
+                                                    return;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    
+                                    if (!string.IsNullOrEmpty(tableName) && !string.IsNullOrEmpty(objectName))
+                                    {
+                                        VisualObjects.Add(new VisualObject {
+                                            PageId = pageId,
+                                            PageName = pageName,
+                                            ReportID = reportId,
+                                            ModelID = modelId,
+                                            VisualId = visualId,
+                                            VisualType = visualType,
+                                            AppliedFilterVersion = "",
+                                            CustomVisualFlag = visualType.ToLower().StartsWith("custom"),
+                                            TableName = tableName,
+                                            ObjectName = objectName,
+                                            ObjectType = objectType,
+                                            Source = sourceType,
+                                            displayName = "",
+                                            ReportDate = reportDate
+                                        });
+                                    }
+                                }
+                                catch { }
+                            };
+                            
+                            // Check various object types for conditional formatting
+                            var objectTypes = new[] { "labels", "categoryAxis", "valueAxis", "title", "background", "border", "dropShadow", "values", "dataLabels" };
+                            foreach (var objType in objectTypes)
+                            {
+                                try
+                                {
+                                    var objects = visualObjects[objType];
+                                    if (objects != null && objects.Type == Newtonsoft.Json.Linq.JTokenType.Array)
+                                    {
+                                        foreach (var obj in objects)
+                                        {
+                                            if (obj["properties"] == null) continue;
+                                            
+                                            var properties = obj["properties"];
+                                            
+                                            // Check common property paths for expressions
+                                            var propertyPaths = new[] {
+                                                "color.solid.color.expr",
+                                                "fontColor.solid.color.expr",
+                                                "backColor.solid.color.expr",
+                                                "background.solid.color.expr",
+                                                "labelColor.solid.color.expr",
+                                                "titleColor.solid.color.expr",
+                                                "text.expr",
+                                                "webURL.expr",
+                                                "icon.value.expr"
+                                            };
+                                            
+                                            foreach (var propPath in propertyPaths)
+                                            {
+                                                try
+                                                {
+                                                    var expr = properties.SelectToken(propPath);
+                                                    if (expr != null)
+                                                    {
+                                                        string sourceLabel = objType;
+                                                        if (propPath.Contains("fontColor")) sourceLabel = objType + " (Font Color)";
+                                                        else if (propPath.Contains("backColor")) sourceLabel = objType + " (Back Color)";
+                                                        else if (propPath.Contains("background")) sourceLabel = objType + " (Background)";
+                                                        else if (propPath.Contains("text")) sourceLabel = objType + " (Text)";
+                                                        else if (propPath.Contains("webURL")) sourceLabel = objType + " (WebURL)";
+                                                        else if (propPath.Contains("icon")) sourceLabel = objType + " (Icon)";
+                                                        
+                                                        processExpression(expr, sourceLabel);
+                                                    }
+                                                }
+                                                catch { }
+                                            }
+                                        }
+                                    }
+                                }
+                                catch { }
+                            }
+                        }
+                    }
+                    catch { }
+
                     // === VISUAL FILTERS - ENHANCED FOR BETTER COVERAGE ===
                     try
                     {
