@@ -448,10 +448,10 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                             if (filter["filter"] != null && filter["filter"]["Version"] != null)
                                 version = filter["filter"]["Version"].ToString();
 
-                            var hiddenToken = filter["isHidden"] ?? filter["hidden"] ?? filter["Hidden"];
+                            var hiddenToken = filter["isHiddenInViewMode"] ?? filter["isHidden"] ?? filter["hidden"] ?? filter["Hidden"];
                             if (hiddenToken != null) hidden = hiddenToken.ToString();
 
-                            var lockedToken = filter["isLocked"] ?? filter["locked"] ?? filter["Locked"];
+                            var lockedToken = filter["isLockedInViewMode"] ?? filter["isLocked"] ?? filter["locked"] ?? filter["Locked"];
                             if (lockedToken != null) locked = lockedToken.ToString();
 
                             var displayNameToken = filter["displayName"] ?? filter["DisplayName"] ?? filter["name"] ?? filter["Name"];
@@ -853,10 +853,10 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                         var versionToken = filterObj != null ? (filterObj["Version"] ?? filterObj["version"]) : null;
                         version = versionToken != null ? versionToken.ToString() : "";
 
-                        var hiddenToken = filter["isHidden"] ?? filter["hidden"] ?? filter["Hidden"];
+                        var hiddenToken = filter["isHiddenInViewMode"] ?? filter["isHidden"] ?? filter["hidden"] ?? filter["Hidden"];
                         hidden = hiddenToken != null ? hiddenToken.ToString() : "";
 
-                        var lockedToken = filter["isLocked"] ?? filter["locked"] ?? filter["Locked"];
+                        var lockedToken = filter["isLockedInViewMode"] ?? filter["isLocked"] ?? filter["locked"] ?? filter["Locked"];
                         locked = lockedToken != null ? lockedToken.ToString() : "";
 
                         var displayNameToken = filter["displayName"] ?? filter["DisplayName"] ?? filter["name"] ?? filter["Name"];
@@ -1527,8 +1527,13 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                             version = filter["filter"] != null && filter["filter"]["Version"] != null
                                 ? filter["filter"]["Version"].ToString()
                                 : "";
-                            hidden = filter["isHidden"] != null ? filter["isHidden"].ToString() : "";
-                            locked = filter["isLocked"] != null ? filter["isLocked"].ToString() : "";
+                            
+                            var hiddenToken = filter["isHiddenInViewMode"] ?? filter["isHidden"];
+                            hidden = hiddenToken != null ? hiddenToken.ToString() : "";
+                            
+                            var lockedToken = filter["isLockedInViewMode"] ?? filter["isLocked"];
+                            locked = lockedToken != null ? lockedToken.ToString() : "";
+                            
                             displayName = filter["displayName"] != null ? filter["displayName"].ToString() : "";
 
                             VisualFilters.Add(new VisualFilter {
