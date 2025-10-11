@@ -1584,14 +1584,19 @@ foreach ($workspace in $workspacesInfo) {
                 
                 # Use Fabric API for Gen 2 dataflows
                 $accessToken = Get-CurrentAccessToken
+                # Fabric API endpoint for dataflow definition - uses /items/ path structure
                 $fabricApiUrl = "https://api.fabric.microsoft.com/v1/workspaces/$workspaceId/dataflows/$dataflowId/getDefinition"
                 
                 try {
                     # Call Fabric API to get dataflow definition
+                    # The POST body should be empty JSON object
                     $fabricResponse = Invoke-RestMethod -Uri $fabricApiUrl `
-                        -Headers @{ Authorization = "Bearer $accessToken" } `
+                        -Headers @{ 
+                            Authorization = "Bearer $accessToken"
+                        } `
                         -Method POST `
-                        -ContentType "application/json"
+                        -ContentType "application/json" `
+                        -Body "{}"
                     
                     # The response contains a definition with parts
                     if ($fabricResponse.definition -and $fabricResponse.definition.parts) {
@@ -1625,8 +1630,46 @@ foreach ($workspace in $workspacesInfo) {
                         continue
                     }
                 } catch {
-                    Write-Host "Error getting Gen 2 dataflow definition for '$dataflowName': $_"
-                    continue
+                    $errorMessage = $_.Exception.Message
+                    Write-Host "Error getting Gen 2 dataflow definition for '$dataflowName': $errorMessage"
+                    
+                    # Try to extract more detailed error information
+                    if ($_.ErrorDetails.Message) {
+                        Write-Host "API Error details: $($_.ErrorDetails.Message)"
+                    }
+                    
+                    # Fall back to Gen 1 API if Fabric API fails
+                    Write-Host "Attempting to use Gen 1 API as fallback for dataflow '$dataflowName'..."
+                    try {
+                        $apiUrl = "https://api.powerbi.com/v1.0/myorg/groups/$workspaceId/dataflows/$dataflowId"
+                        $response = Invoke-PowerBIRestMethod -Url $apiUrl -Method Get
+                        $jsonString = $response | ConvertTo-Json
+                        $jsonString | Out-File -FilePath $dataflowOutputFilePath -Encoding UTF8
+                        
+                        # Extract the data from the JSON response
+                        $startMarker = '"document\":'
+                        $endMarker = '\\r\\n\"'
+                        $startIndex = $jsonString.IndexOf($startMarker) + $startMarker.Length
+                        $endIndex = $jsonString.IndexOf($endMarker, $startIndex)
+                        $fallbackEndMarker = '"connectionOverrides\"'
+                        
+                        if ($endIndex -lt 0) {
+                            $endIndex = $jsonString.IndexOf($fallbackEndMarker, $startIndex)
+                        }
+                        
+                        if ($startIndex -ge 0 -and $endIndex -ge 0 -and $endIndex -gt $startIndex) {
+                            $documentContent = $jsonString.Substring($startIndex, $endIndex - $startIndex)
+                            Write-Host "Successfully retrieved Gen 2 dataflow using Gen 1 API fallback."
+                            # Set generation to 1 for proper formatting
+                            $dataflowGeneration = 1
+                        } else {
+                            Write-Host "Fallback also failed for dataflow '$dataflowName'. Skipping."
+                            continue
+                        }
+                    } catch {
+                        Write-Host "Fallback to Gen 1 API also failed for '$dataflowName': $($_.Exception.Message)"
+                        continue
+                    }
                 }
             } else {
                 # Gen 1 dataflow processing (original logic)
