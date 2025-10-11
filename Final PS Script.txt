@@ -1560,6 +1560,7 @@ foreach ($workspace in $workspacesInfo) {
         foreach ($dataflow in $dataflows.value) {
             $dataflowId = $dataflow.objectId
             $dataflowName = $dataflow.name
+            $dataflowGeneration = $dataflow.generation
 
             # Clean up workspace name
             $cleanWorkspaceName = $workspaceName -replace '\[', '(' -replace '\]', ')'
@@ -1574,49 +1575,116 @@ foreach ($workspace in $workspacesInfo) {
             # Define output file path specific to the dataflow
             $dataflowOutputFilePath = Join-Path -Path $baseOutputFilePath -ChildPath "$cleanWorkspaceName ~ $cleanDataFlowName.txt"
             
-            # Set the Power BI REST API URL for the specific dataflow
-            $apiUrl = "https://api.powerbi.com/v1.0/myorg/groups/$workspaceId/dataflows/$dataflowId"
+            # Initialize document content variable
+            $documentContent = ""
             
-            # Get the dataflow
-            $response = Invoke-PowerBIRestMethod -Url $apiUrl -Method Get
-            
-            # Convert the response to JSON string
-            $jsonString = $response | ConvertTo-Json
-            
-            # Write the JSON string to a text file
-            $jsonString | Out-File -FilePath $dataflowOutputFilePath -Encoding UTF8
-            
-            # Extract the data from the JSON response without writing intermediate files
-            $startMarker = '"document\":'
-            $endMarker = '\\r\\n\"'
-            $startIndex = $jsonString.IndexOf($startMarker) + $startMarker.Length
-            $endIndex = $jsonString.IndexOf($endMarker, $startIndex)
-	    $fallbackEndMarker = '"connectionOverrides\"'
-
-		# Extract start and end indices
-		$startIndex = $jsonString.IndexOf($startMarker) + $startMarker.Length
-		$endIndex = $jsonString.IndexOf($endMarker, $startIndex)
-
-		# Check if $endMarker is valid; if not, look for fallback marker
-		if ($endIndex -lt 0) {
-		    $endIndex = $jsonString.IndexOf($fallbackEndMarker, $startIndex)
-		}
-            
-            # Check if the startIndex and endIndex are valid
-            if ($startIndex -ge 0 -and $endIndex -ge 0 -and $endIndex -gt $startIndex) {
-                $documentContent = $jsonString.Substring($startIndex, $endIndex - $startIndex)
+            # Check if this is a Gen 2 dataflow
+            if ($dataflowGeneration -eq 2) {
+                Write-Host "Processing Gen 2 dataflow: '$dataflowName' in workspace '$workspaceName'"
+                
+                # Use Fabric API for Gen 2 dataflows
+                $accessToken = Get-CurrentAccessToken
+                $fabricApiUrl = "https://api.fabric.microsoft.com/v1/workspaces/$workspaceId/dataflows/$dataflowId/getDefinition"
+                
+                try {
+                    # Call Fabric API to get dataflow definition
+                    $fabricResponse = Invoke-RestMethod -Uri $fabricApiUrl `
+                        -Headers @{ Authorization = "Bearer $accessToken" } `
+                        -Method POST `
+                        -ContentType "application/json"
+                    
+                    # The response contains a definition with parts
+                    if ($fabricResponse.definition -and $fabricResponse.definition.parts) {
+                        # Find the item.dataflow.json part which contains the PowerQuery definition
+                        $dataflowPart = $fabricResponse.definition.parts | Where-Object { $_.path -eq "item.dataflow.json" } | Select-Object -First 1
+                        
+                        if ($dataflowPart -and $dataflowPart.payload) {
+                            # Decode the base64 payload
+                            $payloadBytes = [System.Convert]::FromBase64String($dataflowPart.payload)
+                            $payloadJson = [System.Text.Encoding]::UTF8.GetString($payloadBytes)
+                            
+                            # Write the full response to file for reference
+                            $payloadJson | Out-File -FilePath $dataflowOutputFilePath -Encoding UTF8
+                            
+                            # Parse the JSON to extract the PowerQuery document
+                            $payloadObject = $payloadJson | ConvertFrom-Json
+                            
+                            # The document field contains the PowerQuery M code
+                            if ($payloadObject.document) {
+                                $documentContent = $payloadObject.document
+                            } else {
+                                Write-Host "No document field found in Gen 2 dataflow '$dataflowName'."
+                                continue
+                            }
+                        } else {
+                            Write-Host "No item.dataflow.json part found for Gen 2 dataflow '$dataflowName'."
+                            continue
+                        }
+                    } else {
+                        Write-Host "Invalid response structure from Fabric API for dataflow '$dataflowName'."
+                        continue
+                    }
+                } catch {
+                    Write-Host "Error getting Gen 2 dataflow definition for '$dataflowName': $_"
+                    continue
+                }
             } else {
-                Write-Host "Invalid Start/End mark for dataflow '$dataflowName' in workspace '$workspaceName'."
-                continue
+                # Gen 1 dataflow processing (original logic)
+                Write-Host "Processing Gen 1 dataflow: '$dataflowName' in workspace '$workspaceName'"
+                
+                # Set the Power BI REST API URL for the specific dataflow
+                $apiUrl = "https://api.powerbi.com/v1.0/myorg/groups/$workspaceId/dataflows/$dataflowId"
+                
+                # Get the dataflow
+                $response = Invoke-PowerBIRestMethod -Url $apiUrl -Method Get
+                
+                # Convert the response to JSON string
+                $jsonString = $response | ConvertTo-Json
+                
+                # Write the JSON string to a text file
+                $jsonString | Out-File -FilePath $dataflowOutputFilePath -Encoding UTF8
+                
+                # Extract the data from the JSON response without writing intermediate files
+                $startMarker = '"document\":'
+                $endMarker = '\\r\\n\"'
+                $startIndex = $jsonString.IndexOf($startMarker) + $startMarker.Length
+                $endIndex = $jsonString.IndexOf($endMarker, $startIndex)
+                $fallbackEndMarker = '"connectionOverrides\"'
+
+                # Extract start and end indices
+                $startIndex = $jsonString.IndexOf($startMarker) + $startMarker.Length
+                $endIndex = $jsonString.IndexOf($endMarker, $startIndex)
+
+                # Check if $endMarker is valid; if not, look for fallback marker
+                if ($endIndex -lt 0) {
+                    $endIndex = $jsonString.IndexOf($fallbackEndMarker, $startIndex)
+                }
+                
+                # Check if the startIndex and endIndex are valid
+                if ($startIndex -ge 0 -and $endIndex -ge 0 -and $endIndex -gt $startIndex) {
+                    $documentContent = $jsonString.Substring($startIndex, $endIndex - $startIndex)
+                } else {
+                    Write-Host "Invalid Start/End mark for dataflow '$dataflowName' in workspace '$workspaceName'."
+                    continue
+                }
             }
 
             # Format the extracted content
-            $formattedText = $documentContent -replace '\\r\\n', "`n" `
-                                                    -replace '\\\"', '"' `
-                                                    -replace '\\\\', '\' `
-                                                    -replace '(?<=\w)(=|then|else)(?=\w)', ' $1 ' `
-                                                    -replace '(?<=then)\s+', ' ' `
-                                                    -replace '\s+(?=else)', "`n    "
+            # Gen 2 dataflows come as plain text, Gen 1 come with escape sequences
+            if ($dataflowGeneration -eq 2) {
+                # Gen 2 dataflows are already in plain text format
+                $formattedText = $documentContent -replace '(?<=\w)(=|then|else)(?=\w)', ' $1 ' `
+                                                        -replace '(?<=then)\s+', ' ' `
+                                                        -replace '\s+(?=else)', "`n    "
+            } else {
+                # Gen 1 dataflows need escape sequence processing
+                $formattedText = $documentContent -replace '\\r\\n', "`n" `
+                                                        -replace '\\\"', '"' `
+                                                        -replace '\\\\', '\' `
+                                                        -replace '(?<=\w)(=|then|else)(?=\w)', ' $1 ' `
+                                                        -replace '(?<=then)\s+', ' ' `
+                                                        -replace '\s+(?=else)', "`n    "
+            }
 
             # Additional formatting
             $insideQuotes = $false
@@ -1633,13 +1701,22 @@ foreach ($workspace in $workspacesInfo) {
                 }
             }
 
-            $formattedTextStep8 = $formattedTextStep7 -replace 'nshared', 'QueryStartandEndMarker' `
-                                                      -replace '\\r', ' ' `
-                                                      -replace '\\n', ' ' `
-                                                      -replace '\\', '' `
-                                                      -replace '\r\n', "`n" `
-                                                      -replace '(?<!["\w])r(\s)(?![\w"])', '$1' `
-                                                      -replace '\;r', ''
+            # Additional formatting step 8 - handle escape sequences differently for Gen 1 vs Gen 2
+            if ($dataflowGeneration -eq 2) {
+                # Gen 2: simpler processing since already plain text
+                $formattedTextStep8 = $formattedTextStep7 -replace '\nshared', 'QueryStartandEndMarker' `
+                                                          -replace 'section Section1;', '' `
+                                                          -replace '\r\n', "`n"
+            } else {
+                # Gen 1: handle all escape sequences
+                $formattedTextStep8 = $formattedTextStep7 -replace 'nshared', 'QueryStartandEndMarker' `
+                                                          -replace '\\r', ' ' `
+                                                          -replace '\\n', ' ' `
+                                                          -replace '\\', '' `
+                                                          -replace '\r\n', "`n" `
+                                                          -replace '(?<!["\w])r(\s)(?![\w"])', '$1' `
+                                                          -replace '\;r', ''
+            }
 
             $formattedTextStep9 = $formattedTextStep8 -replace '(?<=let|in|each)\s+', "`n    " `
                                                       -replace '(?<=,\s*)#', "`n    #"
