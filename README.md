@@ -113,6 +113,7 @@ This automatically:
 
 ### ✨ Recently Added Features
 
+- **Gen 2 Dataflow Support** → Now supports both Gen 1 (classic) and Gen 2 (Fabric) dataflows using the appropriate APIs. Gen 2 dataflows are automatically detected and processed using the Fabric API.
 - **Workspace Selector** → Only want to run this against 1, 2, 10 workspaces? Now
 a popup will allow you to choose which workspaces you run this against. Select All will still run against eveyrthing and a built-in timer ensures no selection will run against everything.
 - **Unused Model Objects** → Identify model fields/measures not used in any visuals, measures, or relationships.  
@@ -147,6 +148,9 @@ a popup will allow you to choose which workspaces you run this against. Select A
 
 ### 4. Dataflow Backup and Metadata Extract
 - Extracts dataflows from Power BI workspaces, formatting and organizing their contents, including query details.
+- **Supports both Gen 1 (classic) and Gen 2 (Fabric) dataflows**:
+  - Gen 1 dataflows use the Power BI REST API
+  - Gen 2 dataflows use the Fabric API to extract PowerQuery definitions
 - Leverages PowerShell to parse and extract the metadata and output within an Excel File.
 - All backups are saved with the following format: Workspace Name ~ Dataflow Name.
 - Must have edit rights on the related dataflow. 'Ownership' of the Dataflow is not required. Works with all Pro, Premium Capacity, Fabric Capacity workspaces. 'My Workspace' also included.
