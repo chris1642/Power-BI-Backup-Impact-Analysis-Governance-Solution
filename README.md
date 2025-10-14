@@ -85,7 +85,7 @@ This automatically:
 > ⚙️ *PowerShell may prompt to install required modules.*  
 > No admin access is needed — they install at the user level.
 
-> 🧰 *This setup uses the portable version of Tabular Editor 2 (v2.26.0).*  
+> 🧰 *This setup uses the portable version of Tabular Editor 2 (v2.27.2).*  
 > You don't need it preinstalled. It runs locally from the folder with no differences.  
 > https://github.com/TabularEditor/TabularEditor _(MIT License)_
 
