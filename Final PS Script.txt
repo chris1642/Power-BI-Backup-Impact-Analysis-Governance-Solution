@@ -1714,17 +1714,17 @@ foreach ($workspace in $workspacesInfo) {
             # Set the Power BI REST API URL for the specific dataflow
             $apiUrl = "https://api.powerbi.com/v1.0/myorg/groups/$workspaceId/dataflows/$dataflowId"
             
-            # Get the dataflow
+            # Get the dataflow (returns JSON string)
             $response = Invoke-PowerBIRestMethod -Url $apiUrl -Method Get
             
-            # Parse response as JSON object instead of string manipulation
+            # Parse response as JSON object
             $dataflowObject = $response | ConvertFrom-Json
             
-            # Save the original JSON for backup
-            $response | ConvertTo-Json -Depth 100 | Out-File -FilePath $dataflowOutputFilePath -Encoding UTF8
+            # Save the original response for backup
+            $response | Out-File -FilePath $dataflowOutputFilePath -Encoding UTF8
             
             # Extract document content directly from JSON object
-            if (-not $dataflowObject.properties.document) {
+            if (-not $dataflowObject.properties -or -not $dataflowObject.properties.document) {
                 Write-Host "No document property found for dataflow '$dataflowName' in workspace '$workspaceName'."
                 continue
             }
