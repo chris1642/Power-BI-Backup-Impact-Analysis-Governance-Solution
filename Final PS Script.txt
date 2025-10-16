@@ -1687,7 +1687,7 @@ function IsInsideCurlyBraces {
     return $openBraces -gt 0
 }
 
-# Loop through all workspaces to fetch dataflows
+# Loop through all workspaces to fetch Gen1 dataflows (Power BI API)
 
 
 foreach ($workspace in $workspacesInfo) {
@@ -1705,13 +1705,12 @@ foreach ($workspace in $workspacesInfo) {
 
     # Check if the response is valid and contains dataflows
     if ($dataflows -and $dataflows.value) {
-        Write-Host "Dataflows found in workspace '$workspaceName': $($dataflows.value.Count)"
+        Write-Host "Gen1 Dataflows found in workspace '$workspaceName': $($dataflows.value.Count)"
         
-        # Iterate through the dataflows
+        # Iterate through the Gen1 dataflows
         foreach ($dataflow in $dataflows.value) {
             $dataflowId = $dataflow.objectId
             $dataflowName = $dataflow.name
-            $dataflowGeneration = if ($dataflow.PSObject.Properties['generation']) { $dataflow.generation } else { 1 }
 
             # Clean up workspace name
             $cleanWorkspaceName = $workspaceName -replace '\[', '(' -replace '\]', ')'
@@ -1722,46 +1721,6 @@ foreach ($workspace in $workspacesInfo) {
             $cleanDataFlowName = $dataflowName -replace '\[', '(' -replace '\]', ')'
             $cleanDataFlowName = $cleanDataFlowName -replace "[^a-zA-Z0-9\(\)&,.-]", " "
             $cleanDataFlowName = $cleanDataFlowName.TrimStart()
-            
-            # Check if this is a Fabric (Gen2) dataflow
-            if ($dataflowGeneration -eq 2) {
-                Write-Host "Processing Fabric (Gen2) dataflow: $cleanWorkspaceName ~ $cleanDataFlowName"
-                
-                # Get current access token
-                $currentAccessToken = Get-CurrentAccessToken
-                
-                # Download and extract Fabric dataflow
-                $fabricResult = Export-FabricDataflow -WorkspaceId $workspaceId `
-                                                      -DataflowId $dataflowId `
-                                                      -WorkspaceName $workspaceName `
-                                                      -DataflowName $dataflowName `
-                                                      -OutputPath $baseOutputFilePath `
-                                                      -AccessToken $currentAccessToken
-                
-                if ($fabricResult) {
-                    # Parse the .pq content
-                    $parsedQueries = Parse-FabricDataflowContent -Content $fabricResult.Content `
-                                                                  -DataflowId $dataflowId `
-                                                                  -DataflowName $dataflowName `
-                                                                  -WorkspaceName $workspaceName `
-                                                                  -ReportDate $currentDate
-                    
-                    # Add parsed queries to combined DataTable
-                    foreach ($query in $parsedQueries) {
-                        $row = $combinedDataTable.NewRow()
-                        $row["Dataflow ID"] = $query."Dataflow ID"
-                        $row["Dataflow Name"] = $query."Dataflow Name"
-                        $row["Query Name"] = $query."Query Name"
-                        $row["Query"] = $query.Query
-                        $row["Report Date"] = $query."Report Date"
-                        $row["Workspace Name - Dataflow Name"] = $query."Workspace Name - Dataflow Name"
-                        $combinedDataTable.Rows.Add($row)
-                    }
-                }
-                
-                # Skip the Gen1 processing for Gen2 dataflows
-                continue
-            }
             
             # Define output file path specific to the dataflow (Gen1)
             $dataflowOutputFilePath = Join-Path -Path $baseOutputFilePath -ChildPath "$cleanWorkspaceName ~ $cleanDataFlowName.txt"
@@ -1912,6 +1871,71 @@ foreach ($workspace in $workspacesInfo) {
         }
     } else {
         Write-Host "No dataflows found in workspace '$workspaceName'."
+    }
+}
+
+# Loop through all workspaces to fetch Gen2 dataflows (Fabric Items API)
+foreach ($workspace in $workspacesInfo) {
+    $workspaceName = $workspace.WorkspaceName
+    $workspaceId = $workspace.WorkspaceId
+    
+    # Set the Fabric API URL for items
+    $fabricItemsUrl = "https://api.fabric.microsoft.com/v1/workspaces/$workspaceId/items"
+    
+    try {
+        # Get the list of items in the workspace
+        $fabricItemsResponse = Invoke-PowerBIRestMethod -Method GET -Url $fabricItemsUrl | ConvertFrom-Json
+        
+        # Filter for Dataflow items (Gen2 dataflows)
+        $gen2Dataflows = $fabricItemsResponse.value | Where-Object { $_.type -eq 'Dataflow' }
+        
+        if ($gen2Dataflows -and $gen2Dataflows.Count -gt 0) {
+            Write-Host "Gen2 Dataflows found in workspace '$workspaceName': $($gen2Dataflows.Count)"
+            
+            # Iterate through the Gen2 dataflows
+            foreach ($dataflow in $gen2Dataflows) {
+                $dataflowId = $dataflow.id
+                $dataflowName = $dataflow.displayName
+                
+                Write-Host "Processing Fabric (Gen2) dataflow: $workspaceName ~ $dataflowName"
+                
+                # Get current access token
+                $currentAccessToken = Get-CurrentAccessToken
+                
+                # Download and extract Fabric dataflow
+                $fabricResult = Export-FabricDataflow -WorkspaceId $workspaceId `
+                                                      -DataflowId $dataflowId `
+                                                      -WorkspaceName $workspaceName `
+                                                      -DataflowName $dataflowName `
+                                                      -OutputPath $baseOutputFilePath `
+                                                      -AccessToken $currentAccessToken
+                
+                if ($fabricResult) {
+                    # Parse the .pq content
+                    $parsedQueries = Parse-FabricDataflowContent -Content $fabricResult.Content `
+                                                                  -DataflowId $dataflowId `
+                                                                  -DataflowName $dataflowName `
+                                                                  -WorkspaceName $workspaceName `
+                                                                  -ReportDate $currentDate
+                    
+                    # Add parsed queries to combined DataTable
+                    foreach ($query in $parsedQueries) {
+                        $row = $combinedDataTable.NewRow()
+                        $row["Dataflow ID"] = $query."Dataflow ID"
+                        $row["Dataflow Name"] = $query."Dataflow Name"
+                        $row["Query Name"] = $query."Query Name"
+                        $row["Query"] = $query.Query
+                        $row["Report Date"] = $query."Report Date"
+                        $row["Workspace Name - Dataflow Name"] = $query."Workspace Name - Dataflow Name"
+                        $combinedDataTable.Rows.Add($row)
+                    }
+                }
+            }
+        } else {
+            Write-Host "No Gen2 dataflows found in workspace '$workspaceName'."
+        }
+    } catch {
+        Write-Warning "Failed to fetch Gen2 dataflows from Fabric API for workspace '$workspaceName': $_"
     }
 }
 
