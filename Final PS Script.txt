@@ -1711,7 +1711,7 @@ foreach ($workspace in $workspacesInfo) {
         foreach ($dataflow in $dataflows.value) {
             $dataflowId = $dataflow.objectId
             $dataflowName = $dataflow.name
-            $dataflowGeneration = $dataflow.generation
+            $dataflowGeneration = if ($dataflow.PSObject.Properties['generation']) { $dataflow.generation } else { 1 }
 
             # Clean up workspace name
             $cleanWorkspaceName = $workspaceName -replace '\[', '(' -replace '\]', ')'
