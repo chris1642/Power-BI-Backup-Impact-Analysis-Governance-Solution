@@ -1465,7 +1465,158 @@ Write-Output "Measure Dependency Detail Extraction Process Completed. Excel outp
 
 #### Start of Power BI Dataflow Backup and Detail Extract ####
 
+# Function to download and extract Fabric (Gen2) dataflows
+function Export-FabricDataflow {
+    param (
+        [string]$WorkspaceId,
+        [string]$DataflowId,
+        [string]$WorkspaceName,
+        [string]$DataflowName,
+        [string]$OutputPath,
+        [string]$AccessToken
+    )
+    
+    # Clean up names
+    $cleanWorkspaceName = $WorkspaceName -replace '\[', '(' -replace '\]', ')'
+    $cleanWorkspaceName = $cleanWorkspaceName -replace "[^a-zA-Z0-9\(\)&,.-]", " "
+    $cleanWorkspaceName = $cleanWorkspaceName.TrimStart()
+    
+    $cleanDataflowName = $DataflowName -replace '\[', '(' -replace '\]', ')'
+    $cleanDataflowName = $cleanDataflowName -replace "[^a-zA-Z0-9\(\)&,.-]", " "
+    $cleanDataflowName = $cleanDataflowName.TrimStart()
+    
+    $fabricApiBaseUri = "https://api.fabric.microsoft.com/v1/workspaces"
+    $endpoint = "$fabricApiBaseUri/$WorkspaceId/dataflows/$DataflowId/getDefinition"
+    
+    $headers = @{
+        "Authorization" = "Bearer $AccessToken"
+        "Content-Type"  = "application/json"
+    }
+    
+    try {
+        Write-Host "Downloading Fabric dataflow: $cleanWorkspaceName ~ $cleanDataflowName"
+        $response = Invoke-RestMethod -Uri $endpoint -Method POST -Headers $headers -Body "{}"
+        
+        if (-not $response.definition.parts) {
+            Write-Warning "No parts found in Fabric dataflow response for $cleanDataflowName"
+            return $null
+        }
+        
+        # Create temp directory for extraction
+        $tempDir = Join-Path $env:TEMP "FabricDataflow_$DataflowId"
+        if (Test-Path $tempDir) {
+            Remove-Item -Path $tempDir -Recurse -Force
+        }
+        New-Item -Path $tempDir -ItemType Directory | Out-Null
+        
+        # Extract files
+        foreach ($part in $response.definition.parts) {
+            $fileName = $part.path
+            $filePath = Join-Path $tempDir $fileName
+            $payloadType = $part.payloadType
+            $payload = $part.payload
+            
+            if ($payloadType -eq "InlineBase64") {
+                $bytes = [System.Convert]::FromBase64String($payload)
+                $fileDir = Split-Path $filePath
+                if (-not (Test-Path $fileDir)) {
+                    New-Item -ItemType Directory -Path $fileDir -Force | Out-Null
+                }
+                [System.IO.File]::WriteAllBytes($filePath, $bytes)
+            }
+        }
+        
+        # Find the .pq file
+        $pqFile = Get-ChildItem -Path $tempDir -Filter "*.pq" -Recurse | Select-Object -First 1
+        
+        if ($pqFile) {
+            # Read the .pq file content
+            $pqContent = Get-Content -Path $pqFile.FullName -Raw -Encoding UTF8
+            
+            # Save as .pqt
+            $outputFileName = "$cleanWorkspaceName ~ $cleanDataflowName.pqt"
+            $outputFilePath = Join-Path $OutputPath $outputFileName
+            $pqContent | Out-File -FilePath $outputFilePath -Encoding UTF8
+            
+            Write-Host "Saved Fabric dataflow to: $outputFilePath"
+            
+            # Clean up temp directory
+            Remove-Item -Path $tempDir -Recurse -Force
+            
+            return @{
+                Content = $pqContent
+                FilePath = $outputFilePath
+            }
+        } else {
+            Write-Warning "No .pq file found in Fabric dataflow for $cleanDataflowName"
+            Remove-Item -Path $tempDir -Recurse -Force
+            return $null
+        }
+        
+    } catch {
+        Write-Warning "Failed to download Fabric dataflow $cleanDataflowName : $_"
+        return $null
+    }
+}
 
+# Function to parse .pq content and extract queries
+function Parse-FabricDataflowContent {
+    param (
+        [string]$Content,
+        [string]$DataflowId,
+        [string]$DataflowName,
+        [string]$WorkspaceName,
+        [datetime]$ReportDate
+    )
+    
+    $queries = @()
+    
+    # Clean up names
+    $cleanWorkspaceName = $WorkspaceName -replace '\[', '(' -replace '\]', ')'
+    $cleanWorkspaceName = $cleanWorkspaceName -replace "[^a-zA-Z0-9\(\)&,.-]", " "
+    $cleanWorkspaceName = $cleanWorkspaceName.TrimStart()
+    
+    $cleanDataflowName = $DataflowName -replace '\[', '(' -replace '\]', ')'
+    $cleanDataflowName = $cleanDataflowName -replace "[^a-zA-Z0-9\(\)&,.-]", " "
+    $cleanDataflowName = $cleanDataflowName.TrimStart()
+    
+    # Split content by "section Section1;" to get the queries section
+    $sections = $Content -split 'section Section1;', 2
+    
+    if ($sections.Count -gt 1) {
+        $queriesSection = $sections[1]
+        
+        # Use regex to find all queries: optional attributes [...] followed by "shared QueryName = expression;"
+        # Pattern matches: optional attributes, then "shared", then query name, then "=", then everything until next "shared" or end
+        $pattern = '(?s)(?:\[[^\]]*\]\s*)?shared\s+(\w+)\s*=\s*(.*?)(?=(?:\[[^\]]*\]\s*)?shared\s+\w+\s*=|$)'
+        $matches = [regex]::Matches($queriesSection, $pattern)
+        
+        foreach ($match in $matches) {
+            $queryName = $match.Groups[1].Value
+            $queryExpression = $match.Groups[2].Value.Trim()
+            
+            # Remove trailing semicolons
+            $queryExpression = $queryExpression -replace ';\s*$', ''
+            $queryExpression = $queryExpression.Trim()
+            
+            # Skip if empty or just whitespace
+            if ([string]::IsNullOrWhiteSpace($queryName) -or [string]::IsNullOrWhiteSpace($queryExpression)) {
+                continue
+            }
+            
+            $queries += [PSCustomObject]@{
+                "Dataflow ID" = $DataflowId
+                "Dataflow Name" = $DataflowName
+                "Query Name" = $queryName
+                "Query" = $queryExpression
+                "Report Date" = $ReportDate
+                "Workspace Name - Dataflow Name" = "$cleanWorkspaceName ~ $cleanDataflowName"
+            }
+        }
+    }
+    
+    return $queries
+}
 
 
 
@@ -1560,6 +1711,7 @@ foreach ($workspace in $workspacesInfo) {
         foreach ($dataflow in $dataflows.value) {
             $dataflowId = $dataflow.objectId
             $dataflowName = $dataflow.name
+            $dataflowGeneration = $dataflow.generation
 
             # Clean up workspace name
             $cleanWorkspaceName = $workspaceName -replace '\[', '(' -replace '\]', ')'
@@ -1571,7 +1723,47 @@ foreach ($workspace in $workspacesInfo) {
             $cleanDataFlowName = $cleanDataFlowName -replace "[^a-zA-Z0-9\(\)&,.-]", " "
             $cleanDataFlowName = $cleanDataFlowName.TrimStart()
             
-            # Define output file path specific to the dataflow
+            # Check if this is a Fabric (Gen2) dataflow
+            if ($dataflowGeneration -eq 2) {
+                Write-Host "Processing Fabric (Gen2) dataflow: $cleanWorkspaceName ~ $cleanDataFlowName"
+                
+                # Get current access token
+                $currentAccessToken = Get-CurrentAccessToken
+                
+                # Download and extract Fabric dataflow
+                $fabricResult = Export-FabricDataflow -WorkspaceId $workspaceId `
+                                                      -DataflowId $dataflowId `
+                                                      -WorkspaceName $workspaceName `
+                                                      -DataflowName $dataflowName `
+                                                      -OutputPath $baseOutputFilePath `
+                                                      -AccessToken $currentAccessToken
+                
+                if ($fabricResult) {
+                    # Parse the .pq content
+                    $parsedQueries = Parse-FabricDataflowContent -Content $fabricResult.Content `
+                                                                  -DataflowId $dataflowId `
+                                                                  -DataflowName $dataflowName `
+                                                                  -WorkspaceName $workspaceName `
+                                                                  -ReportDate $currentDate
+                    
+                    # Add parsed queries to combined DataTable
+                    foreach ($query in $parsedQueries) {
+                        $row = $combinedDataTable.NewRow()
+                        $row["Dataflow ID"] = $query."Dataflow ID"
+                        $row["Dataflow Name"] = $query."Dataflow Name"
+                        $row["Query Name"] = $query."Query Name"
+                        $row["Query"] = $query.Query
+                        $row["Report Date"] = $query."Report Date"
+                        $row["Workspace Name - Dataflow Name"] = $query."Workspace Name - Dataflow Name"
+                        $combinedDataTable.Rows.Add($row)
+                    }
+                }
+                
+                # Skip the Gen1 processing for Gen2 dataflows
+                continue
+            }
+            
+            # Define output file path specific to the dataflow (Gen1)
             $dataflowOutputFilePath = Join-Path -Path $baseOutputFilePath -ChildPath "$cleanWorkspaceName ~ $cleanDataFlowName.txt"
             
             # Set the Power BI REST API URL for the specific dataflow
