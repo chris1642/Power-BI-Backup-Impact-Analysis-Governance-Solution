@@ -26,7 +26,6 @@ $ErrorActionPreference="SilentlyContinue"; $WarningPreference="SilentlyContinue"
 
 # Temporarily set execution policy to Bypass for this session
 if ((Get-ExecutionPolicy) -ne 'Bypass') {
-    Write-Host "Temporarily setting Execution Policy to Bypass for this session..."
     Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 }
 
@@ -95,7 +94,6 @@ if ($zipFile) {
     [System.IO.Compression.ZipFile]::ExtractToDirectory($zipFile.FullName, $TabularEditorFolderPath)
     Write-Output "Extracted $($zipFile.Name) to $TabularEditorFolderPath"
 } else {
-    Write-Host "No zip file matching the pattern $TabularEditorZipPattern found in $baseFolderPath\Config"
 }
 
 
@@ -1138,7 +1136,6 @@ function Export-ReportUsingAPI {
 		    if (Test-Path $driveLetter) { subst $driveLetter /D }
 		
 		    $substCommand = "subst $driveLetter $quotedExtractFolder"
-		    Write-Host "Running command: $substCommand"
 		    cmd.exe /c $substCommand
 		
 		    if (-not (Test-Path $driveLetter)) {
@@ -1150,7 +1147,6 @@ function Export-ReportUsingAPI {
 		        # Extract into subst drive
 		        & $pbiToolsPath extract $filepath -extractFolder $driveLetter -modelSerialization Raw
 		
-		        Write-Host "Generating .bim for $cleanWorkspaceName ~ $cleanReportName using $driveLetter"
 		        & $pbiToolsPath generate-bim $driveLetter -transforms RemovePBIDataSourceVersion
 		
 		        $bimFilesGenerated = Get-ChildItem -Path $extractFolder -Filter *.bim
@@ -1159,7 +1155,6 @@ function Export-ReportUsingAPI {
 		            $newBimPath = Join-Path -Path $tempExtractFolder -ChildPath $newBimName
 		
 		            Move-Item -Path $bimFile.FullName -Destination $newBimPath -Force
-		            Write-Host "Moved .bim file to $newBimPath"
 		        }
 		    }
 		    finally {
@@ -1199,7 +1194,6 @@ Model.Database.ID = "$fileName";
     $destinationPath = Join-Path -Path $folderPath -ChildPath $bimFile.Name
     Move-Item -Path $bimFile.FullName -Destination $destinationPath -Force
 
-    Write-Host "Updated and moved $fileName.bim"
 }
 
 # --- Cleanup Temporary Folders ---
@@ -1494,11 +1488,9 @@ function Export-FabricDataflow {
     }
     
     try {
-        Write-Host "Downloading Fabric dataflow: $cleanWorkspaceName ~ $cleanDataflowName"
         $response = Invoke-RestMethod -Uri $endpoint -Method POST -Headers $headers -Body "{}"
         
         if (-not $response.definition.parts) {
-            Write-Warning "No parts found in Fabric dataflow response for $cleanDataflowName"
             return $null
         }
         
@@ -1534,12 +1526,10 @@ function Export-FabricDataflow {
             $pqContent = Get-Content -Path $pqFile.FullName -Raw -Encoding UTF8
             
             # Save as .pqt
-            $outputFileName = "$cleanWorkspaceName ~ $cleanDataflowName.pqt"
+            $outputFileName = "$cleanWorkspaceName ~ $cleanDataflowName.pq"
             $outputFilePath = Join-Path $OutputPath $outputFileName
             $pqContent | Out-File -FilePath $outputFilePath -Encoding UTF8
-            
-            Write-Host "Saved Fabric dataflow to: $outputFilePath"
-            
+                        
             # Clean up temp directory
             Remove-Item -Path $tempDir -Recurse -Force
             
@@ -1548,13 +1538,11 @@ function Export-FabricDataflow {
                 FilePath = $outputFilePath
             }
         } else {
-            Write-Warning "No .pq file found in Fabric dataflow for $cleanDataflowName"
             Remove-Item -Path $tempDir -Recurse -Force
             return $null
         }
         
     } catch {
-        Write-Warning "Failed to download Fabric dataflow $cleanDataflowName : $_"
         return $null
     }
 }
@@ -1692,7 +1680,6 @@ foreach ($workspace in $workspacesInfo) {
 
     # Check if the response is valid and contains dataflows
     if ($dataflows -and $dataflows.value) {
-        Write-Host "Gen1 Dataflows found in workspace '$workspaceName': $($dataflows.value.Count)"
         
         # Iterate through the Gen1 dataflows
         foreach ($dataflow in $dataflows.value) {
@@ -1727,7 +1714,6 @@ foreach ($workspace in $workspacesInfo) {
                 
                 # Check if the JSON has the expected structure
                 if (-not $dataflowJson.'pbi:mashup' -or -not $dataflowJson.'pbi:mashup'.document) {
-                    Write-Host "No document property found in dataflow '$dataflowName' in workspace '$workspaceName'."
                     continue
                 }
                 
@@ -1743,7 +1729,6 @@ foreach ($workspace in $workspacesInfo) {
                 $sections = $documentContent -split 'section Section1;', 2
                 
                 if ($sections.Count -lt 2) {
-                    Write-Host "Could not find 'section Section1;' in dataflow '$dataflowName'."
                     continue
                 }
                 
@@ -1789,12 +1774,10 @@ foreach ($workspace in $workspacesInfo) {
                 }
                 
             } catch {
-                Write-Warning "Failed to parse dataflow '$dataflowName' in workspace '$workspaceName': $_"
                 continue
             }
         }
     } else {
-        Write-Host "No dataflows found in workspace '$workspaceName'."
     }
 }
 
@@ -1814,14 +1797,12 @@ foreach ($workspace in $workspacesInfo) {
         $gen2Dataflows = $fabricItemsResponse.value | Where-Object { $_.type -eq 'Dataflow' }
         
         if ($gen2Dataflows -and $gen2Dataflows.Count -gt 0) {
-            Write-Host "Gen2 Dataflows found in workspace '$workspaceName': $($gen2Dataflows.Count)"
             
             # Iterate through the Gen2 dataflows
             foreach ($dataflow in $gen2Dataflows) {
                 $dataflowId = $dataflow.id
                 $dataflowName = $dataflow.displayName
                 
-                Write-Host "Processing Fabric (Gen2) dataflow: $workspaceName ~ $dataflowName"
                 
                 # Get current access token
                 $currentAccessToken = Get-CurrentAccessToken
@@ -1856,10 +1837,8 @@ foreach ($workspace in $workspacesInfo) {
                 }
             }
         } else {
-            Write-Host "No Gen2 dataflows found in workspace '$workspaceName'."
         }
     } catch {
-        Write-Warning "Failed to fetch Gen2 dataflows from Fabric API for workspace '$workspaceName': $_"
     }
 }
 
