@@ -1867,34 +1867,24 @@ if ($combinedDataTable.Rows.Count -eq 0) {
 $combinedDataTable | Export-Excel -Path $combinedExcelOutputPath -AutoSize
 Write-Host "Data exported to $combinedExcelOutputPath"
 
-# Combine files if both are there
+# Copy the Excel file to the base folder for easy access
 $fileName = "Dataflow Detail.xlsx"
 $sourceFilePath = Join-Path -Path $dataflow_new_date_folder -ChildPath $fileName
 $destinationFilePath = Join-Path -Path $baseFolderPath -ChildPath $fileName
 
 # Check if the source file exists
-if (-not (Test-Path -Path $sourceFilePath)) {
-    Write-Error "Source file not found: $sourceFilePath"
-    exit
+if (Test-Path -Path $sourceFilePath) {
+    # Remove the destination file if it already exists
+    if (Test-Path -Path $destinationFilePath) {
+        Remove-Item -Path $destinationFilePath -Force
+    }
+    
+    # Copy the source file to the destination
+    Copy-Item -Path $sourceFilePath -Destination $destinationFilePath
+    Write-Host "Copied Dataflow Detail.xlsx to $baseFolderPath"
+} else {
+    Write-Warning "Source file not found: $sourceFilePath"
 }
-
-# Remove the destination file if it already exists
-if (Test-Path -Path $destinationFilePath) {
-    Remove-Item -Path $destinationFilePath -Force
-}
-
-# Copy the source file to the destination
-Copy-Item -Path $sourceFilePath -Destination $destinationFilePath
-
-# Load the source and destination Excel files
-$sourceData = Import-Excel -Path $sourceFilePath
-$destinationData = Import-Excel -Path $destinationFilePath
-
-# Combine the data
-$combinedData = $destinationData + $sourceData
-
-# Export the combined data to the destination file
-$combinedData | Export-Excel -Path $destinationFilePath -WorksheetName "Sheet1"
 
 Write-Output "Dataflow Backup and Detail Extraction Process Completed. Excel output saved to $combinedExcelOutputPath"
 
