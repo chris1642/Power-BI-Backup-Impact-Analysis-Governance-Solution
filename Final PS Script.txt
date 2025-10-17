@@ -1673,6 +1673,20 @@ foreach ($header in $headers) {
 # Get the current date
 $currentDate = [datetime]::Parse($latestDataflowDateFolder.Name)
 
+# Function to check if a position is within curly braces
+function IsInsideCurlyBraces {
+    param (
+        [string]$text,
+        [int]$position
+    )
+    $openBraces = 0
+    for ($i = 0; $i -lt $position; $i++) {
+        if ($text[$i] -eq '{') { $openBraces++ }
+        elseif ($text[$i] -eq '}') { $openBraces-- }
+    }
+    return $openBraces -gt 0
+}
+
 # Loop through all workspaces to fetch Gen1 dataflows (Power BI API)
 
 
@@ -1714,59 +1728,132 @@ foreach ($workspace in $workspacesInfo) {
             # Set the Power BI REST API URL for the specific dataflow
             $apiUrl = "https://api.powerbi.com/v1.0/myorg/groups/$workspaceId/dataflows/$dataflowId"
             
-            # Get the dataflow (returns JSON string)
+            # Get the dataflow
             $response = Invoke-PowerBIRestMethod -Url $apiUrl -Method Get
             
-            # Parse response as JSON object
-            $dataflowObject = $response | ConvertFrom-Json
+            # Convert the response to JSON string
+            $jsonString = $response | ConvertTo-Json
             
-            # Save the original response for backup
-            $response | Out-File -FilePath $dataflowOutputFilePath -Encoding UTF8
+            # Write the JSON string to a text file
+            $jsonString | Out-File -FilePath $dataflowOutputFilePath -Encoding UTF8
             
-            # Extract document content directly from JSON object
-            if (-not $dataflowObject.properties -or -not $dataflowObject.properties.document) {
-                Write-Host "No document property found for dataflow '$dataflowName' in workspace '$workspaceName'."
+            # Extract the data from the JSON response without writing intermediate files
+            $startMarker = '"document\":'
+            $endMarker = '\\r\\n\"'
+            $startIndex = $jsonString.IndexOf($startMarker) + $startMarker.Length
+            $endIndex = $jsonString.IndexOf($endMarker, $startIndex)
+	    $fallbackEndMarker = '"connectionOverrides\"'
+
+		# Extract start and end indices
+		$startIndex = $jsonString.IndexOf($startMarker) + $startMarker.Length
+		$endIndex = $jsonString.IndexOf($endMarker, $startIndex)
+
+		# Check if $endMarker is valid; if not, look for fallback marker
+		if ($endIndex -lt 0) {
+		    $endIndex = $jsonString.IndexOf($fallbackEndMarker, $startIndex)
+		}
+            
+            # Check if the startIndex and endIndex are valid
+            if ($startIndex -ge 0 -and $endIndex -ge 0 -and $endIndex -gt $startIndex) {
+                $documentContent = $jsonString.Substring($startIndex, $endIndex - $startIndex)
+            } else {
+                Write-Host "Invalid Start/End mark for dataflow '$dataflowName' in workspace '$workspaceName'."
                 continue
             }
-            
-            # The document is already a string, no need for complex extraction
-            $documentContent = $dataflowObject.properties.document
-            
-            # Parse the document content to extract queries
-            # Split by "section Section1;" to separate metadata from queries
-            $sections = $documentContent -split 'section Section1;', 2
-            
-            if ($sections.Count -lt 2) {
-                Write-Host "Could not find 'section Section1;' in dataflow '$dataflowName'."
-                continue
-            }
-            
-            $queriesSection = $sections[1]
-            
-            # Use regex to extract queries (similar to Gen2 parsing for consistency)
-            # Pattern matches: "shared QueryName = expression;" 
-            $queryPattern = '(?s)shared\s+(\w+)\s*=\s*(.*?)(?=\s*shared\s+\w+\s*=|$)'
-            $queryMatches = [regex]::Matches($queriesSection, $queryPattern)
-            
-            $data = @()
-            foreach ($match in $queryMatches) {
-                $queryName = $match.Groups[1].Value.Trim()
-                $queryExpression = $match.Groups[2].Value.Trim()
-                
-                # Remove trailing semicolon if present
-                $queryExpression = $queryExpression -replace ';\s*$', ''
-                
-                if ([string]::IsNullOrWhiteSpace($queryName) -or [string]::IsNullOrWhiteSpace($queryExpression)) {
-                    continue
+
+            # Format the extracted content
+            $formattedText = $documentContent -replace '\\r\\n', "`n" `
+                                                    -replace '\\\"', '"' `
+                                                    -replace '\\\\', '\' `
+                                                    -replace '(?<=\w)(=|then|else)(?=\w)', ' $1 ' `
+                                                    -replace '(?<=then)\s+', ' ' `
+                                                    -replace '\s+(?=else)', "`n    "
+
+            # Additional formatting
+            $insideQuotes = $false
+            $formattedTextStep7 = ""
+            for ($i = 0; $i -lt $formattedText.Length; $i++) {
+                $char = $formattedText[$i]
+                if ($char -eq '"') {
+                    $insideQuotes = -not $insideQuotes
                 }
-                
+                if ($char -eq ',' -and -not $insideQuotes -and -not (IsInsideCurlyBraces -text $formattedText -position $i)) {
+                    $formattedTextStep7 += "$char`n    "
+                } else {
+                    $formattedTextStep7 += $char
+                }
+            }
+
+            $formattedTextStep8 = $formattedTextStep7 -replace 'nshared', 'QueryStartandEndMarker' `
+                                                      -replace '\\r', ' ' `
+                                                      -replace '\\n', ' ' `
+                                                      -replace '\\', '' `
+                                                      -replace '\r\n', "`n" `
+                                                      -replace '(?<!["\w])r(\s)(?![\w"])', '$1' `
+                                                      -replace '\;r', ''
+
+            $formattedTextStep9 = $formattedTextStep8 -replace '(?<=let|in|each)\s+', "`n    " `
+                                                      -replace '(?<=,\s*)#', "`n    #"
+
+            $formattedTextStep9 = $formattedTextStep9 -replace '(?<!\n)QueryStartandEndMarker\s', "`nQueryStartandEndMarker`n`n"
+
+            $formattedTextStep9 = $formattedTextStep9 -replace '(^|\s)let', "`nlet"
+
+            $formattedTextStep9 = $formattedTextStep9 -replace '\)  in', ")`n    in"
+
+            # Read the content directly from the formatted text
+            $fileContent = $formattedTextStep9
+
+            # Initialize variables
+            $inQuery = $false
+            $queryName = ""
+            $query = ""
+            $data = @()
+
+            # Split the content into lines
+            $lines = $fileContent -split "`n"
+
+            # Iterate over the lines
+            foreach ($line in $lines) {
+                if ($line -match 'QueryStartandEndMarker\s*') {
+                    # If we find a new query, save the previous one
+                    if ($queryName -ne "") {
+                        $data += [PSCustomObject]@{
+                            "Dataflow ID" = $dataflowId
+                            "Dataflow Name" = $dataflowName
+                            "Query Name" = $queryName
+                            "Query" = $query.Trim()
+                            "Report Date" = $currentDate
+                            "Workspace Name - Dataflow Name" = "$cleanWorkspaceName ~ $cleanDataFlowName"  # Add data to new column
+                        }
+                    }
+                    # Reset variables for new query
+                    $inQuery = $true
+                    $queryName = ""
+                    $query = ""
+                } elseif ($inQuery -and $line.Trim() -ne "") {
+                    # Set the query name as the first non-empty line after QueryStartandEndMarker
+                    if ($queryName -eq "") {
+                        $queryName = $line.Trim()
+                    } else {
+                        # Append the line to the query
+                        $query += "$line`n"
+                    }
+                } elseif ($queryName -ne "") {
+                    # Append the line to the query
+                    $query += "$line`n"
+                }
+            }
+
+            # Add the last query
+            if ($queryName -ne "") {
                 $data += [PSCustomObject]@{
                     "Dataflow ID" = $dataflowId
                     "Dataflow Name" = $dataflowName
                     "Query Name" = $queryName
-                    "Query" = $queryExpression.Trim()
+                    "Query" = $query.Trim()
                     "Report Date" = $currentDate
-                    "Workspace Name - Dataflow Name" = "$cleanWorkspaceName ~ $cleanDataFlowName"
+                    "Workspace Name - Dataflow Name" = "$cleanWorkspaceName ~ $cleanDataFlowName"  # Add data to new column
                 }
             }
 
@@ -1778,7 +1865,7 @@ foreach ($workspace in $workspacesInfo) {
                 $row["Query Name"] = $item."Query Name"
                 $row["Query"] = $item.Query
                 $row["Report Date"] = $item."Report Date"
-                $row["Workspace Name - Dataflow Name"] = $item."Workspace Name - Dataflow Name"
+                $row["Workspace Name - Dataflow Name"] = $item."Workspace Name - Dataflow Name"  # Add data to new column
                 $combinedDataTable.Rows.Add($row)
             }
         }
