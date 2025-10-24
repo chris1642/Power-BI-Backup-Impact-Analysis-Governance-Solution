@@ -32,6 +32,7 @@ if ((Get-ExecutionPolicy) -ne 'Bypass') {
 # =============================
 # Download latest pbi-tools
 # =============================
+
 $pbiToolsZip = Join-Path $configFolder "PBI Tools.zip"
 
 Write-Host "[INFO] Fetching latest pbi-tools release..."
@@ -49,6 +50,7 @@ if ($pbiAsset -and $pbiAsset.browser_download_url) {
 # =============================
 Download latest Tabular Editor 2 Portable
 # =============================
+
 $teZip = Join-Path $configFolder "TabularEditor.zip"
 $teDownloadUrl = "https://github.com/TabularEditor/TabularEditor/releases/latest/download/TabularEditor.Portable.zip"
 
@@ -113,7 +115,7 @@ foreach ($module in $requiredModules) {
 
 # Connect to the Power BI Service
 function Connect-PowerBI {
-    Connect-PowerBIServiceAccount
+    Connect-PowerBIServiceAccount | Out-Null
     $global:accessTokenObject = Get-PowerBIAccessToken
     $global:accessToken = $accessTokenObject.Authorization -replace 'Bearer ', ''
     # Write the access token to a temporary file
@@ -128,7 +130,7 @@ Connect-PowerBI
 function Start-TokenRefreshJob {
     $jobScript = {
         function Connect-PowerBI {
-            Connect-PowerBIServiceAccount
+            Connect-PowerBIServiceAccount | Out-Null
             $global:accessTokenObject = Get-PowerBIAccessToken
             $global:accessToken = $accessTokenObject.Authorization -replace 'Bearer ', ''
             # Write the access token to a temporary file
@@ -139,7 +141,7 @@ function Start-TokenRefreshJob {
             Connect-PowerBI
         }
     }
-    Start-Job -ScriptBlock $jobScript -Name "TokenRefreshJob"
+	Start-Job -ScriptBlock $jobScript -Name "TokenRefreshJob" | Out-Null
 }
 
 # Start the background job to refresh the token
