@@ -950,13 +950,13 @@ foreach ($dataset in $datasetsInfo) {
         # Construct the folder path and create it if it doesn't exist
         $modelBackupsPath = "$baseFolderPath\Model Backups"
         if (-not (Test-Path $modelBackupsPath)) {
-            New-Item -ItemType Directory -Force -Path $modelBackupsPath
+            New-Item -ItemType Directory -Force -Path $modelBackupsPath | Out-Null
         }
 
         # Construct the date model backup folder path and create it if it doesn't exist
         $folderPath = "$modelBackupsPath\$date"
         if (-not (Test-Path $folderPath)) {
-            New-Item -ItemType Directory -Force -Path $folderPath
+            New-Item -ItemType Directory -Force -Path $folderPath | Out-Null
         }
 
     # Check if the workspace is Premium or Fabric capacity before proceeding
@@ -1024,18 +1024,18 @@ $reportBackupsPath = Join-Path -Path $baseFolderPath -ChildPath "Report Backups"
 
 # Check if the base folder exists, if not create it
 if (-not (Test-Path -Path $baseFolderPath)) {
-    New-Item -Path $baseFolderPath -ItemType Directory -Force
+    New-Item -Path $baseFolderPath -ItemType Directory -Force | Out-Null
 }
 
 # Check if the "Report Backups" folder exists, if not create it
 if (-not (Test-Path -Path $reportBackupsPath)) {
-    New-Item -Path $reportBackupsPath -ItemType Directory -Force
+    New-Item -Path $reportBackupsPath -ItemType Directory -Force | Out-Null
 }
 
 # Create a new sub folder for the date
 $newDateFolder = Join-Path -Path $reportBackupsPath -ChildPath $date
 if (-not (Test-Path -Path $newDateFolder)) {
-    New-Item -Path $newDateFolder -ItemType Directory -Force
+    New-Item -Path $newDateFolder -ItemType Directory -Force | Out-Null
 }
 
 # Define the temporary extraction folder
@@ -1043,7 +1043,7 @@ $tempExtractFolder = "$baseFolderPath\Config\Temp"
 
 # Check if the temp extract folder exists, if not create it
 if (-not (Test-Path -Path $tempExtractFolder)) {
-    New-Item -Path $tempExtractFolder -ItemType Directory -Force
+    New-Item -Path $tempExtractFolder -ItemType Directory -Force | Out-Null
 }
 
 # Function to Export Using REST API and Stored Token
@@ -1630,7 +1630,7 @@ $date = (Get-Date -UFormat "%Y-%m-%d")
 
 # Create a new folder for the backups
 $dataflow_new_date_folder = Join-Path -Path $dataflowBackupsPath -ChildPath $date
-New-Item -Path $dataflow_new_date_folder -ItemType Directory -Force
+New-Item -Path $dataflow_new_date_folder -ItemType Directory -Force | Out-Null
 
 # Set the base output file path
 $baseOutputFilePath = $dataflow_new_date_folder
