@@ -1913,11 +1913,15 @@ function Export-FabricNotebook {
     }
     
     try {
+        Write-Output "Calling Fabric API: $endpoint"
         $response = Invoke-RestMethod -Uri $endpoint -Method POST -Headers $headers -Body "{}"
         
         if (-not $response.definition.parts) {
+            Write-Warning "No definition parts found in response for notebook '$NotebookName'"
             return $null
         }
+        
+        Write-Output "Found $($response.definition.parts.Count) part(s) in notebook definition"
         
         # Create temp directory for extraction
         $tempDir = Join-Path $env:TEMP "FabricNotebook_$NotebookId"
@@ -1947,6 +1951,7 @@ function Export-FabricNotebook {
         $notebookFile = Get-ChildItem -Path $tempDir -Filter "notebook.ipynb" -Recurse | Select-Object -First 1
         
         if ($notebookFile) {
+            Write-Output "Found notebook file: $($notebookFile.FullName)"
             # Read the notebook file content
             $notebookContent = Get-Content -Path $notebookFile.FullName -Raw -Encoding UTF8
             
@@ -1963,11 +1968,15 @@ function Export-FabricNotebook {
                 FilePath = $outputFilePath
             }
         } else {
+            Write-Warning "No notebook.ipynb file found in extracted files for notebook '$NotebookName'"
+            Write-Output "Files found in temp directory:"
+            Get-ChildItem -Path $tempDir -Recurse | ForEach-Object { Write-Output "  $($_.FullName)" }
             Remove-Item -Path $tempDir -Recurse -Force
             return $null
         }
         
     } catch {
+        Write-Warning "Failed to export notebook '$NotebookName' (ID: $NotebookId): $_"
         return $null
     }
 }
@@ -2125,6 +2134,7 @@ foreach ($workspace in $workspacesInfo) {
                                                               -AccessToken $currentAccessToken
                 
                 if ($fabricNotebookResult) {
+                    Write-Output "Successfully exported notebook: $notebookName"
                     # Parse the notebook content
                     $parsedCells = Parse-NotebookContent -Content $fabricNotebookResult.Content `
                                                          -NotebookId $notebookId `
@@ -2144,6 +2154,8 @@ foreach ($workspace in $workspacesInfo) {
                         $row["Workspace Name - Notebook Name"] = $cell."Workspace Name - Notebook Name"
                         $combinedNotebookDataTable.Rows.Add($row)
                     }
+                } else {
+                    Write-Warning "Failed to export notebook '$notebookName' - no result returned"
                 }
             }
         } else {
