@@ -991,7 +991,7 @@ Model.Database.Name = `"$newModelDatabaseName`";
         $modelExportArgs = "`"Provider=MSOLAP;Data Source=powerbi://api.powerbi.com/v1.0/myorg/$workspaceName;Password=$(Get-CurrentAccessToken)`" `"$datasetName`" -S `"$tempScriptPath`" -B `"$folderPath\$cleanDatasetWorkspaceName ~ $cleanDatasetName.bim`""
         
         # Start the Tabular Editor process for model export and renaming
-        Start-Process -FilePath "$TabularEditor2Path" -Wait -NoNewWindow -PassThru -ArgumentList $modelExportArgs
+        Start-Process -FilePath "$TabularEditor2Path" -Wait -NoNewWindow -ArgumentList $modelExportArgs
 
         # Clean up the temporary script file
         Remove-Item -Path $tempScriptPath
@@ -1145,9 +1145,9 @@ function Export-ReportUsingAPI {
 		
 		    try {
 		        # Extract into subst drive
-		        & $pbiToolsPath extract $filepath -extractFolder $driveLetter -modelSerialization Raw
+		        & $pbiToolsPath extract $filepath -extractFolder $driveLetter -modelSerialization Raw *> $null
 		
-		        & $pbiToolsPath generate-bim $driveLetter -transforms RemovePBIDataSourceVersion
+		        & $pbiToolsPath generate-bim $driveLetter -transforms RemovePBIDataSourceVersion *> $null
 		
 		        $bimFilesGenerated = Get-ChildItem -Path $extractFolder -Filter *.bim
 		        foreach ($bimFile in $bimFilesGenerated) {
@@ -1222,10 +1222,10 @@ Write-Output "Report Backup Process Completed"
 Write-Output "Report Detail Extraction Process Started"
 
 # Start Tabular Editor process 1
-$p = Start-Process -FilePath "$TabularEditor2Path" -Wait -NoNewWindow -PassThru -WorkingDirectory $baseFolderPath -ArgumentList "`"$baseFolderPath\Config\Blank Model.bim`" -S `"$Script1Path`""
+$p = Start-Process -FilePath "$TabularEditor2Path" -Wait -NoNewWindow -WorkingDirectory $baseFolderPath -ArgumentList "`"$baseFolderPath\Config\Blank Model.bim`" -S `"$Script1Path`""
 
 # Start Tabular Editor process 2
-$p = Start-Process -FilePath "$TabularEditor2Path" -Wait -NoNewWindow -PassThru -WorkingDirectory $baseFolderPath -ArgumentList "`"$baseFolderPath\Config\Blank Model.bim`" -S `"$Script2Path`""
+$p = Start-Process -FilePath "$TabularEditor2Path" -Wait -NoNewWindow -WorkingDirectory $baseFolderPath -ArgumentList "`"$baseFolderPath\Config\Blank Model.bim`" -S `"$Script2Path`""
 
 # Define the output Excel file path in the parent folder
 $outputExcelFile = Join-Path -Path $baseFolderPath -ChildPath "Report Detail.xlsx"
@@ -1358,7 +1358,7 @@ foreach ($dataset in $datasetsInfo) {
     $modelScriptArgs = "`"$sourceFolderPath\$cleanDatasetWorkspaceName ~ $cleanDatasetName.bim`" -S `"$Script3Path`""
     
     # Start the Tabular Editor process to run the first model script
-    Start-Process -FilePath "$TabularEditor2Path" -WorkingDirectory $baseFolderPath -Wait -NoNewWindow -PassThru -ArgumentList $modelScriptArgs
+    Start-Process -FilePath "$TabularEditor2Path" -WorkingDirectory $baseFolderPath -Wait -NoNewWindow -ArgumentList $modelScriptArgs
 }
 
 Write-Host "First model export and script run completed."
@@ -1423,7 +1423,7 @@ foreach ($dataset in $datasetsInfo) {
     $modelScriptArgs = "`"$sourceFolderPath\$cleanDatasetWorkspaceName ~ $cleanDatasetName.bim`" -S `"$Script4Path`""
     
     # Start the Tabular Editor process to run the second model script
-    Start-Process -FilePath "$TabularEditor2Path" -WorkingDirectory $baseFolderPath -Wait -NoNewWindow -PassThru -ArgumentList $modelScriptArgs
+    Start-Process -FilePath "$TabularEditor2Path" -WorkingDirectory $baseFolderPath -Wait -NoNewWindow -ArgumentList $modelScriptArgs
 }
 
 Write-Host "Second model export and script run completed."
@@ -1655,7 +1655,7 @@ $headers = @("Dataflow ID", "Dataflow Name", "Query Name", "Query", "Report Date
 # Initialize a combined DataTable with the specified headers
 $combinedDataTable = New-Object System.Data.DataTable
 foreach ($header in $headers) {
-    $combinedDataTable.Columns.Add($header, [System.String])
+   $null = $combinedDataTable.Columns.Add($header, [System.String])
 }
 
 # Get the current date
