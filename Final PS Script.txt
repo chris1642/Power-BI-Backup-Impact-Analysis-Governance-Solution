@@ -1958,7 +1958,9 @@ function Export-FabricNotebook {
             # Save as .ipynb
             $outputFileName = "$cleanWorkspaceName ~ $cleanNotebookName.ipynb"
             $outputFilePath = Join-Path $OutputPath $outputFileName
+            Write-Output "Saving notebook to: $outputFilePath"
             $notebookContent | Out-File -FilePath $outputFilePath -Encoding UTF8
+            Write-Output "File saved successfully. File size: $((Get-Item $outputFilePath).Length) bytes"
                         
             # Clean up temp directory
             Remove-Item -Path $tempDir -Recurse -Force
@@ -2040,8 +2042,10 @@ function Parse-NotebookContent {
         }
     } catch {
         # If parsing fails, return empty array
+        Write-Warning "Failed to parse notebook content for '$NotebookName': $_"
     }
     
+    Write-Output "Parsed $($cells.Count) cell(s) from notebook '$NotebookName'"
     return $cells
 }
 
@@ -2142,6 +2146,7 @@ foreach ($workspace in $workspacesInfo) {
                                                          -WorkspaceName $workspaceName `
                                                          -ReportDate $notebookCurrentDate
                     
+                    Write-Output "Adding $($parsedCells.Count) cell(s) to DataTable"
                     # Add parsed cells to combined DataTable
                     foreach ($cell in $parsedCells) {
                         $row = $combinedNotebookDataTable.NewRow()
@@ -2168,14 +2173,18 @@ foreach ($workspace in $workspacesInfo) {
 
 # Check if the combined DataTable has any rows, if not add a dummy row with headers only
 if ($combinedNotebookDataTable.Rows.Count -eq 0) {
+    Write-Warning "No notebook cells were added to DataTable. Adding empty row."
     $row = $combinedNotebookDataTable.NewRow()
     foreach ($header in $notebookHeaders) {
         $row[$header] = ""
     }
     $combinedNotebookDataTable.Rows.Add($row)
+} else {
+    Write-Output "Total rows in DataTable: $($combinedNotebookDataTable.Rows.Count)"
 }
 
 # Export the combined DataTable to an Excel file
+Write-Output "Exporting to Excel: $combinedNotebookExcelOutputPath"
 $combinedNotebookDataTable | Export-Excel -Path $combinedNotebookExcelOutputPath -AutoSize
 Write-Host "Data exported to $combinedNotebookExcelOutputPath"
 
