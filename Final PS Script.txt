@@ -993,6 +993,7 @@ Model.Database.Name = `"$newModelDatabaseName`";
         $modelExportArgs = "`"Provider=MSOLAP;Data Source=powerbi://api.powerbi.com/v1.0/myorg/$workspaceName;Password=$(Get-CurrentAccessToken)`" `"$datasetName`" -S `"$tempScriptPath`" -B `"$folderPath\$cleanDatasetWorkspaceName ~ $cleanDatasetName.bim`""
         
         # Start the Tabular Editor process for model export and renaming
+		Write-Host "Exporting $cleanDatasetWorkspaceName ~ $cleanDatasetName"
         Start-Process -FilePath "$TabularEditor2Path" -Wait -NoNewWindow -ArgumentList $modelExportArgs
 
         # Clean up the temporary script file
@@ -1360,6 +1361,7 @@ foreach ($dataset in $datasetsInfo) {
     $modelScriptArgs = "`"$sourceFolderPath\$cleanDatasetWorkspaceName ~ $cleanDatasetName.bim`" -S `"$Script3Path`""
     
     # Start the Tabular Editor process to run the first model script
+	Write-Host "Extracting Model Detail for $cleanDatasetWorkspaceName ~ $cleanDatasetName"
     Start-Process -FilePath "$TabularEditor2Path" -WorkingDirectory $baseFolderPath -Wait -NoNewWindow -ArgumentList $modelScriptArgs
 }
 
@@ -1425,6 +1427,7 @@ foreach ($dataset in $datasetsInfo) {
     $modelScriptArgs = "`"$sourceFolderPath\$cleanDatasetWorkspaceName ~ $cleanDatasetName.bim`" -S `"$Script4Path`""
     
     # Start the Tabular Editor process to run the second model script
+	Write-Host "Extracting Measure Dependency Detail for $cleanDatasetWorkspaceName ~ $cleanDatasetName"
     Start-Process -FilePath "$TabularEditor2Path" -WorkingDirectory $baseFolderPath -Wait -NoNewWindow -ArgumentList $modelScriptArgs
 }
 
