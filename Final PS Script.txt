@@ -1879,6 +1879,317 @@ if (Test-Path -Path $sourceFilePath) {
 Write-Output "Dataflow Backup and Detail Extraction Process Completed. Excel output saved to $combinedExcelOutputPath"
 
 
+
+
+
+#### Start of Notebook Backup and Detail Extract ####
+
+# Function to download and extract Fabric Notebooks
+function Export-FabricNotebook {
+    param (
+        [string]$WorkspaceId,
+        [string]$NotebookId,
+        [string]$WorkspaceName,
+        [string]$NotebookName,
+        [string]$OutputPath,
+        [string]$AccessToken
+    )
+    
+    # Clean up names
+    $cleanWorkspaceName = $WorkspaceName -replace '\[', '(' -replace '\]', ')'
+    $cleanWorkspaceName = $cleanWorkspaceName -replace "[^a-zA-Z0-9\(\)&,.-]", " "
+    $cleanWorkspaceName = $cleanWorkspaceName.TrimStart()
+    
+    $cleanNotebookName = $NotebookName -replace '\[', '(' -replace '\]', ')'
+    $cleanNotebookName = $cleanNotebookName -replace "[^a-zA-Z0-9\(\)&,.-]", " "
+    $cleanNotebookName = $cleanNotebookName.TrimStart()
+    
+    $fabricApiBaseUri = "https://api.fabric.microsoft.com/v1/workspaces"
+    $endpoint = "$fabricApiBaseUri/$WorkspaceId/notebooks/$NotebookId/getDefinition"
+    
+    $headers = @{
+        "Authorization" = "Bearer $AccessToken"
+        "Content-Type"  = "application/json"
+    }
+    
+    try {
+        $response = Invoke-RestMethod -Uri $endpoint -Method POST -Headers $headers -Body "{}"
+        
+        if (-not $response.definition.parts) {
+            return $null
+        }
+        
+        # Create temp directory for extraction
+        $tempDir = Join-Path $env:TEMP "FabricNotebook_$NotebookId"
+        if (Test-Path $tempDir) {
+            Remove-Item -Path $tempDir -Recurse -Force
+        }
+        New-Item -Path $tempDir -ItemType Directory | Out-Null
+        
+        # Extract files
+        foreach ($part in $response.definition.parts) {
+            $fileName = $part.path
+            $filePath = Join-Path $tempDir $fileName
+            $payloadType = $part.payloadType
+            $payload = $part.payload
+            
+            if ($payloadType -eq "InlineBase64") {
+                $bytes = [System.Convert]::FromBase64String($payload)
+                $fileDir = Split-Path $filePath
+                if (-not (Test-Path $fileDir)) {
+                    New-Item -ItemType Directory -Path $fileDir -Force | Out-Null
+                }
+                [System.IO.File]::WriteAllBytes($filePath, $bytes)
+            }
+        }
+        
+        # Find the notebook.ipynb file
+        $notebookFile = Get-ChildItem -Path $tempDir -Filter "notebook.ipynb" -Recurse | Select-Object -First 1
+        
+        if ($notebookFile) {
+            # Read the notebook file content
+            $notebookContent = Get-Content -Path $notebookFile.FullName -Raw -Encoding UTF8
+            
+            # Save as .ipynb
+            $outputFileName = "$cleanWorkspaceName ~ $cleanNotebookName.ipynb"
+            $outputFilePath = Join-Path $OutputPath $outputFileName
+            $notebookContent | Out-File -FilePath $outputFilePath -Encoding UTF8
+                        
+            # Clean up temp directory
+            Remove-Item -Path $tempDir -Recurse -Force
+            
+            return @{
+                Content = $notebookContent
+                FilePath = $outputFilePath
+            }
+        } else {
+            Remove-Item -Path $tempDir -Recurse -Force
+            return $null
+        }
+        
+    } catch {
+        return $null
+    }
+}
+
+# Function to parse notebook content and extract cells
+function Parse-NotebookContent {
+    param (
+        [string]$Content,
+        [string]$NotebookId,
+        [string]$NotebookName,
+        [string]$WorkspaceName,
+        [datetime]$ReportDate
+    )
+    
+    $cells = @()
+    
+    # Clean up names
+    $cleanWorkspaceName = $WorkspaceName -replace '\[', '(' -replace '\]', ')'
+    $cleanWorkspaceName = $cleanWorkspaceName -replace "[^a-zA-Z0-9\(\)&,.-]", " "
+    $cleanWorkspaceName = $cleanWorkspaceName.TrimStart()
+    
+    $cleanNotebookName = $NotebookName -replace '\[', '(' -replace '\]', ')'
+    $cleanNotebookName = $cleanNotebookName -replace "[^a-zA-Z0-9\(\)&,.-]", " "
+    $cleanNotebookName = $cleanNotebookName.TrimStart()
+    
+    try {
+        # Parse JSON content
+        $notebookJson = $Content | ConvertFrom-Json
+        
+        # Extract cells from notebook
+        if ($notebookJson.cells) {
+            $cellIndex = 0
+            foreach ($cell in $notebookJson.cells) {
+                $cellIndex++
+                
+                $cellType = $cell.cell_type
+                $cellSource = ""
+                
+                # Handle source as array or string
+                if ($cell.source -is [Array]) {
+                    $cellSource = $cell.source -join ""
+                } else {
+                    $cellSource = $cell.source
+                }
+                
+                # Skip if empty
+                if ([string]::IsNullOrWhiteSpace($cellSource)) {
+                    continue
+                }
+                
+                $cells += [PSCustomObject]@{
+                    "Notebook ID" = $NotebookId
+                    "Notebook Name" = $NotebookName
+                    "Cell Index" = $cellIndex
+                    "Cell Type" = $cellType
+                    "Cell Content" = $cellSource.Trim()
+                    "Report Date" = $ReportDate
+                    "Workspace Name - Notebook Name" = "$cleanWorkspaceName ~ $cleanNotebookName"
+                }
+            }
+        }
+    } catch {
+        # If parsing fails, return empty array
+    }
+    
+    return $cells
+}
+
+
+
+
+Write-Output "Notebook Backup and Detail Extraction Process Started"
+
+# Define the notebook backups path
+$notebookBackupsPath = Join-Path -Path $baseFolderPath -ChildPath "Notebook Backups"
+
+# Check if the "Notebook Backups" folder exists, if not create it
+if (-not (Test-Path -Path $notebookBackupsPath)) {
+    New-Item -Path $notebookBackupsPath -ItemType Directory
+}
+
+# Create a new folder for the backups
+$notebook_new_date_folder = Join-Path -Path $notebookBackupsPath -ChildPath $date
+New-Item -Path $notebook_new_date_folder -ItemType Directory -Force
+
+# Set the base output file path
+$notebookBaseOutputFilePath = $notebook_new_date_folder
+
+# Get the latest folder by date
+$latestNotebookDateFolder = Get-ChildItem -Path $notebookBackupsPath -Directory |
+    Where-Object { $_.Name -match '^\d{4}-\d{2}-\d{2}$' } |  # Filter for folders with a date pattern
+    Sort-Object { [datetime]::Parse($_.Name) } -Descending | # Sort by date, descending
+    Select-Object -First 1
+
+if ($latestNotebookDateFolder) {
+    # Override with the latest-dated folder
+    $notebookFolderPath = $latestNotebookDateFolder.FullName
+    Write-Host "Using the latest dated folder: $notebookFolderPath"
+} else {
+    # Use current folder if no previous folders found
+    $notebookFolderPath = $notebook_new_date_folder
+    Write-Host "No previous dated folders found. Using current folder: $notebookFolderPath"
+}
+
+# Set the combined Excel output path
+$combinedNotebookExcelOutputPath = Join-Path -Path $notebook_new_date_folder -ChildPath "Notebook Detail.xlsx"
+
+# Define the headers
+$notebookHeaders = @("Notebook ID", "Notebook Name", "Cell Index", "Cell Type", "Cell Content", "Report Date", "Workspace Name - Notebook Name")
+
+# Initialize a combined DataTable with the specified headers
+$combinedNotebookDataTable = New-Object System.Data.DataTable
+foreach ($header in $notebookHeaders) {
+    $combinedNotebookDataTable.Columns.Add($header, [System.String])
+}
+
+# Get the current date
+$notebookCurrentDate = [datetime]::Parse($latestNotebookDateFolder.Name)
+
+# Loop through all workspaces to fetch Notebooks (Fabric Items API)
+foreach ($workspace in $workspacesInfo) {
+    $workspaceName = $workspace.WorkspaceName
+    $workspaceId = $workspace.WorkspaceId
+    
+    # Set the Fabric API URL for items
+    $fabricItemsUrl = "https://api.fabric.microsoft.com/v1/workspaces/$workspaceId/items"
+    
+    try {
+        # Get the list of items in the workspace
+        $fabricItemsResponse = Invoke-PowerBIRestMethod -Method GET -Url $fabricItemsUrl | ConvertFrom-Json
+        
+        # Filter for Notebook items
+        $notebooks = $fabricItemsResponse.value | Where-Object { $_.type -eq 'Notebook' }
+        
+        if ($notebooks -and $notebooks.Count -gt 0) {
+            Write-Output "Found $($notebooks.Count) notebook(s) in workspace: $workspaceName"
+            
+            # Iterate through the Notebooks
+            foreach ($notebook in $notebooks) {
+                $notebookId = $notebook.id
+                $notebookName = $notebook.displayName
+                
+                Write-Output "Processing notebook: $notebookName"
+                
+                # Get current access token
+                $currentAccessToken = Get-CurrentAccessToken
+                
+                # Download and extract Fabric notebook
+                $fabricNotebookResult = Export-FabricNotebook -WorkspaceId $workspaceId `
+                                                              -NotebookId $notebookId `
+                                                              -WorkspaceName $workspaceName `
+                                                              -NotebookName $notebookName `
+                                                              -OutputPath $notebookBaseOutputFilePath `
+                                                              -AccessToken $currentAccessToken
+                
+                if ($fabricNotebookResult) {
+                    # Parse the notebook content
+                    $parsedCells = Parse-NotebookContent -Content $fabricNotebookResult.Content `
+                                                         -NotebookId $notebookId `
+                                                         -NotebookName $notebookName `
+                                                         -WorkspaceName $workspaceName `
+                                                         -ReportDate $notebookCurrentDate
+                    
+                    # Add parsed cells to combined DataTable
+                    foreach ($cell in $parsedCells) {
+                        $row = $combinedNotebookDataTable.NewRow()
+                        $row["Notebook ID"] = $cell."Notebook ID"
+                        $row["Notebook Name"] = $cell."Notebook Name"
+                        $row["Cell Index"] = $cell."Cell Index"
+                        $row["Cell Type"] = $cell."Cell Type"
+                        $row["Cell Content"] = $cell."Cell Content"
+                        $row["Report Date"] = $cell."Report Date"
+                        $row["Workspace Name - Notebook Name"] = $cell."Workspace Name - Notebook Name"
+                        $combinedNotebookDataTable.Rows.Add($row)
+                    }
+                }
+            }
+        } else {
+            Write-Output "No notebooks found in workspace: $workspaceName"
+        }
+    } catch {
+        Write-Warning "Failed to fetch notebooks for workspace: $workspaceName. Error: $_"
+    }
+}
+
+# Check if the combined DataTable has any rows, if not add a dummy row with headers only
+if ($combinedNotebookDataTable.Rows.Count -eq 0) {
+    $row = $combinedNotebookDataTable.NewRow()
+    foreach ($header in $notebookHeaders) {
+        $row[$header] = ""
+    }
+    $combinedNotebookDataTable.Rows.Add($row)
+}
+
+# Export the combined DataTable to an Excel file
+$combinedNotebookDataTable | Export-Excel -Path $combinedNotebookExcelOutputPath -AutoSize
+Write-Host "Data exported to $combinedNotebookExcelOutputPath"
+
+# Copy the Excel file to the base folder for easy access
+$notebookFileName = "Notebook Detail.xlsx"
+$notebookSourceFilePath = Join-Path -Path $notebook_new_date_folder -ChildPath $notebookFileName
+$notebookDestinationFilePath = Join-Path -Path $baseFolderPath -ChildPath $notebookFileName
+
+# Check if the source file exists
+if (Test-Path -Path $notebookSourceFilePath) {
+    # Remove the destination file if it already exists
+    if (Test-Path -Path $notebookDestinationFilePath) {
+        Remove-Item -Path $notebookDestinationFilePath -Force
+    }
+    
+    # Copy the source file to the destination
+    Copy-Item -Path $notebookSourceFilePath -Destination $notebookDestinationFilePath
+    Write-Host "Copied Notebook Detail.xlsx to $baseFolderPath"
+} else {
+    Write-Warning "Source file not found: $notebookSourceFilePath"
+}
+
+Write-Output "Notebook Backup and Detail Extraction Process Completed. Excel output saved to $combinedNotebookExcelOutputPath"
+
+
+
+
 # Stop the background job after script completion
 Stop-Job -Name "TokenRefreshJob"
 Remove-Job -Name "TokenRefreshJob"

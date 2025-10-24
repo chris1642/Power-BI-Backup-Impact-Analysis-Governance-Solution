@@ -10,13 +10,13 @@
 # Power BI Governance & Impact Analysis Solution
 
 ## What It Does
-This provides a quick and automated way to identify where and how specific fields, measures, and tables are used across Power BI reports in all workspaces by analyzing the visual object layer. It also backs up and breaks down the details of your models, reports, and dataflows for easy review, giving you an all-in-one **Power BI Governance** solution.
+This provides a quick and automated way to identify where and how specific fields, measures, and tables are used across Power BI reports in all workspaces by analyzing the visual object layer. It also backs up and breaks down the details of your models, reports, dataflows, and notebooks for easy review, giving you an all-in-one **Power BI Governance** solution.
 
 ### Key Features:
 - **Impact Analysis**: Fully understand the downstream impact of data model changes, ensuring you don’t accidentally break visuals or dashboards—especially when reports connected to a model span multiple workspaces.
 - **Used and Unused Objects**: Identify which tables, columns, and measures are actively used and where. Equally as important, see what isn't used and can be safely removed from your model to save space and complexity.
-- **Comprehensive Environment Overview**: Gain a clear, detailed view of your entire Power BI environment, including complete breakdowns of your models, reports, and dataflows and their dependencies. 
-- **Backup Solution**: Automatically backs up every model, report, and dataflow for safekeeping.
+- **Comprehensive Environment Overview**: Gain a clear, detailed view of your entire Power BI environment, including complete breakdowns of your models, reports, dataflows, and notebooks and their dependencies. 
+- **Backup Solution**: Automatically backs up every model, report, dataflow, and notebook for safekeeping.
 - **User-Friendly Output**: Results are presented in a Power BI model, making them easy to explore, analyze, and share with your team.
 
      .
@@ -152,27 +152,35 @@ a popup will allow you to choose which workspaces you run this against. Select A
 - Must have edit rights on the related dataflow. 'Ownership' of the Dataflow is not required. Works with all Pro, Premium Capacity, Fabric Capacity workspaces. 'My Workspace' also included.
 - <img width="542" alt="image" src="https://github.com/user-attachments/assets/67e83016-4bc7-4cf5-8d94-1a9779aad6d8">
 
-### 5. Model Connection Details Metadata Extract
+### 5. Notebook Backup and Metadata Extract
+- Extracts Fabric Notebooks from workspaces, backing up the full notebook definition and extracting cell content.
+- Leverages the Fabric Items API to download notebook definitions and parse cell content.
+- All backups are saved with the following format: Workspace Name ~ Notebook Name.ipynb in a "Notebook Backups" folder with dated subfolders.
+- Extracts cell-level metadata (cell type, content, index) into a "Notebook Detail.xlsx" file similar to Dataflow Detail.
+- Works with Fabric Capacity workspaces where Notebooks are available.
+- Requires read access to the notebooks in the workspace.
+
+### 6. Model Connection Details Metadata Extract
 - Leverages Power BI REST API to gather all model connection details.
 - Exports the extracted metadata into the same structured excel workbook as the Power BI Environment Information Extract
 - You must have read permissions on the related model.
 
-### 6. Model Refresh History Metadata Extract
+### 7. Model Refresh History Metadata Extract
 - Leverages Power BI REST API to gather all model refresh history (limited to the same history shown in the Service).
 - Exports the extracted metadata into the same structured excel workbook as the Power BI Environment Detail Extract
 - You must have read permissions on the related model.
 
-### 7. Dataflow Connection Details Metadata Extract
+### 8. Dataflow Connection Details Metadata Extract
 - Leverages Power BI REST API to gather all Dataflow connection details.
 - Exports the extracted metadata into the same structured excel workbook as the Power BI Environment Detail Extract
 - You must have read permissions on the related Dataflow.
 
-### 8. Dataflow Refresh History Metadata Extract
+### 9. Dataflow Refresh History Metadata Extract
 - Leverages Power BI REST API to gather all Dataflow refresh history (limited to the same history shown in the Service).
 - Exports the extracted metadata into the same structured excel workbook as the Power BI Environment Detail Extract
 - You must have read permissions on the related Dataflow.
   
-### 9. Power BI Governance Model
+### 10. Power BI Governance Model
 - Combines extracts into a Semantic Model to allow easy exploring, impact analysis, and governance of all Power BI Reports, Models, and Dataflows across all Workspaces
 - Works for anyone who runs the script and has at least 1 model and report. Dataflow not required.
 - Public example (limited due to no filter pane): https://app.powerbi.com/view?r=eyJrIjoiNmMxYWQ2ZTItZDM4ZS00MGM1LTlhMDQtN2I1OTMwMzI0OTg2IiwidCI6ImUyY2Y4N2QyLTYxMjktNGExYS1iZTczLTEzOGQyY2Y5OGJlMiJ9
