@@ -993,7 +993,7 @@ Model.Database.Name = `"$newModelDatabaseName`";
         $modelExportArgs = "`"Provider=MSOLAP;Data Source=powerbi://api.powerbi.com/v1.0/myorg/$workspaceName;Password=$(Get-CurrentAccessToken)`" `"$datasetName`" -S `"$tempScriptPath`" -B `"$folderPath\$cleanDatasetWorkspaceName ~ $cleanDatasetName.bim`""
         
         # Start the Tabular Editor process for model export and renaming
-		Write-Host "Exporting $cleanDatasetWorkspaceName ~ $cleanDatasetName"
+		Write-Host "**Exporting $cleanDatasetWorkspaceName ~ $cleanDatasetName**"
         Start-Process -FilePath "$TabularEditor2Path" -Wait -NoNewWindow -ArgumentList $modelExportArgs
 
         # Clean up the temporary script file
@@ -1148,6 +1148,7 @@ function Export-ReportUsingAPI {
 		
 		    try {
 		        # Extract into subst drive
+				Write-Host "If available, extracting Model from $cleanWorkspaceName ~ $cleanReportName"
 		        & $pbiToolsPath extract $filepath -extractFolder $driveLetter -modelSerialization Raw *> $null
 		
 		        & $pbiToolsPath generate-bim $driveLetter -transforms RemovePBIDataSourceVersion *> $null
@@ -1361,7 +1362,7 @@ foreach ($dataset in $datasetsInfo) {
     $modelScriptArgs = "`"$sourceFolderPath\$cleanDatasetWorkspaceName ~ $cleanDatasetName.bim`" -S `"$Script3Path`""
     
     # Start the Tabular Editor process to run the first model script
-	Write-Host "Extracting Model Detail for $cleanDatasetWorkspaceName ~ $cleanDatasetName"
+	Write-Host "**Extracting Model Detail for $cleanDatasetWorkspaceName ~ $cleanDatasetName**"
     Start-Process -FilePath "$TabularEditor2Path" -WorkingDirectory $baseFolderPath -Wait -NoNewWindow -ArgumentList $modelScriptArgs
 }
 
@@ -1427,7 +1428,7 @@ foreach ($dataset in $datasetsInfo) {
     $modelScriptArgs = "`"$sourceFolderPath\$cleanDatasetWorkspaceName ~ $cleanDatasetName.bim`" -S `"$Script4Path`""
     
     # Start the Tabular Editor process to run the second model script
-	Write-Host "Extracting Measure Dependency Detail for $cleanDatasetWorkspaceName ~ $cleanDatasetName"
+	Write-Host "**Extracting Measure Dependency Detail for $cleanDatasetWorkspaceName ~ $cleanDatasetName**"
     Start-Process -FilePath "$TabularEditor2Path" -WorkingDirectory $baseFolderPath -Wait -NoNewWindow -ArgumentList $modelScriptArgs
 }
 
@@ -1504,7 +1505,7 @@ function Export-FabricDataflow {
         if (Test-Path $tempDir) {
             Remove-Item -Path $tempDir -Recurse -Force
         }
-        New-Item -Path $tempDir -ItemType Directory | Out-Null
+        New-Item -Path $tempDir -ItemType Directory -Force | Out-Null
         
         # Extract files
         foreach ($part in $response.definition.parts) {
@@ -1622,7 +1623,7 @@ $dataflowBackupsPath = Join-Path -Path $baseFolderPath -ChildPath "Dataflow Back
 
 # Check if the "Dataflow Backups" folder exists, if not create it
 if (-not (Test-Path -Path $dataflowBackupsPath)) {
-    New-Item -Path $dataflowBackupsPath -ItemType Directory
+    New-Item -Path $dataflowBackupsPath -ItemType Directory -Force | Out-Null
 }
 
 # Create a variable for end of week (Friday) date
@@ -1876,7 +1877,6 @@ if (Test-Path -Path $sourceFilePath) {
     
     # Copy the source file to the destination
     Copy-Item -Path $sourceFilePath -Destination $destinationFilePath
-    Write-Host "Copied Dataflow Detail.xlsx to $baseFolderPath"
 } else {
     Write-Warning "Source file not found: $sourceFilePath"
 }
