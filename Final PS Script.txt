@@ -1580,24 +1580,29 @@ function Parse-FabricDataflowContent {
     if ($sections.Count -gt 1) {
         $queriesSection = $sections[1]
         
-        # Use regex to find all queries: optional attributes [...] followed by "shared QueryName = expression;"
-        # Pattern matches: optional attributes, then "shared", then query name, then "=", then everything until next "shared" or end
-        $pattern = '(?s)(?:\[[^\]]*\]\s*)?shared\s+(\w+)\s*=\s*(.*?)(?=(?:\[[^\]]*\]\s*)?shared\s+\w+\s*=|$)'
+        # Use regex to find all queries:
+        # Supports both shared QueryName = ... and shared #"Query Name With Spaces" = ...
+        $pattern = '(?s)(?:\[[^\]]*\]\s*)?shared\s+(?:#"(.*?)"|([A-Za-z_]\w*))\s*=\s*(.*?)(?=(?:\[[^\]]*\]\s*)?shared\s+(?:#"(?:.*?)"|[A-Za-z_]\w*)\s*=|$)'
         $matches = [regex]::Matches($queriesSection, $pattern)
         
         foreach ($match in $matches) {
-            $queryName = $match.Groups[1].Value
-            $queryExpression = $match.Groups[2].Value.Trim()
-            
+            # Group 1 = hash-quoted name, Group 2 = unquoted name, Group 3 = expression
+            if ($match.Groups[1].Success) {
+                $queryName = $match.Groups[1].Value
+            } else {
+                $queryName = $match.Groups[2].Value
+            }
+            $queryExpression = $match.Groups[3].Value.Trim()
+
             # Remove trailing semicolons
             $queryExpression = $queryExpression -replace ';\s*$', ''
             $queryExpression = $queryExpression.Trim()
-            
+
             # Skip if empty or just whitespace
             if ([string]::IsNullOrWhiteSpace($queryName) -or [string]::IsNullOrWhiteSpace($queryExpression)) {
                 continue
             }
-            
+
             $queries += [PSCustomObject]@{
                 "Dataflow ID" = $DataflowId
                 "Dataflow Name" = $DataflowName
@@ -1611,6 +1616,7 @@ function Parse-FabricDataflowContent {
     
     return $queries
 }
+
 
 
 
@@ -1741,17 +1747,23 @@ foreach ($workspace in $workspacesInfo) {
                 $queriesSection = $sections[1]
                 
                 # Use regex to extract queries (similar to Gen2 parsing for consistency)
-                # Pattern matches: "shared QueryName = expression;"
-                $queryPattern = '(?s)shared\s+(\w+)\s*=\s*(.*?)(?=\s*shared\s+\w+\s*=|$)'
+                # Supports both shared QueryName = ... and shared #"Query Name With Spaces" = ...
+                $queryPattern = '(?s)(?:\[[^\]]*\]\s*)?shared\s+(?:#"(.*?)"|([A-Za-z_]\w*))\s*=\s*(.*?)(?=(?:\[[^\]]*\]\s*)?shared\s+(?:#"(?:.*?)"|[A-Za-z_]\w*)\s*=|$)'
                 $queryMatches = [regex]::Matches($queriesSection, $queryPattern)
                 
                 $data = @()
                 foreach ($match in $queryMatches) {
-                    $queryName = $match.Groups[1].Value.Trim()
-                    $queryExpression = $match.Groups[2].Value.Trim()
+                    # Group 1 = hash-quoted name, Group 2 = unquoted name, Group 3 = expression
+                    if ($match.Groups[1].Success) {
+                        $queryName = $match.Groups[1].Value
+                    } else {
+                        $queryName = $match.Groups[2].Value
+                    }
+                    $queryExpression = $match.Groups[3].Value.Trim()
                     
                     # Remove trailing semicolon if present
                     $queryExpression = $queryExpression -replace ';\s*$', ''
+                    $queryExpression = $queryExpression.Trim()
                     
                     if ([string]::IsNullOrWhiteSpace($queryName) -or [string]::IsNullOrWhiteSpace($queryExpression)) {
                         continue
@@ -1761,7 +1773,7 @@ foreach ($workspace in $workspacesInfo) {
                         "Dataflow ID" = $dataflowId
                         "Dataflow Name" = $dataflowName
                         "Query Name" = $queryName
-                        "Query" = $queryExpression.Trim()
+                        "Query" = $queryExpression
                         "Report Date" = $currentDate
                         "Workspace Name - Dataflow Name" = "$cleanWorkspaceName ~ $cleanDataFlowName"
                     }
@@ -1786,6 +1798,7 @@ foreach ($workspace in $workspacesInfo) {
     } else {
     }
 }
+
 
 # Loop through all workspaces to fetch Gen2 dataflows (Fabric Items API)
 foreach ($workspace in $workspacesInfo) {
