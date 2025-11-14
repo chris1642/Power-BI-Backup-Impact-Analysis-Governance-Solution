@@ -118,14 +118,6 @@ This automatically:
 
 ---
 ## Features
-
-### ✨ Recently Added Features
-
-- **Workspace Selector** → Only want to run this against 1, 2, 10 workspaces? Now
-a popup will allow you to choose which workspaces you run this against. Select All will still run against eveyrthing and a built-in timer ensures no selection will run against everything.
-- **Unused Model Objects** → Identify model fields/measures not used in any visuals, measures, or relationships.  
-- **Broken Visuals (with Page Links)** → See all broken visuals/filters and jump directly to the impacted report page.  
-- **Report-Level Measures Inventory** → Surface report-only measures with full DAX and usage details.
   
 ---
 
