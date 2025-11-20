@@ -114,6 +114,11 @@ $script:successfulExports = 0
 $script:failedExports = 0
 $script:failedReports = @()
 
+# Initialize rate limiting tracking
+$script:rateLimitHitCount = 0
+$script:adaptiveDelayMs = 600  # Start at 600ms (100 requests/min to stay under 120/min limit)
+$script:maxAdaptiveDelayMs = 5000  # Max 5 seconds between requests
+
 # Logging function that writes to both console and file
 function Write-Log {
     param(
@@ -1100,10 +1105,15 @@ function Export-ReportUsingAPI {
         [string]$ReportName = "Unknown"
     )
 
-    $maxRetries = 3
+    $maxRetries = 5  # Increased for rate limit scenarios
+    $rateLimitMaxRetries = 8  # Even more retries for rate limits specifically
     $retryDelaySeconds = 2
 
-    for ($attempt = 1; $attempt -le $maxRetries; $attempt++) {
+    $attemptCount = 0
+    $maxAttempts = $maxRetries
+
+    while ($attemptCount -lt $maxAttempts) {
+        $attemptCount++
         $accessToken = Get-CurrentAccessToken
         $apiUrl = "https://api.powerbi.com/v1.0/myorg/groups/$GroupId/reports/$ReportId/Export?downloadType=$DownloadType"
 
@@ -1116,6 +1126,12 @@ function Export-ReportUsingAPI {
             # Success - verify file was created
             if (Test-Path $OutFilePath) {
                 $script:successfulExports++
+
+                # Reduce adaptive delay on success (gradually speed up)
+                if ($script:adaptiveDelayMs -gt 600) {
+                    $script:adaptiveDelayMs = [Math]::Max(600, $script:adaptiveDelayMs - 100)
+                }
+
                 Write-Log "Successfully exported: $ReportName" -Level SUCCESS
                 return $true
             } else {
@@ -1127,16 +1143,57 @@ function Export-ReportUsingAPI {
         } catch {
             $errorMessage = $_.Exception.Message
             $statusCode = $_.Exception.Response.StatusCode.value__
+            $isRateLimitError = ($statusCode -eq 429)
 
-            Write-Log "Attempt $attempt/$maxRetries failed for report '$ReportName': $errorMessage (Status: $statusCode)" -Level WARNING
+            # If this is a rate limit error, increase max attempts
+            if ($isRateLimitError -and $maxAttempts -lt $rateLimitMaxRetries) {
+                $maxAttempts = $rateLimitMaxRetries
+            }
+
+            Write-Log "Attempt $attemptCount/$maxAttempts failed for report '$ReportName': $errorMessage (Status: $statusCode)" -Level WARNING
 
             # Check if we should retry
-            if ($attempt -lt $maxRetries) {
+            if ($attemptCount -lt $maxAttempts) {
                 # Retry on rate limiting (429) or server errors (5xx)
-                if ($statusCode -eq 429 -or ($statusCode -ge 500 -and $statusCode -lt 600)) {
-                    $delay = $retryDelaySeconds * [Math]::Pow(2, $attempt - 1)
-                    Write-Log "  Retrying in $delay seconds..." -Level INFO
-                    Start-Sleep -Seconds $delay
+                if ($isRateLimitError -or ($statusCode -ge 500 -and $statusCode -lt 600)) {
+
+                    # Handle rate limiting specially
+                    if ($isRateLimitError) {
+                        $script:rateLimitHitCount++
+
+                        # Try to read Retry-After header
+                        $retryAfterSeconds = 0
+                        try {
+                            $retryAfterHeader = $_.Exception.Response.Headers["Retry-After"]
+                            if ($retryAfterHeader) {
+                                $retryAfterSeconds = [int]$retryAfterHeader
+                                Write-Log "API provided Retry-After: $retryAfterSeconds seconds" -Level INFO
+                            }
+                        } catch {
+                            # Retry-After header not present or couldn't parse
+                        }
+
+                        # Calculate delay: use Retry-After if available, otherwise exponential backoff
+                        if ($retryAfterSeconds -gt 0) {
+                            $delay = $retryAfterSeconds
+                        } else {
+                            # Exponential backoff: 5, 10, 20, 40, 60, 60, 60...
+                            $delay = [Math]::Min(60, 5 * [Math]::Pow(2, $attemptCount - 1))
+                        }
+
+                        Write-Log "Rate limit hit (total: $script:rateLimitHitCount). Waiting $delay seconds before retry..." -Level WARNING
+
+                        # Increase adaptive delay for future requests
+                        $script:adaptiveDelayMs = [Math]::Min($script:maxAdaptiveDelayMs, $script:adaptiveDelayMs + 500)
+                        Write-Log "Adaptive delay increased to $script:adaptiveDelayMs ms for subsequent requests" -Level INFO
+
+                        Start-Sleep -Seconds $delay
+                    } else {
+                        # Server error - use standard exponential backoff
+                        $delay = $retryDelaySeconds * [Math]::Pow(2, $attemptCount - 1)
+                        Write-Log "  Retrying in $delay seconds..." -Level INFO
+                        Start-Sleep -Seconds $delay
+                    }
                 } else {
                     # Don't retry on client errors (4xx) except 429
                     Write-Log "Export failed for report '$ReportName': $errorMessage" -Level ERROR
@@ -1145,7 +1202,7 @@ function Export-ReportUsingAPI {
                     return $false
                 }
             } else {
-                Write-Log "Export failed after $maxRetries attempts for report '$ReportName': $errorMessage" -Level ERROR
+                Write-Log "Export failed after $attemptCount attempts for report '$ReportName': $errorMessage" -Level ERROR
                 $script:failedExports++
                 $script:failedReports += $ReportName
                 return $false
@@ -1221,8 +1278,8 @@ function Export-ReportUsingAPI {
 	            continue
 	        }
 
-	        # Add small delay to avoid rate limiting
-	        Start-Sleep -Milliseconds 250
+	        # Adaptive delay to avoid rate limiting (adjusts based on 429 responses)
+	        Start-Sleep -Milliseconds $script:adaptiveDelayMs
 			
 		# Only process model extraction for Pro Workspaces
 		if ($workspace.WorkspaceIsOnDedicatedCapacity -eq $false) {
@@ -2018,6 +2075,8 @@ Write-Log "Total Workspaces Processed: $script:totalWorkspaces" -Level INFO
 Write-Log "Total Reports Found: $script:totalReports" -Level INFO
 Write-Log "Successful Exports: $script:successfulExports" -Level SUCCESS
 Write-Log "Failed Exports: $script:failedExports" -Level $(if ($script:failedExports -gt 0) { "WARNING" } else { "INFO" })
+Write-Log "Rate Limit Hits (429 errors): $script:rateLimitHitCount" -Level $(if ($script:rateLimitHitCount -gt 0) { "WARNING" } else { "INFO" })
+Write-Log "Final Adaptive Delay: $script:adaptiveDelayMs ms" -Level INFO
 
 if ($script:failedExports -gt 0) {
     Write-Log "----------------------------------------" -Level INFO
