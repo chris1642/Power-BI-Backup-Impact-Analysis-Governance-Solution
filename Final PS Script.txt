@@ -1052,20 +1052,56 @@ function Export-ReportUsingAPI {
         [string]$GroupId,
         [string]$ReportId,
         [string]$OutFilePath,
-        [string]$DownloadType
+        [string]$DownloadType,
+        [string]$ReportName = "Unknown"
     )
 
-    $accessToken = Get-CurrentAccessToken
-    $apiUrl = "https://api.powerbi.com/v1.0/myorg/groups/$GroupId/reports/$ReportId/Export?downloadType=$DownloadType"
+    $maxRetries = 3
+    $retryDelaySeconds = 2
 
-    try {
-        Invoke-RestMethod -Uri $apiUrl `
-            -Headers @{ Authorization = "Bearer $accessToken" } `
-            -Method GET `
-            -OutFile $OutFilePath
-    } catch {
-        
+    for ($attempt = 1; $attempt -le $maxRetries; $attempt++) {
+        $accessToken = Get-CurrentAccessToken
+        $apiUrl = "https://api.powerbi.com/v1.0/myorg/groups/$GroupId/reports/$ReportId/Export?downloadType=$DownloadType"
+
+        try {
+            Invoke-RestMethod -Uri $apiUrl `
+                -Headers @{ Authorization = "Bearer $accessToken" } `
+                -Method GET `
+                -OutFile $OutFilePath
+
+            # Success - verify file was created
+            if (Test-Path $OutFilePath) {
+                return $true
+            } else {
+                Write-Warning "Export appeared to succeed but file not found: $OutFilePath"
+                return $false
+            }
+        } catch {
+            $errorMessage = $_.Exception.Message
+            $statusCode = $_.Exception.Response.StatusCode.value__
+
+            Write-Warning "Attempt $attempt/$maxRetries failed for report '$ReportName': $errorMessage (Status: $statusCode)"
+
+            # Check if we should retry
+            if ($attempt -lt $maxRetries) {
+                # Retry on rate limiting (429) or server errors (5xx)
+                if ($statusCode -eq 429 -or ($statusCode -ge 500 -and $statusCode -lt 600)) {
+                    $delay = $retryDelaySeconds * [Math]::Pow(2, $attempt - 1)
+                    Write-Host "  Retrying in $delay seconds..."
+                    Start-Sleep -Seconds $delay
+                } else {
+                    # Don't retry on client errors (4xx) except 429
+                    Write-Error "Export failed for report '$ReportName': $errorMessage"
+                    return $false
+                }
+            } else {
+                Write-Error "Export failed after $maxRetries attempts for report '$ReportName': $errorMessage"
+                return $false
+            }
+        }
     }
+
+    return $false
 }
 
 	# -------------------
@@ -1114,15 +1150,25 @@ function Export-ReportUsingAPI {
 	        }
 	
 	        Write-Host "Exporting $cleanWorkspaceName ~ $cleanReportName"
-	
+
 	        # Export based on Workspace Type
+	        $exportSuccess = $false
 	        if ($workspace.WorkspaceIsOnDedicatedCapacity -eq $false) {
 	            # Pro Workspace → IncludeModel
-	            Export-ReportUsingAPI -GroupId $workspaceId -ReportId $reportId -OutFilePath $filepath -DownloadType "IncludeModel"
+	            $exportSuccess = Export-ReportUsingAPI -GroupId $workspaceId -ReportId $reportId -OutFilePath $filepath -DownloadType "IncludeModel" -ReportName "$cleanWorkspaceName ~ $cleanReportName"
 	        } else {
 	            # Premium/Fabric Workspace → LiveConnect
-	            Export-ReportUsingAPI -GroupId $workspaceId -ReportId $reportId -OutFilePath $filepath -DownloadType "LiveConnect"
+	            $exportSuccess = Export-ReportUsingAPI -GroupId $workspaceId -ReportId $reportId -OutFilePath $filepath -DownloadType "LiveConnect" -ReportName "$cleanWorkspaceName ~ $cleanReportName"
 	        }
+
+	        # Skip further processing if export failed
+	        if (-not $exportSuccess) {
+	            Write-Warning "Skipping processing for $cleanWorkspaceName ~ $cleanReportName due to export failure"
+	            continue
+	        }
+
+	        # Add small delay to avoid rate limiting
+	        Start-Sleep -Milliseconds 250
 			
 		# Only process model extraction for Pro Workspaces
 		if ($workspace.WorkspaceIsOnDedicatedCapacity -eq $false) {
