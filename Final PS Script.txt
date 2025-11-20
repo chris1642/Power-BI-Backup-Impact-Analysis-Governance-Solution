@@ -101,6 +101,48 @@ if ($zipFile) {
 
 $pbiToolsPath = Join-Path -Path $baseFolderPath -ChildPath "Config\PBI Tools\pbi-tools.exe"
 
+# =============================
+# Logging Configuration
+# =============================
+$date = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
+$logFilePath = Join-Path -Path $baseFolderPath -ChildPath "PowerBI_Backup_Log_$date.txt"
+
+# Initialize counters for summary
+$script:totalWorkspaces = 0
+$script:totalReports = 0
+$script:successfulExports = 0
+$script:failedExports = 0
+$script:failedReports = @()
+
+# Logging function that writes to both console and file
+function Write-Log {
+    param(
+        [string]$Message,
+        [ValidateSet('INFO', 'WARNING', 'ERROR', 'SUCCESS')]
+        [string]$Level = 'INFO'
+    )
+
+    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    $logEntry = "[$timestamp] [$Level] $Message"
+
+    # Write to log file
+    Add-Content -Path $logFilePath -Value $logEntry
+
+    # Write to console with appropriate formatting
+    switch ($Level) {
+        'INFO'    { Write-Host $logEntry -ForegroundColor Cyan }
+        'WARNING' { Write-Warning $Message }
+        'ERROR'   { Write-Error $Message }
+        'SUCCESS' { Write-Host $logEntry -ForegroundColor Green }
+    }
+}
+
+# Initialize log file
+Write-Log "========================================" -Level INFO
+Write-Log "Power BI Backup & Governance Script" -Level INFO
+Write-Log "Started: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" -Level INFO
+Write-Log "Log File: $logFilePath" -Level INFO
+Write-Log "========================================" -Level INFO
 
 # Ensure required modules are installed, and imports them. If import fails, error and exit early
 $requiredModules = @( 'ImportExcel', 'MicrosoftPowerBIMgmt' )
@@ -1017,7 +1059,9 @@ Write-Output "Model Backup Process Completed"
 
 
 
-Write-Output "Report Backup Process Started"
+Write-Log "========================================" -Level INFO
+Write-Log "REPORT BACKUP PROCESS STARTED" -Level INFO
+Write-Log "========================================" -Level INFO
 
 # Define the report backups path
 $reportBackupsPath = Join-Path -Path $baseFolderPath -ChildPath "Report Backups"
@@ -1071,31 +1115,39 @@ function Export-ReportUsingAPI {
 
             # Success - verify file was created
             if (Test-Path $OutFilePath) {
+                $script:successfulExports++
+                Write-Log "Successfully exported: $ReportName" -Level SUCCESS
                 return $true
             } else {
-                Write-Warning "Export appeared to succeed but file not found: $OutFilePath"
+                Write-Log "Export appeared to succeed but file not found: $OutFilePath" -Level WARNING
+                $script:failedExports++
+                $script:failedReports += $ReportName
                 return $false
             }
         } catch {
             $errorMessage = $_.Exception.Message
             $statusCode = $_.Exception.Response.StatusCode.value__
 
-            Write-Warning "Attempt $attempt/$maxRetries failed for report '$ReportName': $errorMessage (Status: $statusCode)"
+            Write-Log "Attempt $attempt/$maxRetries failed for report '$ReportName': $errorMessage (Status: $statusCode)" -Level WARNING
 
             # Check if we should retry
             if ($attempt -lt $maxRetries) {
                 # Retry on rate limiting (429) or server errors (5xx)
                 if ($statusCode -eq 429 -or ($statusCode -ge 500 -and $statusCode -lt 600)) {
                     $delay = $retryDelaySeconds * [Math]::Pow(2, $attempt - 1)
-                    Write-Host "  Retrying in $delay seconds..."
+                    Write-Log "  Retrying in $delay seconds..." -Level INFO
                     Start-Sleep -Seconds $delay
                 } else {
                     # Don't retry on client errors (4xx) except 429
-                    Write-Error "Export failed for report '$ReportName': $errorMessage"
+                    Write-Log "Export failed for report '$ReportName': $errorMessage" -Level ERROR
+                    $script:failedExports++
+                    $script:failedReports += $ReportName
                     return $false
                 }
             } else {
-                Write-Error "Export failed after $maxRetries attempts for report '$ReportName': $errorMessage"
+                Write-Log "Export failed after $maxRetries attempts for report '$ReportName': $errorMessage" -Level ERROR
+                $script:failedExports++
+                $script:failedReports += $ReportName
                 return $false
             }
         }
@@ -1120,19 +1172,23 @@ function Export-ReportUsingAPI {
 	foreach ($workspace in $workspacesInfo) {
 	    $workspaceName = $workspace.WorkspaceName
 	    $workspaceId = $workspace.WorkspaceId
-	
+	    $script:totalWorkspaces++
+
 	    # Clean up workspace name
 	    $cleanWorkspaceName = $workspaceName -replace '\[', '(' -replace '\]', ')'
 	    $cleanWorkspaceName = $cleanWorkspaceName -replace "[^a-zA-Z0-9\(\)&,.-]", " "
 	    $cleanWorkspaceName = $cleanWorkspaceName.TrimStart()
-	
+
 	    # Fetch reports from the existing list
 	    $reports = $reportsInfo | Where-Object { $_.WorkspaceId -eq $workspaceId }
+	    $reportCount = ($reports | Measure-Object).Count
+	    Write-Log "Processing Workspace: $cleanWorkspaceName ($reportCount reports)" -Level INFO
 	
 	    foreach ($report in $reports) {
 	        $reportName = $report.ReportName
 	        $reportId = $report.ReportId
-	
+	        $script:totalReports++
+
 	        # Clean up report name
 	        $cleanReportName = $reportName -replace '\[', '(' -replace '\]', ')'
 	        $cleanReportName = $cleanReportName -replace "[^a-zA-Z0-9\(\)&,.-]", " "
@@ -1148,8 +1204,6 @@ function Export-ReportUsingAPI {
 	        if (Test-Path $filepath) {
 	            Remove-Item $filepath -Force
 	        }
-	
-	        Write-Host "Exporting $cleanWorkspaceName ~ $cleanReportName"
 
 	        # Export based on Workspace Type
 	        $exportSuccess = $false
@@ -1163,7 +1217,7 @@ function Export-ReportUsingAPI {
 
 	        # Skip further processing if export failed
 	        if (-not $exportSuccess) {
-	            Write-Warning "Skipping processing for $cleanWorkspaceName ~ $cleanReportName due to export failure"
+	            Write-Log "Skipping further processing for $cleanWorkspaceName ~ $cleanReportName due to export failure" -Level WARNING
 	            continue
 	        }
 
@@ -1253,7 +1307,9 @@ Remove-Item -Path "$tempDestinationRemovalPath\Temp" -Recurse -Force -ErrorActio
 Remove-Item -Path "$tempDestinationRemovalPath\localhost" -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item -Path "$baseFolderPath\localhost" -Recurse -Force -ErrorAction SilentlyContinue
 
-Write-Output "Report Backup Process Completed"
+Write-Log "========================================" -Level INFO
+Write-Log "REPORT BACKUP PROCESS COMPLETED" -Level SUCCESS
+Write-Log "========================================" -Level INFO
 
 
 
@@ -1951,5 +2007,31 @@ Write-Output "All Excel files processed and combined successfully."
 
 $scriptEndTime = Get-Date
 $elapsedTime = New-TimeSpan -Start $scriptStartTime -End $scriptEndTime
+
+# =============================
+# EXECUTION SUMMARY
+# =============================
+Write-Log "========================================" -Level INFO
+Write-Log "EXECUTION SUMMARY" -Level INFO
+Write-Log "========================================" -Level INFO
+Write-Log "Total Workspaces Processed: $script:totalWorkspaces" -Level INFO
+Write-Log "Total Reports Found: $script:totalReports" -Level INFO
+Write-Log "Successful Exports: $script:successfulExports" -Level SUCCESS
+Write-Log "Failed Exports: $script:failedExports" -Level $(if ($script:failedExports -gt 0) { "WARNING" } else { "INFO" })
+
+if ($script:failedExports -gt 0) {
+    Write-Log "----------------------------------------" -Level INFO
+    Write-Log "FAILED REPORTS:" -Level WARNING
+    foreach ($failedReport in $script:failedReports) {
+        Write-Log "  - $failedReport" -Level WARNING
+    }
+    Write-Log "----------------------------------------" -Level INFO
+}
+
+Write-Log "Total Elapsed Time: $($elapsedTime.Hours)h $($elapsedTime.Minutes)m $($elapsedTime.Seconds)s" -Level INFO
+Write-Log "Completed: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" -Level INFO
+Write-Log "========================================" -Level INFO
+Write-Log "Log file saved to: $logFilePath" -Level SUCCESS
+
 Write-Output "Total Elapsed Time: $($elapsedTime.Hours)h $($elapsedTime.Minutes)m $($elapsedTime.Seconds)s"
  
