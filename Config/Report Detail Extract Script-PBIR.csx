@@ -396,7 +396,8 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
     string pagesRoot = Path.Combine(unzipPath, "Report", "definition", "pages");
     if (Directory.Exists(pagesRoot))
     {
-        // === REPORT FILTERS SECTION ===
+        // === READ PUBLIC CUSTOM VISUALS LIST ===
+        var publicCustomVisuals = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         string reportJsonPath = Path.Combine(unzipPath, "Report", "definition", "report.json");
         if (File.Exists(reportJsonPath))
         {
@@ -413,6 +414,24 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                 }
                 catch { }
 
+                // Extract publicCustomVisuals list
+                try
+                {
+                    if (json != null && json["publicCustomVisuals"] != null)
+                    {
+                        foreach (var cv in json["publicCustomVisuals"])
+                        {
+                            string cvName = cv.ToString();
+                            if (!string.IsNullOrEmpty(cvName))
+                            {
+                                publicCustomVisuals.Add(cvName);
+                            }
+                        }
+                    }
+                }
+                catch { }
+
+                // === REPORT FILTERS SECTION ===
                 if (json != null && json["filterConfig"] != null && json["filterConfig"]["filters"] != null)
                 {
                     foreach (var filter in json["filterConfig"]["filters"])
@@ -647,34 +666,128 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
         }
 
         // === BOOKMARKS SECTION ===
-        string bookmarksPath = Path.Combine(unzipPath, "Report", "definition", "bookmarks", "bookmarks.json");
-        if (File.Exists(bookmarksPath))
+        string bookmarksFolder = Path.Combine(unzipPath, "Report", "definition", "bookmarks");
+        if (Directory.Exists(bookmarksFolder))
         {
             try
             {
-                string content = File.ReadAllText(bookmarksPath);
-                string[] bookmarks = content.Split(new string[] { "\"name\"" }, StringSplitOptions.None);
-                foreach (string b in bookmarks)
+                // Process individual bookmark .bookmark.json files (PBIR format)
+                foreach (var bookmarkFile in Directory.GetFiles(bookmarksFolder, "*.bookmark.json"))
                 {
-                    if (b.Contains("\"displayName\"") && b.Contains("\"id\""))
+                    try
                     {
-                        string name = ExtractValue(b, "\"name\"");
-                        string id = ExtractValue(b, "\"id\"");
-                        string group = ExtractValue(b, "\"group\"");
-                        string displayName = ExtractValue(b, "\"displayName\"");
-
-                        Bookmarks.Add(new Bookmark
+                        string bookmarkContent = File.ReadAllText(bookmarkFile, Encoding.UTF8);
+                        var bookmarkJson = Newtonsoft.Json.Linq.JObject.Parse(bookmarkContent);
+                        
+                        string bookmarkName = bookmarkJson["name"] != null ? bookmarkJson["name"].ToString() : "";
+                        string bookmarkDisplayName = bookmarkJson["displayName"] != null ? bookmarkJson["displayName"].ToString() : "";
+                        
+                        // Get active section/page from explorationState
+                        var explorationState = bookmarkJson["explorationState"];
+                        string activeSection = "";
+                        if (explorationState != null && explorationState["activeSection"] != null)
                         {
-                            Name = name,
-                            Id = id,
-                            PageName = group,
-                            PageId = "",
-                            VisualId = "",
-                            VisualHiddenFlag = false,
-                            ReportID = reportId,
-                            ModelID = modelId,
-                            ReportDate = reportDate
-                        });
+                            activeSection = explorationState["activeSection"].ToString();
+                        }
+                        
+                        // Process visual states from sections
+                        bool hasVisualStates = false;
+                        if (explorationState != null && explorationState["sections"] != null)
+                        {
+                            var sections = explorationState["sections"];
+                            foreach (var section in sections.Children<Newtonsoft.Json.Linq.JProperty>())
+                            {
+                                string sectionName = section.Name;
+                                var sectionData = section.Value;
+                                var visualContainers = sectionData["visualContainers"];
+                                
+                                if (visualContainers != null)
+                                {
+                                    foreach (var vc in visualContainers.Children<Newtonsoft.Json.Linq.JProperty>())
+                                    {
+                                        hasVisualStates = true;
+                                        string visualId = vc.Name;
+                                        var visualData = vc.Value;
+                                        
+                                        bool visualHidden = false;
+                                        var singleVisual = visualData["singleVisual"];
+                                        if (singleVisual != null && singleVisual["display"] != null)
+                                        {
+                                            var mode = singleVisual["display"]["mode"];
+                                            if (mode != null && mode.ToString() == "hidden")
+                                            {
+                                                visualHidden = true;
+                                            }
+                                        }
+                                        
+                                        Bookmarks.Add(new Bookmark
+                                        {
+                                            Name = bookmarkDisplayName,
+                                            Id = bookmarkName,
+                                            PageName = sectionName,
+                                            PageId = activeSection,
+                                            VisualId = visualId,
+                                            VisualHiddenFlag = visualHidden,
+                                            ReportID = reportId,
+                                            ModelID = modelId,
+                                            ReportDate = reportDate
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // If no visual states found, still add the bookmark with basic info
+                        if (!hasVisualStates)
+                        {
+                            Bookmarks.Add(new Bookmark
+                            {
+                                Name = bookmarkDisplayName,
+                                Id = bookmarkName,
+                                PageName = activeSection,
+                                PageId = activeSection,
+                                VisualId = "",
+                                VisualHiddenFlag = false,
+                                ReportID = reportId,
+                                ModelID = modelId,
+                                ReportDate = reportDate
+                            });
+                        }
+                    }
+                    catch { }
+                }
+                
+                // Fallback: handle legacy bookmarks.json format if no individual files found
+                if (!Bookmarks.Any())
+                {
+                    string bookmarksJsonPath = Path.Combine(bookmarksFolder, "bookmarks.json");
+                    if (File.Exists(bookmarksJsonPath))
+                    {
+                        string content = File.ReadAllText(bookmarksJsonPath);
+                        string[] bookmarks = content.Split(new string[] { "\"name\"" }, StringSplitOptions.None);
+                        foreach (string b in bookmarks)
+                        {
+                            if (b.Contains("\"displayName\"") && b.Contains("\"id\""))
+                            {
+                                string name = ExtractValue(b, "\"name\"");
+                                string id = ExtractValue(b, "\"id\"");
+                                string group = ExtractValue(b, "\"group\"");
+                                string displayName = ExtractValue(b, "\"displayName\"");
+
+                                Bookmarks.Add(new Bookmark
+                                {
+                                    Name = name,
+                                    Id = id,
+                                    PageName = group,
+                                    PageId = "",
+                                    VisualId = "",
+                                    VisualHiddenFlag = false,
+                                    ReportID = reportId,
+                                    ModelID = modelId,
+                                    ReportDate = reportDate
+                                });
+                            }
+                        }
                     }
                 }
             }
@@ -697,6 +810,37 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                 pageName = pageJson["displayName"] != null ? pageJson["displayName"].ToString() : "";
                 string width = pageJson["width"] != null ? pageJson["width"].ToString() : "0";
                 string height = pageJson["height"] != null ? pageJson["height"].ToString() : "0";
+                
+                // Check if page is hidden
+                bool isHidden = false;
+                try
+                {
+                    var visibility = pageJson["visibility"];
+                    if (visibility != null && visibility.ToString() == "HiddenInViewMode")
+                    {
+                        isHidden = true;
+                    }
+                }
+                catch { }
+                
+                // Count visuals for this page
+                int visualCount = 0;
+                string visualsPathForCount = Path.Combine(pageFolder, "visuals");
+                if (Directory.Exists(visualsPathForCount))
+                {
+                    visualCount = Directory.GetDirectories(visualsPathForCount).Length;
+                }
+                
+                // Determine page type based on dimensions
+                string pageType = "";
+                int w = 0;
+                int h = 0;
+                int.TryParse(width, out w);
+                int.TryParse(height, out h);
+                if (w == 320 && h == 240) pageType = "Tooltip";
+                else if (w == 816 && h == 1056) pageType = "Letter";
+                else if (w == 960 && h == 720) pageType = "4:3";
+                else if (w == 1280 && h == 720) pageType = "16:9";
 
                 Pages.Add(new Page
                 {
@@ -705,13 +849,13 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                     ReportID = reportId,
                     ModelID = modelId,
                     Number = 0,
-                    Width = string.IsNullOrEmpty(width) ? 0 : int.Parse(width),
-                    Height = string.IsNullOrEmpty(height) ? 0 : int.Parse(height),
-                    HiddenFlag = false,
-                    VisualCount = 0,
+                    Width = w,
+                    Height = h,
+                    HiddenFlag = isHidden,
+                    VisualCount = visualCount,
                     BackgroundImage = "",
                     WallpaperImage = "",
-                    Type = "",
+                    Type = pageType,
                     ReportDate = reportDate
                 });
 
@@ -1008,6 +1152,15 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                 showItemsNoData = true;
                             }
                         }
+                        // Also check by searching for showAll=true anywhere in the visual (as ReportWrapper does)
+                        if (!showItemsNoData)
+                        {
+                            string nodeStr = node.ToString();
+                            if (nodeStr.Contains("\"showAll\": true") || nodeStr.Contains("\"showAll\":true"))
+                            {
+                                showItemsNoData = true;
+                            }
+                        }
                     }
                     catch { }
                     
@@ -1043,6 +1196,16 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                         {
                             hiddenFlag = true;
                         }
+                        // Also check isHidden property (as used by ReportWrapper)
+                        var isHiddenToken = node["isHidden"];
+                        if (isHiddenToken != null)
+                        {
+                            string isHiddenStr = isHiddenToken.ToString().ToLower();
+                            if (isHiddenStr == "true")
+                            {
+                                hiddenFlag = true;
+                            }
+                        }
                     }
                     catch { }
 
@@ -1061,7 +1224,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                         PageName = pageName,
                         ReportID = reportId,
                         ModelID = modelId,
-                        CustomVisualFlag = visualType.ToLower().StartsWith("custom"),
+                        CustomVisualFlag = publicCustomVisuals.Contains(visualType),
                         ObjectCount = visualObjectCount,
                         ShowItemsNoDataFlag = showItemsNoData,
                         SlicerType = slicerType,
@@ -1130,23 +1293,27 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                     }
 
                     // === CUSTOM VISUALS ===
-                    var visualNodeForCustom = node["visual"];
-                    if (visualNodeForCustom != null && visualNodeForCustom["customVisual"] != null)
+                    // Add to custom visuals list if visual type is in publicCustomVisuals
+                    if (publicCustomVisuals.Contains(visualType))
                     {
-                        CustomVisuals.Add(new CustomVisual {
-                            Name = visualId,
-                            ReportID = reportId,
-                            ModelID = modelId,
-                            ReportDate = reportDate
-                        });
+                        // Check if not already added
+                        bool alreadyAdded = CustomVisuals.Any(cv => cv.Name == visualType);
+                        if (!alreadyAdded)
+                        {
+                            CustomVisuals.Add(new CustomVisual {
+                                Name = visualType,
+                                ReportID = reportId,
+                                ModelID = modelId,
+                                ReportDate = reportDate
+                            });
+                        }
                     }
 
                     // === VISUAL OBJECTS - ENHANCED FOR BETTER COVERAGE ===
                     try
                     {
                         var visual = node["visual"];
-                        string visualTypeLower = visualType.ToLower();
-                        string customFlag = visualTypeLower.StartsWith("custom") ? "true" : "false";
+                        bool isCustomVisual = publicCustomVisuals.Contains(visualType);
 
                         var allProjections = ExtractAllProjections(node);
                         
@@ -1249,7 +1416,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                 VisualId = visualId,
                                 VisualType = visualType,
                                 AppliedFilterVersion = appliedFilterVersion,
-                                CustomVisualFlag = customFlag == "true",
+                                CustomVisualFlag = isCustomVisual,
                                 TableName = tableName,
                                 ObjectName = objectName,
                                 ObjectType = objectType,
@@ -1352,7 +1519,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                         VisualId = visualId,
                                         VisualType = visualType,
                                         AppliedFilterVersion = "",
-                                        CustomVisualFlag = visualType.ToLower().StartsWith("custom"),
+                                        CustomVisualFlag = publicCustomVisuals.Contains(visualType),
                                         TableName = tableName,
                                         ObjectName = objectName,
                                         ObjectType = objectType,
