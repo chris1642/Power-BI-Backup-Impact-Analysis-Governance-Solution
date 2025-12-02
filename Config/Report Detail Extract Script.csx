@@ -3166,12 +3166,19 @@ public class Bookmark
 {
     public string Id { get; set; }
     public string Name { get; set; }
+    public string BookmarkDisplayName { get; set; }
     public string ReportID { get; set; }
     public string ModelID { get; set; }
     public string PageName { get; set; }
+    public string PageDisplayName { get; set; }
     public string PageId { get; set; }
     public string VisualId { get; set; }
+    public string VisualName { get; set; }
     public bool VisualHiddenFlag { get; set; }
+    public bool SuppressData { get; set; }
+    public bool CurrentPageSelected { get; set; }
+    public bool ApplyVisualDisplayState { get; set; }
+    public bool ApplyToAllVisuals { get; set; }
     public string ReportDate { get; set; }
 }
 
@@ -3186,6 +3193,8 @@ public class ReportFilter
     public string FilterType { get; set; }
     public string HiddenFilter { get; set; }
     public string LockedFilter { get; set; }
+    public string HowCreated { get; set; }
+    public string Used { get; set; }
     public string AppliedFilterVersion { get; set; }
     public string ReportDate { get; set; }
 }
@@ -3193,17 +3202,23 @@ public class ReportFilter
 public class VisualObject
 {
     public string PageName { get; set; }
+    public string PageDisplayName { get; set; }
     public string PageId { get; set; }
     public string ReportID { get; set; }
     public string ModelID { get; set; }
     public string displayName { get; set; }
     public string VisualId { get; set; }
+    public string VisualName { get; set; }
     public string VisualType { get; set; }
     public string AppliedFilterVersion { get; set; }
     public bool CustomVisualFlag { get; set; }
     public string TableName { get; set; }
     public string ObjectName { get; set; }
     public string ObjectType { get; set; }
+    public bool ImplicitMeasure { get; set; }
+    public bool Sparkline { get; set; }
+    public bool VisualCalc { get; set; }
+    public string Format { get; set; }
     public string Source { get; set; }
     public string ReportDate { get; set; }
 }
@@ -3211,12 +3226,17 @@ public class VisualObject
 public class Visual
 {
     public string PageName { get; set; }
+    public string PageDisplayName { get; set; }
     public string PageId { get; set; }
     public string ReportID { get; set; }
     public string ModelID { get; set; }
     public string Id { get; set; }
     public string Name { get; set; }
     public string Type { get; set; }
+    public string DisplayType { get; set; }
+    public string Title { get; set; }
+    public string SubTitle { get; set; }
+    public string AltText { get; set; }
     public bool CustomVisualFlag { get; set; }
     public bool HiddenFlag { get; set; }
     public int X { get; set; }
@@ -3224,9 +3244,17 @@ public class Visual
     public int Z { get; set; }
     public int Width { get; set; }
     public int Height { get; set; }
+    public string TabOrder { get; set; }
     public int ObjectCount { get; set; }
+    public int VisualFilterCount { get; set; }
+    public int DataLimit { get; set; }
     public bool ShowItemsNoDataFlag { get; set; }
+    public string Divider { get; set; }
     public string SlicerType { get; set; }
+    public bool RowSubTotals { get; set; }
+    public bool ColumnSubTotals { get; set; }
+    public bool DataVisual { get; set; }
+    public bool HasSparkline { get; set; }
     public string ParentGroup {get; set; }
     public string ReportDate { get; set; }
 }
@@ -3234,8 +3262,10 @@ public class Visual
 public class VisualFilter
 {
     public string PageName { get; set; }
+    public string PageDisplayName { get; set; }
     public string PageId { get; set; }
     public string VisualId { get; set; }
+    public string VisualName { get; set; }
     public string ReportID { get; set; }
     public string ModelID { get; set; }
     public string TableName { get; set; }
@@ -3244,6 +3274,8 @@ public class VisualFilter
     public string FilterType { get; set; }
     public string HiddenFilter { get; set; }
     public string LockedFilter { get; set; }
+    public string HowCreated { get; set; }
+    public string Used { get; set; }
     public string AppliedFilterVersion { get; set; }
     public string displayName { get; set; }
     public string ReportDate { get; set; }
@@ -3255,13 +3287,16 @@ public class PageFilter
     public string ReportID { get; set; }
     public string ModelID { get; set; }
     public string PageName { get; set; }
+    public string PageDisplayName { get; set; }
     public string displayName {get; set; }
     public string TableName { get; set; }
     public string ObjectName { get; set; }
     public string ObjectType { get; set; }
     public string FilterType { get; set; }   
     public string HiddenFilter { get; set; }
-    public string LockedFilter { get; set; } 
+    public string LockedFilter { get; set; }
+    public string HowCreated { get; set; }
+    public string Used { get; set; }
     public string AppliedFilterVersion { get; set; }
     public string ReportDate { get; set; } 
 }
@@ -3270,13 +3305,18 @@ public class Page
 {
     public string Id { get; set; }
     public string Name { get; set; }
+    public string PageDisplayName { get; set; }
     public string ReportID { get; set; }
     public string ModelID { get; set; }
     public int Number { get; set; }
     public int Width { get; set; }
     public int Height { get; set; }
+    public string DisplayOption { get; set; }
     public bool HiddenFlag { get; set; }
     public int VisualCount { get; set; }
+    public int DataVisualCount { get; set; }
+    public int VisibleVisualCount { get; set; }
+    public int PageFilterCount { get; set; }
     public string BackgroundImage { get; set; }
     public string WallpaperImage { get; set; }
     public string Type { get; set; }
@@ -3295,11 +3335,14 @@ public class Connection
 public class VisualInteraction
 {
     public string PageName { get; set; }
+    public string PageDisplayName { get; set; }
     public string PageId { get; set; }
     public string ReportID { get; set; }
     public string ModelID { get; set; }
     public string SourceVisualID { get; set; }
+    public string SourceVisualName { get; set; }
     public string TargetVisualID { get; set; }
+    public string TargetVisualName { get; set; }
     public int TypeID { get; set; }
     public string Type { get; set; }
     public string ReportDate { get; set; }
@@ -3311,8 +3354,10 @@ public class ReportLevelMeasures
     public string ObjectName { get; set; }
     public string ObjectType { get; set; }
     public string Expression { get; set; }
+    public string DataType { get; set; }
     public string HiddenFlag { get; set; }
     public string FormatString { get; set; }
+    public string DataCategory { get; set; }
     public string ReportName { get; set; }
     public string ReportID { get; set; }
     public string ModelID { get; set; }
