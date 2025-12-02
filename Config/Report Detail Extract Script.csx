@@ -834,6 +834,22 @@ catch (Exception ex)
     {
     }
 
+    // Also check by searching for showAll=true anywhere in the visual (as ReportWrapper does)
+    if (!showItemsNoData)
+    {
+        try
+        {
+            string configJsonStr = configJson.ToString();
+            if (configJsonStr.Contains("\"showAll\": true") || configJsonStr.Contains("\"showAll\":true"))
+            {
+                showItemsNoData = true;
+            }
+        }
+        catch
+        {
+        }
+    }
+
     // Determine Visual Type
     try
     {
@@ -878,6 +894,20 @@ catch (Exception ex)
                 string visH = (string)configJson["singleVisual"]["display"]["mode"];
 
                 if (visH == "hidden")
+                {
+                    visHid = true;
+                }
+            }
+            catch
+            {
+            }
+
+            // Also check isHidden property (as used by ReportWrapper)
+            try
+            {
+                bool visH = (bool)configJson["isHidden"];
+
+                if (visH)
                 {
                     visHid = true;
                 }
