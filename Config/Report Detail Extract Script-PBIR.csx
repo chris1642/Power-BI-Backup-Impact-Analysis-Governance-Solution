@@ -229,32 +229,32 @@ var sb_CustomVisuals = new System.Text.StringBuilder();
 sb_CustomVisuals.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "Name" + '\t' + "ReportDate" + newline);
 
 var sb_ReportFilters = new System.Text.StringBuilder();
-sb_ReportFilters.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "DisplayName" + '\t' + "TableName" + '\t' + "ObjectName" + '\t' + "ObjectType" + '\t' + "FilterType" + '\t' + "HiddenFilter" + '\t' + "LockedFilter" + '\t' + "AppliedFilterVersion" + '\t' + "ReportDate" + newline);
+sb_ReportFilters.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "DisplayName" + '\t' + "TableName" + '\t' + "ObjectName" + '\t' + "ObjectType" + '\t' + "FilterType" + '\t' + "HiddenFilter" + '\t' + "LockedFilter" + '\t' + "HowCreated" + '\t' + "Used" + '\t' + "AppliedFilterVersion" + '\t' + "ReportDate" + newline);
 
 var sb_VisualObjects = new System.Text.StringBuilder();
-sb_VisualObjects.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "PageName" + '\t' + "PageId" + '\t' + "VisualId" + '\t' + "VisualType" + '\t' + "AppliedFilterVersion" + '\t' + "CustomVisualFlag" + '\t' + "TableName" + '\t' + "ObjectName" + '\t' + "ObjectType" + '\t' + "Source" + '\t' + "DisplayName" + '\t' + "ReportDate" + newline);
+sb_VisualObjects.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "PageName" + '\t' + "PageId" + '\t' + "VisualId" + '\t' + "VisualName" + '\t' + "VisualType" + '\t' + "AppliedFilterVersion" + '\t' + "CustomVisualFlag" + '\t' + "TableName" + '\t' + "ObjectName" + '\t' + "ObjectType" + '\t' + "ImplicitMeasure" + '\t' + "Sparkline" + '\t' + "VisualCalc" + '\t' + "Format" + '\t' + "Source" + '\t' + "DisplayName" + '\t' + "ReportDate" + newline);
 
 var sb_Bookmarks = new System.Text.StringBuilder();
-sb_Bookmarks.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "Name" + '\t' + "Id" + '\t' + "PageName" + '\t' + "PageId" + '\t' + "VisualId" + '\t' + "VisualHiddenFlag" + '\t' + "ReportDate" + newline);
+sb_Bookmarks.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "Name" + '\t' + "Id" + '\t' + "PageName" + '\t' + "PageId" + '\t' + "VisualId" + '\t' + "VisualHiddenFlag" + '\t' + "SuppressData" + '\t' + "CurrentPageSelected" + '\t' + "ApplyVisualDisplayState" + '\t' + "ApplyToAllVisuals" + '\t' + "ReportDate" + newline);
 
 var sb_PageFilters = new System.Text.StringBuilder();
-sb_PageFilters.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "PageId" + '\t' + "PageName" + '\t' + "DisplayName" + '\t' + "TableName" + '\t' + "ObjectName" + '\t' + "ObjectType" + '\t' + "FilterType" + '\t' + "HiddenFilter" + '\t' + "LockedFilter" + '\t' + "AppliedFilterVersion" + '\t' + "ReportDate" + newline);
+sb_PageFilters.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "PageId" + '\t' + "PageName" + '\t' + "DisplayName" + '\t' + "TableName" + '\t' + "ObjectName" + '\t' + "ObjectType" + '\t' + "FilterType" + '\t' + "HiddenFilter" + '\t' + "LockedFilter" + '\t' + "HowCreated" + '\t' + "Used" + '\t' + "AppliedFilterVersion" + '\t' + "ReportDate" + newline);
 
 var sb_Pages = new System.Text.StringBuilder();
-sb_Pages.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "Id" + '\t' + "Name" + '\t' + "Number" + '\t' + "Width" + '\t' + "Height" + '\t' + "HiddenFlag" + '\t' + "VisualCount" + '\t' + "BackgroundImage" + '\t' + "WallpaperImage" + '\t' + "Type" + '\t' + "ReportDate" + newline);
+sb_Pages.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "Id" + '\t' + "Name" + '\t' + "Number" + '\t' + "Width" + '\t' + "Height" + '\t' + "DisplayOption" + '\t' + "HiddenFlag" + '\t' + "VisualCount" + '\t' + "DataVisualCount" + '\t' + "VisibleVisualCount" + '\t' + "PageFilterCount" + '\t' + "BackgroundImage" + '\t' + "WallpaperImage" + '\t' + "Type" + '\t' + "ReportDate" + newline);
 
 var sb_Visuals = new System.Text.StringBuilder();
-sb_Visuals.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "PageName" + '\t' + "PageId" + '\t' + "Id" + '\t' + "Name" + '\t' + "Type" + '\t' + "CustomVisualFlag" + '\t' + "HiddenFlag" + '\t' + "X" + '\t' + "Y" + '\t' + "Z" + '\t' + "Width" + '\t' + "Height" + '\t' + "ObjectCount" + '\t' + "ShowItemsNoDataFlag" + '\t' + "SlicerType" + '\t' + "ParentGroup" + '\t' + "ReportDate" + newline);
+sb_Visuals.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "PageName" + '\t' + "PageId" + '\t' + "Id" + '\t' + "Name" + '\t' + "Type" + '\t' + "DisplayType" + '\t' + "Title" + '\t' + "SubTitle" + '\t' + "AltText" + '\t' + "CustomVisualFlag" + '\t' + "HiddenFlag" + '\t' + "X" + '\t' + "Y" + '\t' + "Z" + '\t' + "Width" + '\t' + "Height" + '\t' + "TabOrder" + '\t' + "ObjectCount" + '\t' + "VisualFilterCount" + '\t' + "DataLimit" + '\t' + "ShowItemsNoDataFlag" + '\t' + "Divider" + '\t' + "SlicerType" + '\t' + "RowSubTotals" + '\t' + "ColumnSubTotals" + '\t' + "DataVisual" + '\t' + "HasSparkline" + '\t' + "ParentGroup" + '\t' + "ReportDate" + newline);
 
 var sb_VisualFilters = new System.Text.StringBuilder();
-sb_VisualFilters.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "PageName" + '\t' + "PageId" + '\t' + "VisualId" + '\t' + "TableName" + '\t' + "ObjectName" + '\t' + "ObjectType" + '\t' + "FilterType" + '\t' + "HiddenFilter" + '\t' + "LockedFilter" + '\t' + "AppliedFilterVersion" + '\t' + "DisplayName" + '\t' + "ReportDate" + newline);
+sb_VisualFilters.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "PageName" + '\t' + "PageId" + '\t' + "VisualId" + '\t' + "VisualName" + '\t' + "TableName" + '\t' + "ObjectName" + '\t' + "ObjectType" + '\t' + "FilterType" + '\t' + "HiddenFilter" + '\t' + "LockedFilter" + '\t' + "HowCreated" + '\t' + "Used" + '\t' + "AppliedFilterVersion" + '\t' + "DisplayName" + '\t' + "ReportDate" + newline);
 
 var sb_VisualInteractions = new System.Text.StringBuilder();
-sb_VisualInteractions.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "PageName" + '\t' + "PageId" + '\t' + "SourceVisualID" + '\t' + "TargetVisualID" + '\t' + "TypeID" + '\t' + "Type" + '\t' + "ReportDate" + newline);
+sb_VisualInteractions.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "PageName" + '\t' + "PageId" + '\t' + "SourceVisualID" + '\t' + "SourceVisualName" + '\t' + "TargetVisualID" + '\t' + "TargetVisualName" + '\t' + "TypeID" + '\t' + "Type" + '\t' + "ReportDate" + newline);
 
 // === NEW: ReportLevelMeasures StringBuilder ===
 var sb_ReportLevelMeasures = new System.Text.StringBuilder();
-sb_ReportLevelMeasures.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "TableName" + '\t' + "ObjectName" + '\t' + "ObjectType" + '\t' + "Expression" + '\t' + "HiddenFlag" + '\t' + "FormatString" + '\t' + "ReportDate" + newline);
+sb_ReportLevelMeasures.Append("ReportName" + '\t' + "ReportID" + '\t' + "ModelID" + '\t' + "TableName" + '\t' + "ObjectName" + '\t' + "ObjectType" + '\t' + "Expression" + '\t' + "DataType" + '\t' + "HiddenFlag" + '\t' + "FormatString" + '\t' + "DataCategory" + '\t' + "ReportDate" + newline);
 
 // === PROCESS EACH FILE ===
 foreach (var rpt in fileList)
@@ -477,6 +477,32 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                             if (displayNameToken != null) displayName = displayNameToken.ToString();
                         }
                         catch { }
+                        
+                        // Determine HowCreated and Used
+                        string howCreated = "";
+                        string used = "False";
+                        
+                        try
+                        {
+                            if (filterType == "Advanced")
+                            {
+                                howCreated = "Manual";
+                            }
+                            else if (!string.IsNullOrEmpty(filterType))
+                            {
+                                howCreated = "Auto";
+                            }
+                            
+                            // Check if filter has conditions (is used)
+                            if (filter["filter"] != null && 
+                                (filter["filter"]["Where"] != null || 
+                                 filter["filter"]["Values"] != null ||
+                                 filter["filter"]["Condition"] != null))
+                            {
+                                used = "True";
+                            }
+                        }
+                        catch { }
 
                         ReportFilters.Add(new ReportFilter
                         {
@@ -484,10 +510,12 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                             ObjectName = objectName,
                             ObjectType = objectType,
                             FilterType = filterType,
-                            HiddenFilter = hidden,       // FIX #2
-                            LockedFilter = locked,       // FIX #2
+                            HiddenFilter = hidden,
+                            LockedFilter = locked,
+                            HowCreated = howCreated,
+                            Used = used,
                             AppliedFilterVersion = version,
-                            displayName = displayName,   // keep header alignment
+                            displayName = displayName,
                             ReportID = reportId,
                             ModelID = modelId,
                             ReportDate = reportDate
@@ -810,6 +838,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                 pageName = pageJson["displayName"] != null ? pageJson["displayName"].ToString() : "";
                 string width = pageJson["width"] != null ? pageJson["width"].ToString() : "0";
                 string height = pageJson["height"] != null ? pageJson["height"].ToString() : "0";
+                string displayOption = pageJson["displayOption"] != null ? pageJson["displayOption"].ToString() : "";
                 
                 // Check if page is hidden
                 bool isHidden = false;
@@ -825,11 +854,26 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                 
                 // Count visuals for this page
                 int visualCount = 0;
+                int dataVisualCount = 0;
+                int visibleVisualCount = 0;
                 string visualsPathForCount = Path.Combine(pageFolder, "visuals");
                 if (Directory.Exists(visualsPathForCount))
                 {
                     visualCount = Directory.GetDirectories(visualsPathForCount).Length;
+                    // Note: dataVisualCount and visibleVisualCount will be calculated after visuals are processed
                 }
+                
+                // Count page filters
+                int pageFilterCount = 0;
+                try
+                {
+                    var filterConfig = pageJson["filterConfig"];
+                    if (filterConfig != null && filterConfig["filters"] != null)
+                    {
+                        pageFilterCount = filterConfig["filters"].Count();
+                    }
+                }
+                catch { }
                 
                 // Determine page type based on dimensions
                 string pageType = "";
@@ -851,8 +895,12 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                     Number = 0,
                     Width = w,
                     Height = h,
+                    DisplayOption = displayOption,
                     HiddenFlag = isHidden,
                     VisualCount = visualCount,
+                    DataVisualCount = dataVisualCount,
+                    VisibleVisualCount = visibleVisualCount,
+                    PageFilterCount = pageFilterCount,
                     BackgroundImage = "",
                     WallpaperImage = "",
                     Type = pageType,
@@ -907,6 +955,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                     string hidden = "";
                     string locked = "";
                     string displayName = "";
+                    Newtonsoft.Json.Linq.JToken filterObj = null;
 
                     try
                     {
@@ -993,7 +1042,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                         var typeToken = filter["type"] ?? filter["filterType"] ?? filter["Filter"] ?? filter["FilterType"];
                         filterType = typeToken != null ? typeToken.ToString() : "";
 
-                        var filterObj = filter["filter"] ?? filter["Filter"] ?? filter["filterCondition"];
+                        filterObj = filter["filter"] ?? filter["Filter"] ?? filter["filterCondition"];
                         var versionToken = filterObj != null ? (filterObj["Version"] ?? filterObj["version"]) : null;
                         version = versionToken != null ? versionToken.ToString() : "";
 
@@ -1010,6 +1059,32 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
 
                     if (!string.IsNullOrEmpty(tableName) || !string.IsNullOrEmpty(objectName) || !string.IsNullOrEmpty(filterType))
                     {
+                        // Determine HowCreated and Used
+                        string howCreated = "";
+                        string used = "False";
+                        
+                        try
+                        {
+                            if (filterType == "Advanced")
+                            {
+                                howCreated = "Manual";
+                            }
+                            else if (!string.IsNullOrEmpty(filterType))
+                            {
+                                howCreated = "Auto";
+                            }
+                            
+                            // Check if filter has conditions (is used)
+                            if (filterObj != null && 
+                                (filterObj["Where"] != null || 
+                                 filterObj["Values"] != null ||
+                                 filterObj["Condition"] != null))
+                            {
+                                used = "True";
+                            }
+                        }
+                        catch { }
+                        
                         PageFilters.Add(new PageFilter
                         {
                             PageId = pageId,
@@ -1024,6 +1099,8 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                             FilterType = filterType,
                             HiddenFilter = hidden,
                             LockedFilter = locked,
+                            HowCreated = howCreated,
+                            Used = used,
                             AppliedFilterVersion = version
                         });
                     }
@@ -1208,17 +1285,148 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                         }
                     }
                     catch { }
+                    
+                    // === Extract additional visual properties for ReportWrapper compatibility ===
+                    string tabOrder = "";
+                    string title = "";
+                    string subTitle = "";
+                    string altText = "";
+                    string divider = "";
+                    bool rowSubTotals = false;
+                    bool columnSubTotals = false;
+                    bool dataVisual = false;
+                    bool hasSparkline = false;
+                    int visualFilterCount = 0;
+                    int dataLimit = 0;
+                    string displayType = visualType; // Display type is often the same as type
+                    
+                    try
+                    {
+                        var posNode = node["position"];
+                        if (posNode != null && posNode["tabOrder"] != null)
+                        {
+                            tabOrder = posNode["tabOrder"].ToString();
+                        }
+                    }
+                    catch { }
+                    
+                    try
+                    {
+                        var titleNode = node.SelectToken("visual.visualContainerObjects.title[0].properties.text.expr.Literal.Value");
+                        if (titleNode != null)
+                        {
+                            title = titleNode.ToString().Trim('\'', '"');
+                        }
+                    }
+                    catch { }
+                    
+                    try
+                    {
+                        var subTitleNode = node.SelectToken("visual.visualContainerObjects.subTitle[0].properties.text.expr.Literal.Value");
+                        if (subTitleNode != null)
+                        {
+                            subTitle = subTitleNode.ToString().Trim('\'', '"');
+                        }
+                    }
+                    catch { }
+                    
+                    try
+                    {
+                        var altTextNode = node.SelectToken("visual.visualContainerObjects.general[0].properties.altText.expr.Literal.Value");
+                        if (altTextNode != null)
+                        {
+                            altText = altTextNode.ToString().Trim('\'', '"');
+                        }
+                    }
+                    catch { }
+                    
+                    try
+                    {
+                        var dividerNode = node.SelectToken("visual.visualContainerObjects.divider[0].properties.show.expr.Literal.Value");
+                        if (dividerNode != null)
+                        {
+                            divider = dividerNode.ToString();
+                        }
+                    }
+                    catch { }
+                    
+                    try
+                    {
+                        if (visualType == "pivotTable")
+                        {
+                            var cstNode = node.SelectToken("visual.objects.subTotals[0].properties.columnSubtotals.expr.Literal.Value");
+                            if (cstNode != null)
+                            {
+                                columnSubTotals = cstNode.ToString() != "false";
+                            }
+                            
+                            var rstNode = node.SelectToken("visual.objects.subTotals[0].properties.rowSubtotals.expr.Literal.Value");
+                            if (rstNode != null)
+                            {
+                                rowSubTotals = rstNode.ToString() != "false";
+                            }
+                        }
+                    }
+                    catch { }
+                    
+                    try
+                    {
+                        // Check if visual contains data-related keys
+                        string nodeStr = node.ToString();
+                        if (nodeStr.Contains("Aggregation") || nodeStr.Contains("Column") || nodeStr.Contains("Measure") || 
+                            nodeStr.Contains("HierarchyLevel") || nodeStr.Contains("NativeVisualCalculation"))
+                        {
+                            dataVisual = true;
+                        }
+                    }
+                    catch { }
+                    
+                    try
+                    {
+                        // Check for sparklines
+                        string nodeStr = node.ToString();
+                        if (nodeStr.Contains("SparklineData"))
+                        {
+                            hasSparkline = true;
+                        }
+                    }
+                    catch { }
+                    
+                    try
+                    {
+                        var filterConfig = node["filterConfig"];
+                        if (filterConfig != null && filterConfig["filters"] != null)
+                        {
+                            visualFilterCount = filterConfig["filters"].Count();
+                        }
+                    }
+                    catch { }
+                    
+                    try
+                    {
+                        var dataLimitNode = node.SelectToken("filterConfig.filters[?(@.type == 'VisualTopN')].filter.Where[*].Condition.VisualTopN.ItemCount");
+                        if (dataLimitNode != null)
+                        {
+                            int.TryParse(dataLimitNode.ToString(), out dataLimit);
+                        }
+                    }
+                    catch { }
 
                     Visuals.Add(new Visual
                     {
                         Id = visualId,
                         Name = name,
                         Type = visualType,
+                        DisplayType = displayType,
+                        Title = title,
+                        SubTitle = subTitle,
+                        AltText = altText,
                         X = string.IsNullOrEmpty(x) ? 0 : (int)double.Parse(x),
                         Y = string.IsNullOrEmpty(y) ? 0 : (int)double.Parse(y),
                         Z = string.IsNullOrEmpty(z) ? 0 : (int)double.Parse(z),
                         Width = string.IsNullOrEmpty(width) ? 0 : (int)double.Parse(width),
                         Height = string.IsNullOrEmpty(height) ? 0 : (int)double.Parse(height),
+                        TabOrder = tabOrder,
                         HiddenFlag = hiddenFlag,
                         PageId = pageId,
                         PageName = pageName,
@@ -1226,8 +1434,15 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                         ModelID = modelId,
                         CustomVisualFlag = publicCustomVisuals.Contains(visualType),
                         ObjectCount = visualObjectCount,
+                        VisualFilterCount = visualFilterCount,
+                        DataLimit = dataLimit,
                         ShowItemsNoDataFlag = showItemsNoData,
+                        Divider = divider,
                         SlicerType = slicerType,
+                        RowSubTotals = rowSubTotals,
+                        ColumnSubTotals = columnSubTotals,
+                        DataVisual = dataVisual,
+                        HasSparkline = hasSparkline,
                         ParentGroup = string.IsNullOrEmpty(parentGroup) ? null : parentGroup,
                         ReportDate = reportDate
                     });
@@ -1408,18 +1623,41 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
 
                             // Always add the object, even if tableName or objectName is empty
                             visualObjectCount++;
+                            
+                            // Determine additional properties
+                            bool isSparkline = source.Contains("Sparkline");
+                            bool isVisualCalc = source.Contains("NativeVisualCalculation");
+                            bool isImplicitMeasure = (objectType == "Measure" && string.IsNullOrEmpty(tableName));
+                            
+                            // Try to extract format if available
+                            string format = "";
+                            try
+                            {
+                                var formatNode = proj["format"];
+                                if (formatNode != null)
+                                {
+                                    format = formatNode.ToString();
+                                }
+                            }
+                            catch { }
+                            
                             VisualObjects.Add(new VisualObject {
                                 PageId = pageId,
                                 PageName = pageName,
                                 ReportID = reportId,
                                 ModelID = projectionModelId,
                                 VisualId = visualId,
+                                VisualName = name,
                                 VisualType = visualType,
                                 AppliedFilterVersion = appliedFilterVersion,
                                 CustomVisualFlag = isCustomVisual,
                                 TableName = tableName,
                                 ObjectName = objectName,
                                 ObjectType = objectType,
+                                ImplicitMeasure = isImplicitMeasure,
+                                Sparkline = isSparkline,
+                                VisualCalc = isVisualCalc,
+                                Format = format,
                                 Source = source,
                                 displayName = displayName,
                                 ReportDate = reportDate
@@ -1511,18 +1749,27 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                     }
                                     
                                     // Always add the object, even if tableName or objectName is empty
+                                    bool isImplicitMeasure = (objectType == "Measure" && string.IsNullOrEmpty(tableName));
+                                    bool isSparkline = sourceType.Contains("Sparkline");
+                                    bool isVisualCalc = false; // Conditional formatting objects are not visual calcs
+                                    
                                     VisualObjects.Add(new VisualObject {
                                         PageId = pageId,
                                         PageName = pageName,
                                         ReportID = reportId,
                                         ModelID = modelId,
                                         VisualId = visualId,
+                                        VisualName = name,
                                         VisualType = visualType,
                                         AppliedFilterVersion = "",
                                         CustomVisualFlag = publicCustomVisuals.Contains(visualType),
                                         TableName = tableName,
                                         ObjectName = objectName,
                                         ObjectType = objectType,
+                                        ImplicitMeasure = isImplicitMeasure,
+                                        Sparkline = isSparkline,
+                                        VisualCalc = isVisualCalc,
+                                        Format = "",
                                         Source = sourceType,
                                         displayName = "",
                                         ReportDate = reportDate
@@ -1702,6 +1949,33 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                             locked = lockedToken != null ? lockedToken.ToString() : "";
                             
                             displayName = filter["displayName"] != null ? filter["displayName"].ToString() : "";
+                            
+                            // Determine HowCreated and Used
+                            string howCreated = "";
+                            string used = "False";
+                            
+                            try
+                            {
+                                if (filterType == "Advanced")
+                                {
+                                    howCreated = "Manual";
+                                }
+                                else if (!string.IsNullOrEmpty(filterType))
+                                {
+                                    howCreated = "Auto";
+                                }
+                                
+                                // Check if filter has conditions (is used)
+                                var filterObj = filter["filter"];
+                                if (filterObj != null && 
+                                    (filterObj["Where"] != null || 
+                                     filterObj["Values"] != null ||
+                                     filterObj["Condition"] != null))
+                                {
+                                    used = "True";
+                                }
+                            }
+                            catch { }
 
                             VisualFilters.Add(new VisualFilter {
                                 PageId = pageId,
@@ -1709,12 +1983,15 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                 ReportID = reportId,
                                 ModelID = modelId,
                                 VisualId = visualId,
+                                VisualName = name,
                                 TableName = tableName,
                                 ObjectName = objectName,
                                 ObjectType = objectType,
                                 FilterType = filterType,
                                 LockedFilter = locked,
                                 HiddenFilter = hidden,
+                                HowCreated = howCreated,
+                                Used = used,
                                 AppliedFilterVersion = version,
                                 displayName = displayName,
                                 ReportDate = reportDate
@@ -1775,18 +2052,33 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                                                 }
                                                 
                                                 // Add this condition-based filter
+                                                string howCreatedCond = "";
+                                                string usedCond = "True"; // Condition-based filters are always used
+                                                
+                                                if (filterType == "Advanced")
+                                                {
+                                                    howCreatedCond = "Manual";
+                                                }
+                                                else if (!string.IsNullOrEmpty(filterType))
+                                                {
+                                                    howCreatedCond = "Auto";
+                                                }
+                                                
                                                 VisualFilters.Add(new VisualFilter {
                                                     PageId = pageId,
                                                     PageName = pageName,
                                                     ReportID = reportId,
                                                     ModelID = modelId,
                                                     VisualId = visualId,
+                                                    VisualName = name,
                                                     TableName = condTableName,
                                                     ObjectName = condObjectName,
                                                     ObjectType = condObjectType,
                                                     FilterType = filterType,
                                                     LockedFilter = locked,
                                                     HiddenFilter = hidden,
+                                                    HowCreated = howCreatedCond,
+                                                    Used = usedCond,
                                                     AppliedFilterVersion = version,
                                                     displayName = displayName,
                                                     ReportDate = reportDate
@@ -1823,16 +2115,16 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
 
     // Append results to StringBuilders
     foreach (var x in CustomVisuals) sb_CustomVisuals.Append(reportName + '\t' + reportId + '\t' + modelId + '\t' + x.Name + '\t' + reportDate + newline);
-    foreach (var x in ReportFilters) sb_ReportFilters.Append(reportName + '\t' + reportId + '\t' + modelId + '\t' + x.displayName + '\t' + x.TableName + '\t' + x.ObjectName + '\t' + x.ObjectType + '\t' + x.FilterType + '\t' + x.HiddenFilter + '\t' + x.LockedFilter + '\t' + x.AppliedFilterVersion + '\t' + reportDate + newline);
-    foreach (var x in PageFilters) sb_PageFilters.Append(reportName + '\t' + reportId + '\t' + modelId + '\t' + x.PageId + '\t' + x.PageName + '\t' + x.displayName + '\t' + x.TableName + '\t' + x.ObjectName + '\t' + x.ObjectType + '\t' + x.FilterType + '\t' + x.HiddenFilter + '\t' + x.LockedFilter + '\t' + x.AppliedFilterVersion + '\t' + reportDate + newline);
-    foreach (var x in VisualFilters) sb_VisualFilters.Append(reportName + '\t' + reportId + '\t' + modelId + '\t' + x.PageName + '\t' + x.PageId + '\t' + x.VisualId + '\t' + x.TableName + '\t' + x.ObjectName + '\t' + x.ObjectType + '\t' + x.FilterType + '\t' + x.HiddenFilter + '\t' + x.LockedFilter + '\t' + x.AppliedFilterVersion + '\t' + x.displayName + '\t' + reportDate + newline);
-    foreach (var x in VisualObjects) sb_VisualObjects.Append(reportName + '\t' + reportId + '\t' + modelId + '\t' + x.PageName + '\t' + x.PageId + '\t' + x.VisualId + '\t' + x.VisualType + '\t' + x.AppliedFilterVersion + '\t' + x.CustomVisualFlag + '\t' + x.TableName + '\t' + x.ObjectName + '\t' + x.ObjectType + '\t' + x.Source + '\t' + x.displayName + '\t' + reportDate + newline);
-    foreach (var x in Bookmarks) sb_Bookmarks.Append(reportName + '\t' + reportId + '\t' + modelId + '\t' + x.Name + '\t' + x.Id + '\t' + x.PageName + '\t' + x.PageId + '\t' + x.VisualId + '\t' + x.VisualHiddenFlag + '\t' + reportDate + newline);
-    foreach (var x in Pages) sb_Pages.Append(reportName + '\t' + reportId + '\t' + modelId + '\t' + x.Id + '\t' + x.Name + '\t' + x.Number + '\t' + x.Width + '\t' + x.Height + '\t' + x.HiddenFlag + '\t' + x.VisualCount + '\t' + x.BackgroundImage + '\t' + x.WallpaperImage + '\t' + x.Type + '\t' + reportDate + newline);
-    foreach (var x in Visuals) sb_Visuals.Append(reportName + '\t' + reportId + '\t' + modelId + '\t' + x.PageName + '\t' + x.PageId + '\t' + x.Id + '\t' + x.Name + '\t' + x.Type + '\t' + x.CustomVisualFlag + '\t' + x.HiddenFlag + '\t' + x.X + '\t' + x.Y + '\t' + x.Z + '\t' + x.Width + '\t' + x.Height + '\t' + x.ObjectCount + '\t' + x.ShowItemsNoDataFlag + '\t' + x.SlicerType + '\t' + x.ParentGroup + '\t' + reportDate + newline);
+    foreach (var x in ReportFilters) sb_ReportFilters.Append(reportName + '\t' + reportId + '\t' + modelId + '\t' + x.displayName + '\t' + x.TableName + '\t' + x.ObjectName + '\t' + x.ObjectType + '\t' + x.FilterType + '\t' + x.HiddenFilter + '\t' + x.LockedFilter + '\t' + x.HowCreated + '\t' + x.Used + '\t' + x.AppliedFilterVersion + '\t' + reportDate + newline);
+    foreach (var x in PageFilters) sb_PageFilters.Append(reportName + '\t' + reportId + '\t' + modelId + '\t' + x.PageId + '\t' + x.PageName + '\t' + x.displayName + '\t' + x.TableName + '\t' + x.ObjectName + '\t' + x.ObjectType + '\t' + x.FilterType + '\t' + x.HiddenFilter + '\t' + x.LockedFilter + '\t' + x.HowCreated + '\t' + x.Used + '\t' + x.AppliedFilterVersion + '\t' + reportDate + newline);
+    foreach (var x in VisualFilters) sb_VisualFilters.Append(reportName + '\t' + reportId + '\t' + modelId + '\t' + x.PageName + '\t' + x.PageId + '\t' + x.VisualId + '\t' + x.VisualName + '\t' + x.TableName + '\t' + x.ObjectName + '\t' + x.ObjectType + '\t' + x.FilterType + '\t' + x.HiddenFilter + '\t' + x.LockedFilter + '\t' + x.HowCreated + '\t' + x.Used + '\t' + x.AppliedFilterVersion + '\t' + x.displayName + '\t' + reportDate + newline);
+    foreach (var x in VisualObjects) sb_VisualObjects.Append(reportName + '\t' + reportId + '\t' + modelId + '\t' + x.PageName + '\t' + x.PageId + '\t' + x.VisualId + '\t' + x.VisualName + '\t' + x.VisualType + '\t' + x.AppliedFilterVersion + '\t' + x.CustomVisualFlag + '\t' + x.TableName + '\t' + x.ObjectName + '\t' + x.ObjectType + '\t' + x.ImplicitMeasure + '\t' + x.Sparkline + '\t' + x.VisualCalc + '\t' + x.Format + '\t' + x.Source + '\t' + x.displayName + '\t' + reportDate + newline);
+    foreach (var x in Bookmarks) sb_Bookmarks.Append(reportName + '\t' + reportId + '\t' + modelId + '\t' + x.Name + '\t' + x.Id + '\t' + x.PageName + '\t' + x.PageId + '\t' + x.VisualId + '\t' + x.VisualHiddenFlag + '\t' + x.SuppressData + '\t' + x.CurrentPageSelected + '\t' + x.ApplyVisualDisplayState + '\t' + x.ApplyToAllVisuals + '\t' + reportDate + newline);
+    foreach (var x in Pages) sb_Pages.Append(reportName + '\t' + reportId + '\t' + modelId + '\t' + x.Id + '\t' + x.Name + '\t' + x.Number + '\t' + x.Width + '\t' + x.Height + '\t' + x.DisplayOption + '\t' + x.HiddenFlag + '\t' + x.VisualCount + '\t' + x.DataVisualCount + '\t' + x.VisibleVisualCount + '\t' + x.PageFilterCount + '\t' + x.BackgroundImage + '\t' + x.WallpaperImage + '\t' + x.Type + '\t' + reportDate + newline);
+    foreach (var x in Visuals) sb_Visuals.Append(reportName + '\t' + reportId + '\t' + modelId + '\t' + x.PageName + '\t' + x.PageId + '\t' + x.Id + '\t' + x.Name + '\t' + x.Type + '\t' + x.DisplayType + '\t' + x.Title + '\t' + x.SubTitle + '\t' + x.AltText + '\t' + x.CustomVisualFlag + '\t' + x.HiddenFlag + '\t' + x.X + '\t' + x.Y + '\t' + x.Z + '\t' + x.Width + '\t' + x.Height + '\t' + x.TabOrder + '\t' + x.ObjectCount + '\t' + x.VisualFilterCount + '\t' + x.DataLimit + '\t' + x.ShowItemsNoDataFlag + '\t' + x.Divider + '\t' + x.SlicerType + '\t' + x.RowSubTotals + '\t' + x.ColumnSubTotals + '\t' + x.DataVisual + '\t' + x.HasSparkline + '\t' + x.ParentGroup + '\t' + reportDate + newline);
     foreach (var x in Connections) sb_Connections.Append(reportName + '\t' + reportId + '\t' + modelId + '\t' + x.ServerName + '\t' + x.Type + '\t' + reportDate + newline);
-    foreach (var x in VisualInteractions) sb_VisualInteractions.Append(reportName + '\t' + reportId + '\t' + modelId + '\t' + x.PageName + '\t' + x.PageId + '\t' + x.SourceVisualID + '\t' + x.TargetVisualID + '\t' + x.TypeID + '\t' + x.Type + '\t' + reportDate + newline);
-    foreach (var x in ReportLevelMeasures) sb_ReportLevelMeasures.Append(reportName + '\t' + reportId + '\t' + modelId + '\t' + x.TableName + '\t' + x.ObjectName + '\t' + x.ObjectType + '\t' + x.Expression + '\t' + x.HiddenFlag + '\t' + x.FormatString + '\t' + reportDate + newline);
+    foreach (var x in VisualInteractions) sb_VisualInteractions.Append(reportName + '\t' + reportId + '\t' + modelId + '\t' + x.PageName + '\t' + x.PageId + '\t' + x.SourceVisualID + '\t' + x.SourceVisualName + '\t' + x.TargetVisualID + '\t' + x.TargetVisualName + '\t' + x.TypeID + '\t' + x.Type + '\t' + reportDate + newline);
+    foreach (var x in ReportLevelMeasures) sb_ReportLevelMeasures.Append(reportName + '\t' + reportId + '\t' + modelId + '\t' + x.TableName + '\t' + x.ObjectName + '\t' + x.ObjectType + '\t' + x.Expression + '\t' + x.DataType + '\t' + x.HiddenFlag + '\t' + x.FormatString + '\t' + x.DataCategory + '\t' + reportDate + newline);
 }
 
 // === SAVE OUTPUT SECTION ===
@@ -1905,6 +2197,10 @@ public class Bookmark
     public string PageId { get; set; }
     public string VisualId { get; set; }
     public bool VisualHiddenFlag { get; set; }
+    public bool SuppressData { get; set; }
+    public bool CurrentPageSelected { get; set; }
+    public bool ApplyVisualDisplayState { get; set; }
+    public bool ApplyToAllVisuals { get; set; }
     public string ReportDate { get; set; }
 }
 
@@ -1919,6 +2215,8 @@ public class ReportFilter
     public string FilterType { get; set; }
     public string HiddenFilter { get; set; }
     public string LockedFilter { get; set; }
+    public string HowCreated { get; set; }
+    public string Used { get; set; }
     public string AppliedFilterVersion { get; set; }
     public string ReportDate { get; set; }
 }
@@ -1931,12 +2229,17 @@ public class VisualObject
     public string ModelID { get; set; }
     public string displayName { get; set; }
     public string VisualId { get; set; }
+    public string VisualName { get; set; }
     public string VisualType { get; set; }
     public string AppliedFilterVersion { get; set; }
     public bool CustomVisualFlag { get; set; }
     public string TableName { get; set; }
     public string ObjectName { get; set; }
     public string ObjectType { get; set; }
+    public bool ImplicitMeasure { get; set; }
+    public bool Sparkline { get; set; }
+    public bool VisualCalc { get; set; }
+    public string Format { get; set; }
     public string Source { get; set; }
     public string ReportDate { get; set; }
 }
@@ -1950,6 +2253,10 @@ public class Visual
     public string Id { get; set; }
     public string Name { get; set; }
     public string Type { get; set; }
+    public string DisplayType { get; set; }
+    public string Title { get; set; }
+    public string SubTitle { get; set; }
+    public string AltText { get; set; }
     public bool CustomVisualFlag { get; set; }
     public bool HiddenFlag { get; set; }
     public int X { get; set; }
@@ -1957,9 +2264,17 @@ public class Visual
     public int Z { get; set; }
     public int Width { get; set; }
     public int Height { get; set; }
+    public string TabOrder { get; set; }
     public int ObjectCount { get; set; }
+    public int VisualFilterCount { get; set; }
+    public int DataLimit { get; set; }
     public bool ShowItemsNoDataFlag { get; set; }
+    public string Divider { get; set; }
     public string SlicerType { get; set; }
+    public bool RowSubTotals { get; set; }
+    public bool ColumnSubTotals { get; set; }
+    public bool DataVisual { get; set; }
+    public bool HasSparkline { get; set; }
     public string ParentGroup {get; set; }
     public string ReportDate { get; set; }
 }
@@ -1969,6 +2284,7 @@ public class VisualFilter
     public string PageName { get; set; }
     public string PageId { get; set; }
     public string VisualId { get; set; }
+    public string VisualName { get; set; }
     public string ReportID { get; set; }
     public string ModelID { get; set; }
     public string TableName { get; set; }
@@ -1977,6 +2293,8 @@ public class VisualFilter
     public string FilterType { get; set; }
     public string HiddenFilter { get; set; }
     public string LockedFilter { get; set; }
+    public string HowCreated { get; set; }
+    public string Used { get; set; }
     public string AppliedFilterVersion { get; set; }
     public string displayName { get; set; }
     public string ReportDate { get; set; }
@@ -1994,7 +2312,9 @@ public class PageFilter
     public string ObjectType { get; set; }
     public string FilterType { get; set; }   
     public string HiddenFilter { get; set; }
-    public string LockedFilter { get; set; } 
+    public string LockedFilter { get; set; }
+    public string HowCreated { get; set; }
+    public string Used { get; set; }
     public string AppliedFilterVersion { get; set; }
     public string ReportDate { get; set; } 
 }
@@ -2008,8 +2328,12 @@ public class Page
     public int Number { get; set; }
     public int Width { get; set; }
     public int Height { get; set; }
+    public string DisplayOption { get; set; }
     public bool HiddenFlag { get; set; }
     public int VisualCount { get; set; }
+    public int DataVisualCount { get; set; }
+    public int VisibleVisualCount { get; set; }
+    public int PageFilterCount { get; set; }
     public string BackgroundImage { get; set; }
     public string WallpaperImage { get; set; }
     public string Type { get; set; }
@@ -2032,7 +2356,9 @@ public class VisualInteraction
     public string ReportID { get; set; }
     public string ModelID { get; set; }
     public string SourceVisualID { get; set; }
+    public string SourceVisualName { get; set; }
     public string TargetVisualID { get; set; }
+    public string TargetVisualName { get; set; }
     public int TypeID { get; set; }
     public string Type { get; set; }
     public string ReportDate { get; set; }
@@ -2044,8 +2370,10 @@ public class ReportLevelMeasure
     public string ObjectName { get; set; }
     public string ObjectType { get; set; }
     public string Expression { get; set; }
+    public string DataType { get; set; }
     public string HiddenFlag { get; set; }
     public string FormatString { get; set; }
+    public string DataCategory { get; set; }
     public string ReportName { get; set; }
     public string ReportID { get; set; }
     public string ModelID { get; set; }
