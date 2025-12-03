@@ -956,6 +956,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                     string hidden = "";
                     string locked = "";
                     string displayName = "";
+                    Newtonsoft.Json.Linq.JToken filterObj = null;
 
                     try
                     {
@@ -1042,7 +1043,7 @@ if (Directory.Exists(definitionRoot)) // <-- gate on PBIR structure
                         var typeToken = filter["type"] ?? filter["filterType"] ?? filter["Filter"] ?? filter["FilterType"];
                         filterType = typeToken != null ? typeToken.ToString() : "";
 
-                        var filterObj = filter["filter"] ?? filter["Filter"] ?? filter["filterCondition"];
+                        filterObj = filter["filter"] ?? filter["Filter"] ?? filter["filterCondition"];
                         var versionToken = filterObj != null ? (filterObj["Version"] ?? filterObj["version"]) : null;
                         version = versionToken != null ? versionToken.ToString() : "";
 
