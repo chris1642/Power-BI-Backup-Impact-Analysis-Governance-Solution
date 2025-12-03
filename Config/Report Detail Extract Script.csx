@@ -652,7 +652,7 @@ dynamic pageConfigJson = string.IsNullOrEmpty(formattedpagconfigJson)
                 
                 VisualInteractions.Add(new VisualInteraction {
                     PageName = pageName, 
-                    PageDisplayName = pageName,
+                    
                     PageId = pageId, 
                     SourceVisualID = sourceViz, 
                     SourceVisualName = "",  // Visual names will be looked up later if needed
@@ -718,7 +718,7 @@ dynamic pageConfigJson = string.IsNullOrEmpty(formattedpagconfigJson)
         Pages.Add(new Page {
             Id = pageId, 
             Name = pageName, 
-            PageDisplayName = pageName,
+            
             Number = pageNumber, 
             Width = pageWidth, 
             Height = pageHeight, 
@@ -858,7 +858,7 @@ catch (Exception ex)
             PageFilters.Add(new PageFilter {
                 PageId = pageId, 
                 PageName = pageName, 
-                PageDisplayName = pageName,
+                
                 displayName = displayName, 
                 TableName = tblName, 
                 ObjectName = objName, 
@@ -1258,7 +1258,7 @@ catch (Exception ex)
                         sourceLabel = "Sparkline";
                     }
                         
-                    VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, VisualId = visualId, VisualName = visualName, VisualType = visualType, AppliedFilterVersion = appliedFilterVersion, displayName = displayName, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sourceLabel});
+                    VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, VisualId = visualId, VisualType = visualType, AppliedFilterVersion = appliedFilterVersion, displayName = displayName, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sourceLabel});
                     
                     if (isSpark)
                     {
@@ -1280,7 +1280,7 @@ catch (Exception ex)
                                 }
                             }
                                                         
-                            VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, VisualId = visualId, VisualName = visualName, VisualType = visualType, displayName = displayName, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sourceLabel});
+                            VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, VisualId = visualId, VisualType = visualType, displayName = displayName, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sourceLabel});
                             
                             if (createPersp)
                             {
@@ -1342,7 +1342,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -1359,7 +1359,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -1376,7 +1376,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Column";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -1393,7 +1393,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -1420,7 +1420,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -1437,7 +1437,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -1454,7 +1454,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Column";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -1471,7 +1471,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -1498,7 +1498,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -1515,7 +1515,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -1532,7 +1532,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Column";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -1549,7 +1549,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -1575,7 +1575,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Column";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -1592,7 +1592,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -1618,7 +1618,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Column";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -1635,7 +1635,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -1661,7 +1661,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -1678,7 +1678,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -1695,7 +1695,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Column";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -1712,7 +1712,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -1739,7 +1739,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -1756,7 +1756,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -1773,7 +1773,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Column";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -1790,7 +1790,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -1816,7 +1816,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -1833,7 +1833,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -1850,7 +1850,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Column";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -1867,7 +1867,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -1890,7 +1890,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                     catch
                     {
@@ -1915,7 +1915,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                     catch
                     {
@@ -1929,7 +1929,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";                    
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                     catch
                     {
@@ -1943,7 +1943,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Column";                    
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                     catch
                     {
@@ -1956,7 +1956,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                         
                     }
                     catch
@@ -1981,7 +1981,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";                    
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                     catch
                     {
@@ -1995,7 +1995,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                     catch
                     {
@@ -2009,7 +2009,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Column";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                     catch
                     {
@@ -2034,7 +2034,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                     catch
                     {
@@ -2048,7 +2048,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Column";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                     catch
                     {
@@ -2073,7 +2073,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Column";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                     catch
                     {
@@ -2099,7 +2099,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Column";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -2116,7 +2116,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -2141,7 +2141,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -2158,7 +2158,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -2175,7 +2175,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Column";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -2192,7 +2192,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, displayName = displayName, VisualId = visualId, VisualName = visualName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, displayName = displayName, VisualId = visualId, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -2217,7 +2217,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, VisualId = visualId, displayName = displayName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, VisualId = visualId, displayName = displayName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -2234,7 +2234,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, VisualId = visualId, displayName = displayName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, VisualId = visualId, displayName = displayName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -2251,7 +2251,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Column";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, VisualId = visualId, displayName = displayName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, VisualId = visualId, displayName = displayName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -2268,7 +2268,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                         string objectType = "Measure";
                         
-                        VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, VisualId = visualId, displayName = displayName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                        VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, VisualId = visualId, displayName = displayName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                     }
                 }
                 catch
@@ -2290,7 +2290,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                     string objectType = "Measure";
                     
-                    VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, VisualId = visualId, displayName = displayName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                    VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, VisualId = visualId, displayName = displayName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                 }
             }
             catch
@@ -2308,7 +2308,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                     string objectType = "Measure";
                     
-                    VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, VisualId = visualId, displayName = displayName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                    VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, VisualId = visualId, displayName = displayName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                 }
             }
             catch
@@ -2326,7 +2326,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                     string objectType = "Column";
                     
-                    VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, VisualId = visualId, displayName = displayName,  VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                    VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, VisualId = visualId, displayName = displayName,  VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                 }
             }
             catch
@@ -2344,7 +2344,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                     string objectType = "Measure";
                     
-                    VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, VisualId = visualId, displayName = displayName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                    VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, VisualId = visualId, displayName = displayName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                 }
             }
             catch
@@ -2363,7 +2363,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                     string objectType = "Measure";
                     
-                    VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, VisualId = visualId, displayName = displayName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                    VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, VisualId = visualId, displayName = displayName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                 }
             }
             catch
@@ -2381,7 +2381,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                     string objectType = "Measure";
                     
-                    VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, VisualId = visualId, displayName = displayName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                    VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, VisualId = visualId, displayName = displayName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                 }
             }
             catch
@@ -2399,7 +2399,7 @@ catch (Exception ex)
                     string displayName = (string)o2["displayName"];
                     string objectType = "Column";
                     
-                    VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, VisualId = visualId, displayName = displayName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                    VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, VisualId = visualId, displayName = displayName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                 }
             }
             catch
@@ -2417,7 +2417,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                     string objectType = "Measure";
                     
-                    VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, VisualId = visualId, displayName = displayName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                    VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, VisualId = visualId, displayName = displayName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                 }
             }
             catch
@@ -2436,7 +2436,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                     string objectType = "Measure";
                     
-                    VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, VisualId = visualId, displayName = displayName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                    VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, VisualId = visualId, displayName = displayName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                 }
             }
             catch
@@ -2454,7 +2454,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                     string objectType = "Measure";
                     
-                    VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, VisualId = visualId, displayName = displayName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                    VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, VisualId = visualId, displayName = displayName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                 }
             }
             catch
@@ -2472,7 +2472,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                     string objectType = "Column";
                     
-                    VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, VisualId = visualId, displayName = displayName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                    VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, VisualId = visualId, displayName = displayName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                 }
             }
             catch
@@ -2490,7 +2490,7 @@ catch (Exception ex)
                         string displayName = (string)o2["displayName"];
                     string objectType = "Measure";
                     
-                    VisualObjects.Add(new VisualObject {PageName = pageName, PageDisplayName = pageName, PageId = pageId, VisualId = visualId, displayName = displayName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
+                    VisualObjects.Add(new VisualObject {PageName = pageName,  PageId = pageId, VisualId = visualId, displayName = displayName, VisualType = visualType, CustomVisualFlag = customVisualFlag, ObjectName = objectName, TableName = tableName, ObjectType = objectType, ImplicitMeasure = false, Sparkline = false, VisualCalc = false, Format = "", Source = sc});
                 }
             }
             catch
@@ -2499,7 +2499,7 @@ catch (Exception ex)
 
             Visuals.Add(new Visual {
                 PageName = pageName, 
-                PageDisplayName = pageName,
+                
                 PageId = pageId, 
                 Id = visualId, 
                 Name = visualName, 
@@ -2955,7 +2955,7 @@ try
                     
                     VisualFilters.Add(new VisualFilter {
                         PageName = pageName, 
-                        PageDisplayName = pageName,
+                        
                         PageId = pageId, 
                         VisualId = visualId, 
                         VisualName = visualName,
@@ -3020,12 +3020,9 @@ try
             {
                 Id = bId,
                 Name = bName,
-                BookmarkDisplayName = bName,
                 PageId = rptPageId,
                 PageName = pageName,
-                PageDisplayName = pageName,
                 VisualId = "",
-                VisualName = "",
                 VisualHiddenFlag = false,
                 SuppressData = false,  // Would need additional extraction logic
                 CurrentPageSelected = false,  // Would need additional extraction logic
@@ -3081,28 +3078,28 @@ catch
         sb_ReportFilters.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.displayName + '\t' + x.TableName + '\t' + x.ObjectName + '\t' + x.ObjectType + '\t' + x.FilterType + '\t' + x.HiddenFilter + '\t' + x.LockedFilter + '\t' + x.HowCreated + '\t' + x.Used + '\t' + x.AppliedFilterVersion + '\t' + ReportDate + newline);
 
     foreach (var x in PageFilters.ToList())
-        sb_PageFilters.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.PageId + '\t' + x.PageName + '\t' + x.PageDisplayName + '\t' + x.displayName + '\t' + x.TableName + '\t' + x.ObjectName + '\t' + x.ObjectType + '\t' + x.FilterType + '\t' + x.HiddenFilter + '\t' + x.LockedFilter + '\t' + x.HowCreated + '\t' + x.Used + '\t' + x.AppliedFilterVersion + '\t' + ReportDate + newline);
+        sb_PageFilters.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.PageId + '\t' + x.PageName + '\t' + x.displayName + '\t' + x.TableName + '\t' + x.ObjectName + '\t' + x.ObjectType + '\t' + x.FilterType + '\t' + x.HiddenFilter + '\t' + x.LockedFilter + '\t' + x.HowCreated + '\t' + x.Used + '\t' + x.AppliedFilterVersion + '\t' + ReportDate + newline);
 
     foreach (var x in VisualFilters.ToList())
-        sb_VisualFilters.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.PageName + '\t' + x.PageDisplayName + '\t' + x.PageId + '\t' + x.VisualId + '\t' + x.VisualName + '\t' + x.TableName + '\t' + x.ObjectName + '\t' + x.ObjectType + '\t' + x.FilterType + '\t' + x.HiddenFilter + '\t' + x.LockedFilter + '\t' + x.HowCreated + '\t' + x.Used + '\t' + x.AppliedFilterVersion + '\t' + x.displayName + '\t' + ReportDate + newline);
+        sb_VisualFilters.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.PageName + '\t' + x.PageId + '\t' + x.VisualId + '\t' + x.VisualName + '\t' + x.TableName + '\t' + x.ObjectName + '\t' + x.ObjectType + '\t' + x.FilterType + '\t' + x.HiddenFilter + '\t' + x.LockedFilter + '\t' + x.HowCreated + '\t' + x.Used + '\t' + x.AppliedFilterVersion + '\t' + x.displayName + '\t' + ReportDate + newline);
 
     foreach (var x in VisualObjects.ToList())
-        sb_VisualObjects.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.PageName + '\t' + x.PageDisplayName + '\t' + x.PageId + '\t' + x.VisualId + '\t' + x.VisualName + '\t' + x.VisualType + '\t' + x.AppliedFilterVersion + '\t' + x.CustomVisualFlag + '\t' + x.TableName + '\t' + x.ObjectName + '\t' + x.ObjectType + '\t' + x.ImplicitMeasure + '\t' + x.Sparkline + '\t' + x.VisualCalc + '\t' + x.Format + '\t' + x.Source + '\t' + x.displayName + '\t' + ReportDate + newline);
+        sb_VisualObjects.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.PageName + '\t' + x.PageId + '\t' + x.VisualId + '\t' + x.VisualName + '\t' + x.VisualType + '\t' + x.AppliedFilterVersion + '\t' + x.CustomVisualFlag + '\t' + x.TableName + '\t' + x.ObjectName + '\t' + x.ObjectType + '\t' + x.ImplicitMeasure + '\t' + x.Sparkline + '\t' + x.VisualCalc + '\t' + x.Format + '\t' + x.Source + '\t' + x.displayName + '\t' + ReportDate + newline);
 
     foreach (var x in Bookmarks.ToList())
-        sb_Bookmarks.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.Name + '\t' + x.BookmarkDisplayName + '\t' + x.Id + '\t' + x.PageName + '\t' + x.PageDisplayName + '\t' + x.PageId + '\t' + x.VisualId + '\t' + x.VisualName + '\t' + x.VisualHiddenFlag + '\t' + x.SuppressData + '\t' + x.CurrentPageSelected + '\t' + x.ApplyVisualDisplayState + '\t' + x.ApplyToAllVisuals + '\t' + ReportDate + newline);
+        sb_Bookmarks.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.Name + '\t' + x.Id + '\t' + x.PageName + '\t' + x.PageId + '\t' + x.VisualId + '\t' + x.VisualHiddenFlag + '\t' + x.SuppressData + '\t' + x.CurrentPageSelected + '\t' + x.ApplyVisualDisplayState + '\t' + x.ApplyToAllVisuals + '\t' + ReportDate + newline);
 
     foreach (var x in Pages.ToList())
-        sb_Pages.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.Id + '\t' + x.Name + '\t' + x.PageDisplayName + '\t' + x.Number + '\t' + x.Width + '\t' + x.Height + '\t' + x.DisplayOption + '\t' + x.HiddenFlag + '\t' + x.VisualCount + '\t' + x.DataVisualCount + '\t' + x.VisibleVisualCount + '\t' + x.PageFilterCount + '\t' + x.BackgroundImage + '\t' + x.WallpaperImage + '\t' + x.Type + '\t' + ReportDate + newline);
+        sb_Pages.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.Id + '\t' + x.Name + '\t' + x.Number + '\t' + x.Width + '\t' + x.Height + '\t' + x.DisplayOption + '\t' + x.HiddenFlag + '\t' + x.VisualCount + '\t' + x.DataVisualCount + '\t' + x.VisibleVisualCount + '\t' + x.PageFilterCount + '\t' + x.BackgroundImage + '\t' + x.WallpaperImage + '\t' + x.Type + '\t' + ReportDate + newline);
 
     foreach (var x in Visuals.ToList())
-        sb_Visuals.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.PageName + '\t' + x.PageDisplayName + '\t' + x.PageId + '\t' + x.Id + '\t' + x.Name + '\t' + x.Type + '\t' + x.DisplayType + '\t' + x.Title + '\t' + x.SubTitle + '\t' + x.AltText + '\t' + x.CustomVisualFlag + '\t' + x.HiddenFlag + '\t' + x.X + '\t' + x.Y + '\t' + x.Z + '\t' + x.Width + '\t' + x.Height + '\t' + x.TabOrder + '\t' + x.ObjectCount + '\t' + x.VisualFilterCount + '\t' + x.DataLimit + '\t' + x.ShowItemsNoDataFlag + '\t' + x.Divider + '\t' + x.SlicerType + '\t' + x.RowSubTotals + '\t' + x.ColumnSubTotals + '\t' + x.DataVisual + '\t' + x.HasSparkline + '\t' + x.ParentGroup + '\t' + ReportDate + newline);
+        sb_Visuals.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.PageName + '\t' + x.PageId + '\t' + x.Id + '\t' + x.Name + '\t' + x.Type + '\t' + x.DisplayType + '\t' + x.Title + '\t' + x.SubTitle + '\t' + x.AltText + '\t' + x.CustomVisualFlag + '\t' + x.HiddenFlag + '\t' + x.X + '\t' + x.Y + '\t' + x.Z + '\t' + x.Width + '\t' + x.Height + '\t' + x.TabOrder + '\t' + x.ObjectCount + '\t' + x.VisualFilterCount + '\t' + x.DataLimit + '\t' + x.ShowItemsNoDataFlag + '\t' + x.Divider + '\t' + x.SlicerType + '\t' + x.RowSubTotals + '\t' + x.ColumnSubTotals + '\t' + x.DataVisual + '\t' + x.HasSparkline + '\t' + x.ParentGroup + '\t' + ReportDate + newline);
 
     foreach (var x in Connections.ToList())
         sb_Connections.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.ServerName + '\t' + x.Type + '\t' + ReportDate + newline);
 
     foreach (var x in VisualInteractions.ToList())
-        sb_VisualInteractions.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.PageName + '\t' + x.PageDisplayName + '\t' + x.PageId + '\t' + x.SourceVisualID + '\t' + x.SourceVisualName + '\t' + x.TargetVisualID + '\t' + x.TargetVisualName + '\t' + x.TypeID + '\t' + x.Type + '\t' + ReportDate + newline);
+        sb_VisualInteractions.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + x.PageName + '\t' + x.PageId + '\t' + x.SourceVisualID + '\t' + x.SourceVisualName + '\t' + x.TargetVisualID + '\t' + x.TargetVisualName + '\t' + x.TypeID + '\t' + x.Type + '\t' + ReportDate + newline);
 
     foreach (var m in ReportLevelMeasures.ToList())
         sb_ReportLevelMeasures.Append(ReportName + '\t' + ReportID + '\t' + ModelID + '\t' + m.TableName + '\t' + m.ObjectName + '\t' + m.ObjectType + '\t' + m.Expression + '\t' + m.DataType + '\t' + m.HiddenFlag + '\t' + m.FormatString + '\t' + m.DataCategory + '\t' + ReportDate + newline);
@@ -3336,11 +3333,9 @@ public class Bookmark
 {
     public string Id { get; set; }
     public string Name { get; set; }
-    public string BookmarkDisplayName { get; set; }
     public string ReportID { get; set; }
     public string ModelID { get; set; }
     public string PageName { get; set; }
-    public string PageDisplayName { get; set; }
     public string PageId { get; set; }
     public string VisualId { get; set; }
     public string VisualName { get; set; }
@@ -3372,7 +3367,6 @@ public class ReportFilter
 public class VisualObject
 {
     public string PageName { get; set; }
-    public string PageDisplayName { get; set; }
     public string PageId { get; set; }
     public string ReportID { get; set; }
     public string ModelID { get; set; }
@@ -3396,7 +3390,6 @@ public class VisualObject
 public class Visual
 {
     public string PageName { get; set; }
-    public string PageDisplayName { get; set; }
     public string PageId { get; set; }
     public string ReportID { get; set; }
     public string ModelID { get; set; }
@@ -3432,7 +3425,6 @@ public class Visual
 public class VisualFilter
 {
     public string PageName { get; set; }
-    public string PageDisplayName { get; set; }
     public string PageId { get; set; }
     public string VisualId { get; set; }
     public string VisualName { get; set; }
@@ -3457,7 +3449,6 @@ public class PageFilter
     public string ReportID { get; set; }
     public string ModelID { get; set; }
     public string PageName { get; set; }
-    public string PageDisplayName { get; set; }
     public string displayName {get; set; }
     public string TableName { get; set; }
     public string ObjectName { get; set; }
@@ -3475,7 +3466,6 @@ public class Page
 {
     public string Id { get; set; }
     public string Name { get; set; }
-    public string PageDisplayName { get; set; }
     public string ReportID { get; set; }
     public string ModelID { get; set; }
     public int Number { get; set; }
@@ -3505,7 +3495,6 @@ public class Connection
 public class VisualInteraction
 {
     public string PageName { get; set; }
-    public string PageDisplayName { get; set; }
     public string PageId { get; set; }
     public string ReportID { get; set; }
     public string ModelID { get; set; }
