@@ -40,32 +40,52 @@ var modelID = Model.Database.ID;
 
 // Initialize the StringBuilder for the CSV content
 var sb = new System.Text.StringBuilder();
-sb.AppendLine("MeasureName,DependsOn,DependsOnType,ModelAsOfDate,ModelName,ModelID");
+sb.AppendLine("ObjectName,ObjectType,DependsOn,DependsOnType,ModelAsOfDate,ModelName,ModelID");
 
-// Process each measure in the model and list its dependencies
+// ===============================
+//   MEASURES
+// ===============================
 foreach (var table in Model.Tables)
 {
     foreach (var measure in table.Measures)
     {
-        // Get the dictionary of dependencies
         var dependencies = measure.DependsOn;
 
         foreach (var dependency in dependencies)
         {
-            // Add the measure name, dependency name, dependency type, the resolved date, and model name to the CSV
-            sb.AppendLine(String.Format("\"{0}\",\"{1}\",\"{2}\",\"{3}\",\"{4}\",\"{5}\"", 
-                                         measure.Name, 
-                                         dependency.Key.DaxObjectFullName, 
-                                         dependency.Key.ObjectType, 
-                                         currentDateStr, 
+            sb.AppendLine(String.Format("\"{0}\",\"Measure\",\"{1}\",\"{2}\",\"{3}\",\"{4}\",\"{5}\"",
+                                         measure.Name,
+                                         dependency.Key.DaxObjectFullName,
+                                         dependency.Key.ObjectType,
+                                         currentDateStr,
                                          modelName,
                                          modelID));
         }
     }
 }
 
-// Define the path for the new file
-var filePath = System.IO.Path.Combine(dateFolderPath, modelName + "_MD.csv");
+// ===============================
+//   CALCULATED COLUMNS
+// ===============================
+foreach (var table in Model.Tables)
+{
+    foreach (var calcCol in table.CalculatedColumns)
+    {
+        var dependencies = calcCol.DependsOn;
 
-// Write the file content to the file
+        foreach (var dependency in dependencies)
+        {
+            sb.AppendLine(String.Format("\"{0}\",\"CalculatedColumn\",\"{1}\",\"{2}\",\"{3}\",\"{4}\",\"{5}\"",
+                                         calcCol.Name,
+                                         dependency.Key.DaxObjectFullName,
+                                         dependency.Key.ObjectType,
+                                         currentDateStr,
+                                         modelName,
+                                         modelID));
+        }
+    }
+}
+
+// Write the file
+var filePath = System.IO.Path.Combine(dateFolderPath, modelName + "_MD.csv");
 System.IO.File.WriteAllText(filePath, sb.ToString());
