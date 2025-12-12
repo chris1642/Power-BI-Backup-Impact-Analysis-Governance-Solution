@@ -110,14 +110,59 @@ foreach ($module in $requiredModules) {
 }
 
 
-# Prompt for Power BI environment and validate against acceptable values
-# Acceptable values: Public (default), Germany, USGov, China, USGovHigh, USGovMil
+# ================================
+# Read-Host With 120 Second Timeout
+# ================================
+function Read-HostWithTimeout {
+    param(
+        [string]$Prompt,
+        [int]$TimeoutSeconds = 120
+    )
+
+    Write-Host -NoNewline "$Prompt "
+    Write-Host "(waiting up to $TimeoutSeconds seconds):" -ForegroundColor DarkGray
+
+    $inputBuffer = ""
+    $endTime = (Get-Date).AddSeconds($TimeoutSeconds)
+
+    while ((Get-Date) -lt $endTime) {
+        if ([Console]::KeyAvailable) {
+            $key = [Console]::ReadKey($true)
+            # Enter pressed â†’ stop reading
+            if ($key.Key -eq "Enter") {
+                Write-Host ""
+                return $inputBuffer
+            }
+            # Backspace
+            elseif ($key.Key -eq "Backspace") {
+                if ($inputBuffer.Length -gt 0) {
+                    $inputBuffer = $inputBuffer.Substring(0, $inputBuffer.Length - 1)
+                    Write-Host -NoNewline "`b `b"
+                }
+            }
+            else {
+                $inputBuffer += $key.KeyChar
+                Write-Host -NoNewline $key.KeyChar
+            }
+        }
+        Start-Sleep -Milliseconds 100
+    }
+
+    Write-Host "`n[Timeout reached â€” defaulting to blank input]" -ForegroundColor Yellow
+    return ""
+}
+
+# ============================================
+# Prompt for Power BI Environment + Validation
+# ============================================
 if (-not (Get-Variable -Name LoginEnvironment -Scope Script -ErrorAction SilentlyContinue)) {
-    $inputEnv = Read-Host -Prompt "Enter Power BI environment [Public|Germany|USGov|China|USGovHigh|USGovMil] (press Enter for Public)"
+
+    $inputEnv = Read-HostWithTimeout -Prompt "Enter Power BI environment [Public|Germany|USGov|China|USGovHigh|USGovMil] (press Enter for Public)" -TimeoutSeconds 60
+
     if ([string]::IsNullOrWhiteSpace($inputEnv)) {
         $LoginEnvironment = 'Public'
-    } else {
-        # Normalize casing and map common inputs
+    }
+    else {
         switch -Regex ($inputEnv.Trim()) {
             '^public$'        { $LoginEnvironment = 'Public' ; break }
             '^germany$'       { $LoginEnvironment = 'Germany' ; break }
@@ -133,9 +178,14 @@ if (-not (Get-Variable -Name LoginEnvironment -Scope Script -ErrorAction Silentl
     }
 }
 
+# If explicitly 'Public', set to $null for Connect-PowerBIServiceAccount default
+if ($LoginEnvironment -eq 'Public') { 
+    $LoginEnvironment = $null 
+}
+
+
 # If LoginEnvironment is explicitly set to Public, use $null so Connect-PowerBIServiceAccount uses default 'Public' endpoint.
 if ($LoginEnvironment -eq 'Public') { $LoginEnvironment = $null }
-
 # Function to get environment-specific API endpoints
 function Get-PowerBIEndpoints {
     param(
