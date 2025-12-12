@@ -2,9 +2,6 @@
 
 
 $baseFolderPath = "C:\Power BI Backups"
-
-
-
 $Script1Path = "$baseFolderPath\Config\Report Detail Extract Script-PBIR.csx"
 $Script2Path = "$baseFolderPath\Config\Report Detail Extract Script.csx"
 $Script3Path = "$baseFolderPath\Config\Model Detail Extract Script.csx"
@@ -113,9 +110,119 @@ foreach ($module in $requiredModules) {
 }
 
 
+# Prompt for Power BI environment and validate against acceptable values
+# Acceptable values: Public (default), Germany, USGov, China, USGovHigh, USGovMil
+if (-not (Get-Variable -Name LoginEnvironment -Scope Script -ErrorAction SilentlyContinue)) {
+    $inputEnv = Read-Host -Prompt "Enter Power BI environment [Public|Germany|USGov|China|USGovHigh|USGovMil] (press Enter for Public)"
+    if ([string]::IsNullOrWhiteSpace($inputEnv)) {
+        $LoginEnvironment = 'Public'
+    } else {
+        # Normalize casing and map common inputs
+        switch -Regex ($inputEnv.Trim()) {
+            '^public$'        { $LoginEnvironment = 'Public' ; break }
+            '^germany$'       { $LoginEnvironment = 'Germany' ; break }
+            '^usgovhigh$'     { $LoginEnvironment = 'USGovHigh' ; break }
+            '^usgovmil$'      { $LoginEnvironment = 'USGovMil' ; break }
+            '^usgov$'         { $LoginEnvironment = 'USGov' ; break }
+            '^china$'         { $LoginEnvironment = 'China' ; break }
+            default {
+                Write-Warning "Unrecognized environment '$inputEnv'. Defaulting to 'Public'."
+                $LoginEnvironment = 'Public'
+            }
+        }
+    }
+}
+
+# If LoginEnvironment is explicitly set to Public, use $null so Connect-PowerBIServiceAccount uses default 'Public' endpoint.
+if ($LoginEnvironment -eq 'Public') { $LoginEnvironment = $null }
+
+# Function to get environment-specific API endpoints
+function Get-PowerBIEndpoints {
+    param(
+        [string]$Environment
+    )
+    
+    # Default endpoints for Public cloud
+    $endpoints = @{
+        ApiPrefix      = 'https://api.powerbi.com'
+        XmlaPrefix     = 'powerbi://api.powerbi.com'
+        WebPrefix      = 'https://app.powerbi.com'
+        ResourceUrl    = 'https://analysis.windows.net/powerbi/api'
+        EmbedUrl       = 'https://app.powerbi.com/reportEmbed'
+        LoginUrl       = 'https://login.microsoftonline.com'
+        FabricApiPrefix = 'https://api.fabric.microsoft.com'
+    }
+    
+    # Override endpoints based on environment
+    switch ($Environment) {
+        'Germany' {
+            $endpoints.ApiPrefix = 'https://api.powerbi.de'
+            $endpoints.XmlaPrefix = 'powerbi://api.powerbi.de'
+            $endpoints.WebPrefix = 'https://app.powerbi.de'
+            $endpoints.ResourceUrl = 'https://analysis.cloudapi.de/powerbi/api'
+            $endpoints.EmbedUrl = 'https://app.powerbi.de/reportEmbed'
+            $endpoints.LoginUrl = 'https://login.microsoftonline.com'
+            $endpoints.FabricApiPrefix = 'https://api.fabric.microsoft.de'
+        }
+        'China' {
+            $endpoints.ApiPrefix = 'https://api.powerbi.cn'
+            $endpoints.XmlaPrefix = 'powerbi://api.powerbi.cn'
+            $endpoints.WebPrefix = 'https://app.powerbigov.cn'
+            $endpoints.ResourceUrl = 'https://analysis.chinacloudapi.cn/powerbi/api'
+            $endpoints.EmbedUrl = 'https://app.powerbi.cn/reportEmbed'
+            $endpoints.LoginUrl = 'https://login.partner.microsoftonline.cn'
+            $endpoints.FabricApiPrefix = 'https://api.fabric.microsoft.cn'
+        }
+        'USGov' {
+            $endpoints.ApiPrefix = 'https://api.powerbigov.us'
+            $endpoints.XmlaPrefix = 'powerbi://api.powerbigov.us'
+            $endpoints.WebPrefix = 'https://app.powerbigov.us'
+            $endpoints.ResourceUrl = 'https://analysis.usgovcloudapi.net/powerbi/api'
+            $endpoints.EmbedUrl = 'https://app.powerbigov.us/reportEmbed'
+            $endpoints.LoginUrl = 'https://login.microsoftonline.com'
+            $endpoints.FabricApiPrefix = 'https://api.fabric.microsoft.us'
+        }
+        'USGovHigh' {
+            $endpoints.ApiPrefix = 'https://api.high.powerbigov.us'
+            $endpoints.XmlaPrefix = 'powerbi://api.high.powerbigov.us'
+            $endpoints.WebPrefix = 'https://app.high.powerbigov.us'
+            $endpoints.ResourceUrl = 'https://analysis.high.usgovcloudapi.net/powerbi/api'
+            $endpoints.EmbedUrl = 'https://app.high.powerbigov.us/reportEmbed'
+            $endpoints.LoginUrl = 'https://login.microsoftonline.us'
+            $endpoints.FabricApiPrefix = 'https://api.fabric.high.microsoft.us'
+        }
+        'USGovMil' {
+            $endpoints.ApiPrefix = 'https://api.mil.powerbi.us'
+            $endpoints.XmlaPrefix = 'powerbi://api.mil.powerbi.us'
+            $endpoints.WebPrefix = 'https://app.mil.powerbi.us'
+            $endpoints.ResourceUrl = 'https://analysis.dod.usgovcloudapi.net/powerbi/api'
+            $endpoints.EmbedUrl = 'https://app.mil.powerbi.us/reportEmbed'
+            $endpoints.LoginUrl = 'https://login.microsoftonline.us'
+            $endpoints.FabricApiPrefix = 'https://api.fabric.mil.microsoft.us'
+        }
+    }
+    
+    return $endpoints
+}
+
+# Initialize endpoints based on selected environment (store for later, before it becomes $null for Public)
+$EnvironmentForEndpoints = if ($LoginEnvironment) { $LoginEnvironment } else { 'Public' }
+$global:PowerBIEndpoints = Get-PowerBIEndpoints -Environment $EnvironmentForEndpoints
+
 # Connect to the Power BI Service
 function Connect-PowerBI {
-    Connect-PowerBIServiceAccount | Out-Null
+    param(
+        [string]$Environment
+    )
+
+    if ($Environment) {
+        Write-Host "[INFO] Connecting to Power BI using environment: $Environment"
+        Connect-PowerBIServiceAccount -Environment $Environment | Out-Null
+    } else {
+        Write-Host "[INFO] Connecting to Power BI using default environment"
+        Connect-PowerBIServiceAccount | Out-Null
+    }
+
     $global:accessTokenObject = Get-PowerBIAccessToken
     $global:accessToken = $accessTokenObject.Authorization -replace 'Bearer ', ''
     # Write the access token to a temporary file
@@ -124,28 +231,44 @@ function Connect-PowerBI {
 
 # Track script start time
 $scriptStartTime = Get-Date
-Connect-PowerBI
+Connect-PowerBI -Environment $LoginEnvironment
 
 # Function to refresh the token in a background job
+# Start a background job that refreshes the token. Pass the environment so child job can reconnect correctly.
 function Start-TokenRefreshJob {
+    param(
+        [string]$Environment
+    )
+
     $jobScript = {
+        param($EnvArg)
+
         function Connect-PowerBI {
-            Connect-PowerBIServiceAccount | Out-Null
+            param([string]$Environment)
+
+            if ($Environment) {
+                Connect-PowerBIServiceAccount -Environment $Environment | Out-Null
+            } else {
+                Connect-PowerBIServiceAccount | Out-Null
+            }
             $global:accessTokenObject = Get-PowerBIAccessToken
             $global:accessToken = $accessTokenObject.Authorization -replace 'Bearer ', ''
             # Write the access token to a temporary file
             Set-Content -Path $env:TEMP\PowerBI_AccessToken.txt -Value $global:accessToken
         }
+
         while ($true) {
             Start-Sleep -Seconds 3300  # Sleep for 55 minutes
-            Connect-PowerBI
+            Connect-PowerBI -Environment $EnvArg
         }
     }
-	Start-Job -ScriptBlock $jobScript -Name "TokenRefreshJob" | Out-Null
+
+    # Start the job and pass the environment as an argument
+    Start-Job -ScriptBlock $jobScript -Name "TokenRefreshJob" -ArgumentList $Environment | Out-Null
 }
 
 # Start the background job to refresh the token
-Start-TokenRefreshJob
+Start-TokenRefreshJob -Environment $LoginEnvironment
 
 # Function to get the current access token
 function Get-CurrentAccessToken {
@@ -273,9 +396,9 @@ function Show-WorkspacePicker {
     })
     $form.Controls.Add($cancelBtn)
 
-    # Timer (auto-close after 25s)
+    # Timer (auto-close after 10 minutes)
     $timer = New-Object System.Windows.Forms.Timer
-    $timer.Interval = 25000
+    $timer.Interval = 600000
     $timer.Add_Tick({
         $timer.Stop()
         $form.Tag = 'Timeout'
@@ -445,8 +568,8 @@ $fabricItemsRenameMap = @{
 
 
 # Fetch and filter workspaces
-$workspacesUrl = "https://api.powerbi.com/v1.0/myorg/groups"
-$workspacesResponse = Invoke-PowerBIRestMethod -Method GET -Url $workspacesUrl | ConvertFrom-Json
+$workspacesUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/groups"
+$workspacesResponse = Invoke-PowerBIRestMethod -Method GET -Url $workspacesUrl -Verbose | ConvertFrom-Json
 $workspacesInfo = @()
 
 # --- Try WinForms picker; fallback if GUI not available ---
@@ -500,8 +623,8 @@ foreach ($workspace in $workspacesInfo) {
 Write-Output "Workspace [$($workspace.WorkspaceName)] Report & Model metadata extraction process started."
 
     # Fetch datasets
-    $datasetsUrl = "https://api.powerbi.com/v1.0/myorg/groups/$($workspace.WorkspaceId)/datasets"
-    $datasets = Invoke-PowerBIRestMethod -Method GET -Url $datasetsUrl | ConvertFrom-Json
+    $datasetsUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/groups/$($workspace.WorkspaceId)/datasets"
+    $datasets = Invoke-PowerBIRestMethod -Method GET -Url $datasetsUrl -Verbose | ConvertFrom-Json
 
     foreach ($dataset in $datasets.value) {
         $renamedDataset = Rename-Properties -object $dataset -renameMap $datasetRenameMap
@@ -513,8 +636,8 @@ Write-Output "Workspace [$($workspace.WorkspaceName)] Report & Model metadata ex
         $datasetsInfo += $renamedDataset
 
         # Fetch dataset sources
-        $datasourcesUrl = "https://api.powerbi.com/v1.0/myorg/groups/$($workspace.WorkspaceId)/datasets/$($dataset.id)/datasources"
-        $datasources = Invoke-PowerBIRestMethod -Method GET -Url $datasourcesUrl | ConvertFrom-Json
+        $datasourcesUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/groups/$($workspace.WorkspaceId)/datasets/$($dataset.id)/datasources"
+        $datasources = Invoke-PowerBIRestMethod -Method GET -Url $datasourcesUrl -Verbose | ConvertFrom-Json
 
         foreach ($datasource in $datasources.value) {
             $renamedDatasource = Rename-Properties -object $datasource -renameMap $datasetDatasourceRenameMap
@@ -530,8 +653,8 @@ Write-Output "Workspace [$($workspace.WorkspaceName)] Report & Model metadata ex
     }
 
     # Fetch reports
-    $reportsUrl = "https://api.powerbi.com/v1.0/myorg/groups/$($workspace.WorkspaceId)/reports"
-    $reports = Invoke-PowerBIRestMethod -Method GET -Url $reportsUrl | ConvertFrom-Json
+    $reportsUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/groups/$($workspace.WorkspaceId)/reports"
+    $reports = Invoke-PowerBIRestMethod -Method GET -Url $reportsUrl -Verbose | ConvertFrom-Json
 
 	# Create a hash set to store Report IDs
 	$reportIds = @{}
@@ -553,8 +676,8 @@ Write-Output "Workspace [$($workspace.WorkspaceName)] Report & Model metadata ex
         $reportsInfo += $renamedReport
 
         # Fetch report pages
-        $pagesUrl = "https://api.powerbi.com/v1.0/myorg/groups/$($workspace.WorkspaceId)/reports/$($report.id)/pages"
-        $pages = Invoke-PowerBIRestMethod -Method GET -Url $pagesUrl | ConvertFrom-Json
+        $pagesUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/groups/$($workspace.WorkspaceId)/reports/$($report.id)/pages"
+        $pages = Invoke-PowerBIRestMethod -Method GET -Url $pagesUrl -Verbose | ConvertFrom-Json
         foreach ($page in $pages.value) {
             $renamedPage = Rename-Properties -object $page -renameMap $pageRenameMap
             $renamedPage | Add-Member -NotePropertyName "WorkspaceId" -NotePropertyValue $workspace.WorkspaceId -Force
@@ -571,8 +694,8 @@ Write-Output "Workspace [$($workspace.WorkspaceName)] Report & Model metadata ex
 }
 
 # Fetch Apps and App Reports that are in filtered workspaces
-$appsUrl = "https://api.powerbi.com/v1.0/myorg/apps"
-$apps = Invoke-PowerBIRestMethod -Method GET -Url $appsUrl | ConvertFrom-Json
+$appsUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/apps"
+$apps = Invoke-PowerBIRestMethod -Method GET -Url $appsUrl -Verbose | ConvertFrom-Json
 
 # Create a hash set to store App Report IDs
 $appReportIds = @{}
@@ -584,8 +707,8 @@ foreach ($app in $apps.value) {
         $appsInfo += $renamedApp
 
         # Fetch reports within each app
-        $appReportsUrl = "https://api.powerbi.com/v1.0/myorg/apps/$($app.id)/reports"
-        $appReports = Invoke-PowerBIRestMethod -Method GET -Url $appReportsUrl | ConvertFrom-Json
+        $appReportsUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/apps/$($app.id)/reports"
+        $appReports = Invoke-PowerBIRestMethod -Method GET -Url $appReportsUrl -Verbose | ConvertFrom-Json
 
         foreach ($report in $appReports.value) {
             $renamedAppReport = Rename-Properties -object $report -renameMap $appReportRenameMap
@@ -606,8 +729,8 @@ foreach ($workspace in $workspacesInfo) {
 Write-Output "Workspace [$($workspace.WorkspaceName)] Model Refresh History extraction process started."
 
     foreach ($dataset in $datasetsInfo | Where-Object { $_.WorkspaceId -eq $workspace.WorkspaceId }) {
-        $refreshHistoryUrl = "https://api.powerbi.com/v1.0/myorg/groups/$($workspace.WorkspaceId)/datasets/$($dataset.DatasetId)/refreshes"
-        $refreshHistoryResponse = Invoke-PowerBIRestMethod -Method GET -Url $refreshHistoryUrl | ConvertFrom-Json
+        $refreshHistoryUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/groups/$($workspace.WorkspaceId)/datasets/$($dataset.DatasetId)/refreshes"
+        $refreshHistoryResponse = Invoke-PowerBIRestMethod -Method GET -Url $refreshHistoryUrl -Verbose | ConvertFrom-Json
 
         foreach ($refresh in $refreshHistoryResponse.value) {
             $renamedRefreshRecord = Rename-Properties -object $refresh -renameMap $datasetRefreshRenameMap
@@ -628,8 +751,8 @@ foreach ($workspace in $workspacesInfo) {
 
 Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow metadata extraction process started."
 
-    $dataflowsUrl = "https://api.powerbi.com/v1.0/myorg/groups/$($workspace.WorkspaceId)/dataflows"
-    $dataflowsResponse = Invoke-PowerBIRestMethod -Method GET -Url $dataflowsUrl | ConvertFrom-Json
+    $dataflowsUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/groups/$($workspace.WorkspaceId)/dataflows"
+    $dataflowsResponse = Invoke-PowerBIRestMethod -Method GET -Url $dataflowsUrl -Verbose | ConvertFrom-Json
 
     # Ensure response is not null before looping
     if ($dataflowsResponse.value) {
@@ -646,8 +769,8 @@ Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow metadata extracti
             $dataflowsInfo += $renamedDataflow
 
             # Fetch Dataflow Datasources
-            $dataflowSourcesUrl = "https://api.powerbi.com/v1.0/myorg/groups/$($workspace.WorkspaceId)/dataflows/$($dataflow.objectId)/datasources"
-            $dataflowSourcesResponse = Invoke-PowerBIRestMethod -Method GET -Url $dataflowSourcesUrl | ConvertFrom-Json
+            $dataflowSourcesUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/groups/$($workspace.WorkspaceId)/dataflows/$($dataflow.objectId)/datasources"
+            $dataflowSourcesResponse = Invoke-PowerBIRestMethod -Method GET -Url $dataflowSourcesUrl -Verbose | ConvertFrom-Json
 
             # Ensure response is not null before looping
             if ($dataflowSourcesResponse.value) {
@@ -683,8 +806,8 @@ Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow metadata extracti
 # Fetch Dataflow Lineage (Upstream Dataflows)
 foreach ($workspace in $workspacesInfo) {
 
-        $dataflowLineageUrl = "https://api.powerbi.com/v1.0/myorg/groups/$($workspace.WorkspaceId)/datasets/upstreamDataflows"
-        $dataflowLineageResponse = Invoke-PowerBIRestMethod -Method GET -Url $dataflowLineageUrl | ConvertFrom-Json
+        $dataflowLineageUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/groups/$($workspace.WorkspaceId)/datasets/upstreamDataflows"
+        $dataflowLineageResponse = Invoke-PowerBIRestMethod -Method GET -Url $dataflowLineageUrl -Verbose | ConvertFrom-Json
 
         # Ensure response is not null before looping
         if ($dataflowLineageResponse.value) {
@@ -717,8 +840,8 @@ foreach ($workspace in $workspacesInfo) {
 foreach ($workspace in $workspacesInfo) {
 Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow Refresh History extraction process started."
     foreach ($dataflow in $dataflowsInfo | Where-Object { $_.WorkspaceId -eq $workspace.WorkspaceId }) {
-        $refreshHistoryUrl = "https://api.powerbi.com/v1.0/myorg/groups/$($workspace.WorkspaceId)/dataflows/$($dataflow.DataflowId)/transactions"
-        $refreshHistoryResponse = Invoke-PowerBIRestMethod -Method GET -Url $refreshHistoryUrl | ConvertFrom-Json
+        $refreshHistoryUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/groups/$($workspace.WorkspaceId)/dataflows/$($dataflow.DataflowId)/transactions"
+        $refreshHistoryResponse = Invoke-PowerBIRestMethod -Method GET -Url $refreshHistoryUrl -Verbose | ConvertFrom-Json
 
         # Ensure response is not null before looping
         if ($refreshHistoryResponse.value) {
@@ -750,10 +873,10 @@ Write-Output "Workspace [$($workspace.WorkspaceName)] Fabric Item metadata extra
 
     $workspaceId = $workspace.WorkspaceId
     $workspaceName = $workspace.WorkspaceName
-    $fabricItemsUrl = "https://api.fabric.microsoft.com/v1/workspaces/$workspaceId/items"
+    $fabricItemsUrl = "$($global:PowerBIEndpoints.FabricApiPrefix)/v1/workspaces/$workspaceId/items"
 
     try {
-        $fabricItemsResponse = Invoke-PowerBIRestMethod -Method GET -Url $fabricItemsUrl | ConvertFrom-Json
+        $fabricItemsResponse = Invoke-PowerBIRestMethod -Method GET -Url $fabricItemsUrl -Verbose | ConvertFrom-Json
 
 
         $filteredItems = $fabricItemsResponse.value | Where-Object {
@@ -802,8 +925,8 @@ if ($IncludeMyWorkspace -or ($selection -and $selection.TimedOut)) {
     $workspacesInfo += $myWorkspaceDetails
 
     # Fetch datasets from "My Workspace"
-    $myWorkspaceDatasetsUrl = "https://api.powerbi.com/v1.0/myorg/datasets"
-    $myWorkspaceDatasets = Invoke-PowerBIRestMethod -Method GET -Url $myWorkspaceDatasetsUrl | ConvertFrom-Json
+    $myWorkspaceDatasetsUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/datasets"
+    $myWorkspaceDatasets = Invoke-PowerBIRestMethod -Method GET -Url $myWorkspaceDatasetsUrl -Verbose | ConvertFrom-Json
     foreach ($dataset in $myWorkspaceDatasets.value) {
         $renamedDataset = Rename-Properties -object $dataset -renameMap $datasetRenameMap
         $renamedDataset | Add-Member -NotePropertyName "WorkspaceId" -NotePropertyValue $myWorkspaceId -Force
@@ -811,8 +934,8 @@ if ($IncludeMyWorkspace -or ($selection -and $selection.TimedOut)) {
         $datasetNameLookup[$dataset.id] = $dataset.name
         $datasetsInfo += $renamedDataset
 
-        $datasourcesUrl = "https://api.powerbi.com/v1.0/myorg/datasets/$($dataset.id)/datasources"
-        $datasources = Invoke-PowerBIRestMethod -Method GET -Url $datasourcesUrl | ConvertFrom-Json
+        $datasourcesUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/datasets/$($dataset.id)/datasources"
+        $datasources = Invoke-PowerBIRestMethod -Method GET -Url $datasourcesUrl -Verbose | ConvertFrom-Json
         foreach ($datasource in $datasources.value) {
             $renamedDatasource = Rename-Properties -object $datasource -renameMap $datasetDatasourceRenameMap
             $renamedDatasource | Add-Member -NotePropertyName "WorkspaceId" -NotePropertyValue $myWorkspaceId -Force
@@ -827,8 +950,8 @@ if ($IncludeMyWorkspace -or ($selection -and $selection.TimedOut)) {
     }
 
     # Fetch reports from "My Workspace"
-    $myWorkspaceReportsUrl = "https://api.powerbi.com/v1.0/myorg/reports"
-    $myWorkspaceReports = Invoke-PowerBIRestMethod -Method GET -Url $myWorkspaceReportsUrl | ConvertFrom-Json
+    $myWorkspaceReportsUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/reports"
+    $myWorkspaceReports = Invoke-PowerBIRestMethod -Method GET -Url $myWorkspaceReportsUrl -Verbose | ConvertFrom-Json
 
     $sharedReportExists = $false
     foreach ($report in $myWorkspaceReports.value) {
@@ -858,14 +981,14 @@ if ($IncludeMyWorkspace -or ($selection -and $selection.TimedOut)) {
         }
         $reportsInfo += $renamedReport
 
-        $pagesUrl = "https://api.powerbi.com/v1.0/myorg/reports/$($report.id)/pages"
+        $pagesUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/reports/$($report.id)/pages"
         $pages = Invoke-PowerBIRestMethod -Method GET -Url $pagesUrl | ConvertFrom-Json
         foreach ($page in $pages.value) {
             $renamedPage = Rename-Properties -object $page -renameMap $pageRenameMap
             $renamedPage | Add-Member -NotePropertyName "WorkspaceId" -NotePropertyValue $workspaceIdValue -Force
             $renamedPage | Add-Member -NotePropertyName "WorkspaceName" -NotePropertyValue $workspaceNameValue -Force
-            $renamedPage | Add-Member -NotePropertyName "ReportId" -NotePropertyValue $report.id -Force
-            $renamedPage | Add-Member -NotePropertyName "ReportName" -NotePropertyValue $report.name -Force
+            $renamedPage | Add-Member -NotePropertyValue "ReportId" -NotePropertyValue $report.id -Force
+            $renamedPage | Add-Member -NotePropertyValue "ReportName" -NotePropertyValue $report.name -Force
             $reportPagesInfo += $renamedPage
         }
     }
@@ -883,7 +1006,7 @@ if ($IncludeMyWorkspace -or ($selection -and $selection.TimedOut)) {
 
     # Dataset refresh history for My Workspace
     foreach ($dataset in $datasetsInfo | Where-Object { $_.WorkspaceId -eq $myWorkspaceId }) {
-        $refreshHistoryUrl = "https://api.powerbi.com/v1.0/myorg/datasets/$($dataset.DatasetId)/refreshes"
+        $refreshHistoryUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/datasets/$($dataset.DatasetId)/refreshes"
         $refreshHistoryResponse = Invoke-PowerBIRestMethod -Method GET -Url $refreshHistoryUrl | ConvertFrom-Json
         foreach ($refresh in $refreshHistoryResponse.value) {
             $renamedRefreshRecord = Rename-Properties -object $refresh -renameMap $datasetRefreshRenameMap
@@ -990,7 +1113,7 @@ Model.Database.Name = `"$newModelDatabaseName`";
 
 
         # Construct the argument list for the model export with renaming
-        $modelExportArgs = "`"Provider=MSOLAP;Data Source=powerbi://api.powerbi.com/v1.0/myorg/$workspaceName;Password=$(Get-CurrentAccessToken)`" `"$datasetName`" -S `"$tempScriptPath`" -B `"$folderPath\$cleanDatasetWorkspaceName ~ $cleanDatasetName.bim`""
+        $modelExportArgs = "`"Provider=MSOLAP;Data Source=$($global:PowerBIEndpoints.XmlaPrefix)/v1.0/myorg/$workspaceName;Password=$(Get-CurrentAccessToken)`" `"$datasetName`" -S `"$tempScriptPath`" -B `"$folderPath\$cleanDatasetWorkspaceName ~ $cleanDatasetName.bim`""
         
         # Start the Tabular Editor process for model export and renaming
 		Write-Host "**Exporting $cleanDatasetWorkspaceName ~ $cleanDatasetName**"
@@ -1056,7 +1179,7 @@ function Export-ReportUsingAPI {
     )
 
     $accessToken = Get-CurrentAccessToken
-    $apiUrl = "https://api.powerbi.com/v1.0/myorg/groups/$GroupId/reports/$ReportId/Export?downloadType=$DownloadType"
+    $apiUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/groups/$GroupId/reports/$ReportId/Export?downloadType=$DownloadType"
 
     try {
         Invoke-RestMethod -Uri $apiUrl `
@@ -1260,12 +1383,16 @@ foreach ($txtFile in (Get-ChildItem -Path $newDateFolder -Filter *.txt)) {
     
     # Read raw lines without automatically trimming leading or trailing spaces
     $lines = Get-Content -Path $txtFile.FullName -Encoding UTF8
+    
+    if ($lines.Count -eq 0) { continue }
+    
     $headers = $lines[0] -split "`t"
     $data = $lines[1..($lines.Count - 1)] | ForEach-Object {
-        $values = $_ -split "`t", -1  # -1 keeps empty trailing fields and preserves spaces
+        $values = $_ -split "`t", $headers.Count  # Split into exact number of columns as headers
         $obj = @{}
         for ($i = 0; $i -lt $headers.Length; $i++) {
-            $obj[$headers[$i]] = $values[$i]
+            # Handle cases where there might be fewer values than headers
+            $obj[$headers[$i]] = if ($i -lt $values.Count) { $values[$i] } else { $null }
         }
         [PSCustomObject]$obj
     }
@@ -1485,7 +1612,7 @@ function Export-FabricDataflow {
     $cleanDataflowName = $cleanDataflowName -replace "[^a-zA-Z0-9\(\)&,.-]", " "
     $cleanDataflowName = $cleanDataflowName.TrimStart()
     
-    $fabricApiBaseUri = "https://api.fabric.microsoft.com/v1/workspaces"
+    $fabricApiBaseUri = "$($global:PowerBIEndpoints.FabricApiPrefix)/v1/workspaces"
     $endpoint = "$fabricApiBaseUri/$WorkspaceId/dataflows/$DataflowId/getDefinition"
     
     $headers = @{
@@ -1682,7 +1809,7 @@ foreach ($workspace in $workspacesInfo) {
     $workspaceId = $workspace.WorkspaceId
 
     # Set the Power BI REST API URL for the dataflow details
-    $dataflowDetailsUrl = "https://api.powerbi.com/v1.0/myorg/groups/$workspaceId/dataflows"
+    $dataflowDetailsUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/groups/$workspaceId/dataflows"
 
     # Get the list of dataflows in the workspace
     $dataflowsResponse = Invoke-PowerBIRestMethod -Url $dataflowDetailsUrl -Method Get
@@ -1712,7 +1839,7 @@ foreach ($workspace in $workspacesInfo) {
             $dataflowOutputFilePath = Join-Path -Path $baseOutputFilePath -ChildPath "$cleanWorkspaceName ~ $cleanDataFlowName.txt"
             
             # Set the Power BI REST API URL for the specific dataflow
-            $apiUrl = "https://api.powerbi.com/v1.0/myorg/groups/$workspaceId/dataflows/$dataflowId"
+            $apiUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/groups/$workspaceId/dataflows/$dataflowId"
             
             # Get the dataflow
             $response = Invoke-PowerBIRestMethod -Url $apiUrl -Method Get
@@ -1786,7 +1913,7 @@ foreach ($workspace in $workspacesInfo) {
                     $row["Dataflow Name"] = $item."Dataflow Name"
                     $row["Query Name"] = $item."Query Name"
                     $row["Query"] = $item.Query
-                    $row["Report Date"] = $item."Report Date"
+                    $row["Report Date" ] = $item."Report Date"
                     $row["Workspace Name - Dataflow Name"] = $item."Workspace Name - Dataflow Name"
                     $combinedDataTable.Rows.Add($row)
                 }
@@ -1806,7 +1933,7 @@ foreach ($workspace in $workspacesInfo) {
     $workspaceId = $workspace.WorkspaceId
     
     # Set the Fabric API URL for items
-    $fabricItemsUrl = "https://api.fabric.microsoft.com/v1/workspaces/$workspaceId/items"
+    $fabricItemsUrl = "$($global:PowerBIEndpoints.FabricApiPrefix)/v1/workspaces/$workspaceId/items"
     
     try {
         # Get the list of items in the workspace
@@ -1906,4 +2033,4 @@ Write-Output "All Excel files processed and combined successfully."
 $scriptEndTime = Get-Date
 $elapsedTime = New-TimeSpan -Start $scriptStartTime -End $scriptEndTime
 Write-Output "Total Elapsed Time: $($elapsedTime.Hours)h $($elapsedTime.Minutes)m $($elapsedTime.Seconds)s"
- 
+
