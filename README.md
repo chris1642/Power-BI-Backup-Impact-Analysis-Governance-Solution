@@ -19,15 +19,18 @@ This provides a quick and automated way to identify where and how specific field
 - **Backup Solution**: Automatically backs up every model, report, and dataflow for safekeeping.
 - **User-Friendly Output**: Results are presented in a Power BI model, making them easy to explore, analyze, and share with your team.
 
-     .
+---
 
-     .
+#### ✨ Recently Added Features
+
+- **Sovereign Cloud Support** → Now supports Power BI in Government and International clouds! Choose from Public (default), Germany, USGov, China, USGovHigh, or USGovMil environments at script start.
+
+ ---
 
 ## 🚀 Quick Start Instructions  
 
 You’ve got **two ways** to get started:  
 
----
 
 ### 🟢 Option 1 — One-Click Update & Run Tool (Recommended)  
 Always up-to-date and the easiest way to get started.  
@@ -59,9 +62,15 @@ This automatically:
 > Download all repo files and place them into the newly-created `C:\Power BI Backups` folder.  
 
 #### ✅ Step 3: Run Script  
-> Open PowerShell and run the Final PS Script. You can:  
-> - Copy/paste the full script, or  
-> - Rename `Final PS Script.txt` → `Final PS Script.ps1` and run directly  
+> Open PowerShell and run the script:
+> ```powershell
+> cd "C:\Power BI Backups"
+> .\Final_PS_Script.ps1
+> ```
+> 
+> **Environment Selection**: When prompted, enter your Power BI environment:
+> - Press **Enter** for Public cloud (default)
+> - Or enter: `Germany`, `USGov`, `China`, `USGovHigh`, or `USGovMil` for sovereign clouds
 
 #### ✅ Step 4: Open the Power BI File  
 > Open: `Power BI Governance Model.pbit`  
@@ -81,6 +90,17 @@ This automatically:
 ---
 
 ### ℹ️ Additional Notes
+
+> 🌐 **Sovereign Cloud Support**  
+> The script now supports Power BI in Government and International cloud environments:
+> - **Public** (default) - Commercial cloud
+> - **Germany** - Microsoft Cloud Germany  
+> - **USGov** - Azure Government (GCC)
+> - **China** - Microsoft Cloud China (21Vianet)
+> - **USGovHigh** - Azure Government (GCC High)
+> - **USGovMil** - Azure Government (DoD)
+> 
+> When you run the script, you'll be prompted to select your environment. The script automatically uses the correct API endpoints for all Power BI, Fabric, and XMLA connections.
 
 > ⚙️ *PowerShell may prompt to install required modules.*  
 > No admin access is needed — they install at the user level.
@@ -110,14 +130,6 @@ This automatically:
 
 ---
 ## Features
-
-### ✨ Recently Added Features
-
-- **Workspace Selector** → Only want to run this against 1, 2, 10 workspaces? Now
-a popup will allow you to choose which workspaces you run this against. Select All will still run against eveyrthing and a built-in timer ensures no selection will run against everything.
-- **Unused Model Objects** → Identify model fields/measures not used in any visuals, measures, or relationships.  
-- **Broken Visuals (with Page Links)** → See all broken visuals/filters and jump directly to the impacted report page.  
-- **Report-Level Measures Inventory** → Surface report-only measures with full DAX and usage details.
   
 ---
 
@@ -189,6 +201,7 @@ a popup will allow you to choose which workspaces you run this against. Select A
 
 <img width="1235" alt="image" src="https://github.com/user-attachments/assets/805d3145-8290-4d84-8da2-bb27529bb050">
 <img width="1259" alt="image" src="https://github.com/user-attachments/assets/54212360-8d0f-44c5-9337-db2cdd0fb5ee">
+<img width="1240" alt="image" src="https://github.com/user-attachments/assets/488fc303-a9fa-4d4e-b0ce-c827fb440e83">
 <img width="1259" alt="image" src="https://github.com/user-attachments/assets/9280e350-8714-40e5-8e09-d1de07faf5f5">
 <img width="1221" alt="image" src="https://github.com/user-attachments/assets/e120c1bb-b52a-4197-aeb3-2a6ddbb67a9f">
 <img width="1221" alt="image" src="https://github.com/user-attachments/assets/c9f5331d-8976-4f66-be76-5628e38e8d0f">
