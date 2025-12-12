@@ -987,8 +987,8 @@ if ($IncludeMyWorkspace -or ($selection -and $selection.TimedOut)) {
             $renamedPage = Rename-Properties -object $page -renameMap $pageRenameMap
             $renamedPage | Add-Member -NotePropertyName "WorkspaceId" -NotePropertyValue $workspaceIdValue -Force
             $renamedPage | Add-Member -NotePropertyName "WorkspaceName" -NotePropertyValue $workspaceNameValue -Force
-            $renamedPage | Add-Member -NotePropertyName "ReportId" -NotePropertyValue $report.id -Force
-            $renamedPage | Add-Member -NotePropertyName "ReportName" -NotePropertyValue $report.name -Force
+            $renamedPage | Add-Member -NotePropertyValue "ReportId" -NotePropertyValue $report.id -Force
+            $renamedPage | Add-Member -NotePropertyValue "ReportName" -NotePropertyValue $report.name -Force
             $reportPagesInfo += $renamedPage
         }
     }
@@ -1383,12 +1383,16 @@ foreach ($txtFile in (Get-ChildItem -Path $newDateFolder -Filter *.txt)) {
     
     # Read raw lines without automatically trimming leading or trailing spaces
     $lines = Get-Content -Path $txtFile.FullName -Encoding UTF8
+    
+    if ($lines.Count -eq 0) { continue }
+    
     $headers = $lines[0] -split "`t"
     $data = $lines[1..($lines.Count - 1)] | ForEach-Object {
-        $values = $_ -split "`t", -1  # -1 keeps empty trailing fields and preserves spaces
+        $values = $_ -split "`t", $headers.Count  # Split into exact number of columns as headers
         $obj = @{}
         for ($i = 0; $i -lt $headers.Length; $i++) {
-            $obj[$headers[$i]] = $values[$i]
+            # Handle cases where there might be fewer values than headers
+            $obj[$headers[$i]] = if ($i -lt $values.Count) { $values[$i] } else { $null }
         }
         [PSCustomObject]$obj
     }
@@ -1909,7 +1913,7 @@ foreach ($workspace in $workspacesInfo) {
                     $row["Dataflow Name"] = $item."Dataflow Name"
                     $row["Query Name"] = $item."Query Name"
                     $row["Query"] = $item.Query
-                    $row["Report Date"] = $item."Report Date"
+                    $row["Report Date" ] = $item."Report Date"
                     $row["Workspace Name - Dataflow Name"] = $item."Workspace Name - Dataflow Name"
                     $combinedDataTable.Rows.Add($row)
                 }
@@ -2029,4 +2033,4 @@ Write-Output "All Excel files processed and combined successfully."
 $scriptEndTime = Get-Date
 $elapsedTime = New-TimeSpan -Start $scriptStartTime -End $scriptEndTime
 Write-Output "Total Elapsed Time: $($elapsedTime.Hours)h $($elapsedTime.Minutes)m $($elapsedTime.Seconds)s"
- 
+
