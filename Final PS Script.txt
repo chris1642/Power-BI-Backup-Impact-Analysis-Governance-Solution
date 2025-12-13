@@ -619,7 +619,7 @@ $fabricItemsRenameMap = @{
 
 # Fetch and filter workspaces
 $workspacesUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/groups"
-$workspacesResponse = Invoke-PowerBIRestMethod -Method GET -Url $workspacesUrl -Verbose | ConvertFrom-Json
+$workspacesResponse = Invoke-PowerBIRestMethod -Method GET -Url $workspacesUrl | ConvertFrom-Json
 $workspacesInfo = @()
 
 # --- Try WinForms picker; fallback if GUI not available ---
@@ -674,7 +674,7 @@ Write-Output "Workspace [$($workspace.WorkspaceName)] Report & Model metadata ex
 
     # Fetch datasets
     $datasetsUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/groups/$($workspace.WorkspaceId)/datasets"
-    $datasets = Invoke-PowerBIRestMethod -Method GET -Url $datasetsUrl -Verbose | ConvertFrom-Json
+    $datasets = Invoke-PowerBIRestMethod -Method GET -Url $datasetsUrl | ConvertFrom-Json
 
     foreach ($dataset in $datasets.value) {
         $renamedDataset = Rename-Properties -object $dataset -renameMap $datasetRenameMap
@@ -687,7 +687,7 @@ Write-Output "Workspace [$($workspace.WorkspaceName)] Report & Model metadata ex
 
         # Fetch dataset sources
         $datasourcesUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/groups/$($workspace.WorkspaceId)/datasets/$($dataset.id)/datasources"
-        $datasources = Invoke-PowerBIRestMethod -Method GET -Url $datasourcesUrl -Verbose | ConvertFrom-Json
+        $datasources = Invoke-PowerBIRestMethod -Method GET -Url $datasourcesUrl | ConvertFrom-Json
 
         foreach ($datasource in $datasources.value) {
             $renamedDatasource = Rename-Properties -object $datasource -renameMap $datasetDatasourceRenameMap
@@ -704,7 +704,7 @@ Write-Output "Workspace [$($workspace.WorkspaceName)] Report & Model metadata ex
 
     # Fetch reports
     $reportsUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/groups/$($workspace.WorkspaceId)/reports"
-    $reports = Invoke-PowerBIRestMethod -Method GET -Url $reportsUrl -Verbose | ConvertFrom-Json
+    $reports = Invoke-PowerBIRestMethod -Method GET -Url $reportsUrl | ConvertFrom-Json
 
 	# Create a hash set to store Report IDs
 	$reportIds = @{}
@@ -727,7 +727,7 @@ Write-Output "Workspace [$($workspace.WorkspaceName)] Report & Model metadata ex
 
         # Fetch report pages
         $pagesUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/groups/$($workspace.WorkspaceId)/reports/$($report.id)/pages"
-        $pages = Invoke-PowerBIRestMethod -Method GET -Url $pagesUrl -Verbose | ConvertFrom-Json
+        $pages = Invoke-PowerBIRestMethod -Method GET -Url $pagesUrl | ConvertFrom-Json
         foreach ($page in $pages.value) {
             $renamedPage = Rename-Properties -object $page -renameMap $pageRenameMap
             $renamedPage | Add-Member -NotePropertyName "WorkspaceId" -NotePropertyValue $workspace.WorkspaceId -Force
@@ -745,7 +745,7 @@ Write-Output "Workspace [$($workspace.WorkspaceName)] Report & Model metadata ex
 
 # Fetch Apps and App Reports that are in filtered workspaces
 $appsUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/apps"
-$apps = Invoke-PowerBIRestMethod -Method GET -Url $appsUrl -Verbose | ConvertFrom-Json
+$apps = Invoke-PowerBIRestMethod -Method GET -Url $appsUrl | ConvertFrom-Json
 
 # Create a hash set to store App Report IDs
 $appReportIds = @{}
@@ -758,7 +758,7 @@ foreach ($app in $apps.value) {
 
         # Fetch reports within each app
         $appReportsUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/apps/$($app.id)/reports"
-        $appReports = Invoke-PowerBIRestMethod -Method GET -Url $appReportsUrl -Verbose | ConvertFrom-Json
+        $appReports = Invoke-PowerBIRestMethod -Method GET -Url $appReportsUrl | ConvertFrom-Json
 
         foreach ($report in $appReports.value) {
             $renamedAppReport = Rename-Properties -object $report -renameMap $appReportRenameMap
@@ -780,7 +780,7 @@ Write-Output "Workspace [$($workspace.WorkspaceName)] Model Refresh History extr
 
     foreach ($dataset in $datasetsInfo | Where-Object { $_.WorkspaceId -eq $workspace.WorkspaceId }) {
         $refreshHistoryUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/groups/$($workspace.WorkspaceId)/datasets/$($dataset.DatasetId)/refreshes"
-        $refreshHistoryResponse = Invoke-PowerBIRestMethod -Method GET -Url $refreshHistoryUrl -Verbose | ConvertFrom-Json
+        $refreshHistoryResponse = Invoke-PowerBIRestMethod -Method GET -Url $refreshHistoryUrl | ConvertFrom-Json
 
         foreach ($refresh in $refreshHistoryResponse.value) {
             $renamedRefreshRecord = Rename-Properties -object $refresh -renameMap $datasetRefreshRenameMap
@@ -802,7 +802,7 @@ foreach ($workspace in $workspacesInfo) {
 Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow metadata extraction process started."
 
     $dataflowsUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/groups/$($workspace.WorkspaceId)/dataflows"
-    $dataflowsResponse = Invoke-PowerBIRestMethod -Method GET -Url $dataflowsUrl -Verbose | ConvertFrom-Json
+    $dataflowsResponse = Invoke-PowerBIRestMethod -Method GET -Url $dataflowsUrl | ConvertFrom-Json
 
     # Ensure response is not null before looping
     if ($dataflowsResponse.value) {
@@ -820,7 +820,7 @@ Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow metadata extracti
 
             # Fetch Dataflow Datasources
             $dataflowSourcesUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/groups/$($workspace.WorkspaceId)/dataflows/$($dataflow.objectId)/datasources"
-            $dataflowSourcesResponse = Invoke-PowerBIRestMethod -Method GET -Url $dataflowSourcesUrl -Verbose | ConvertFrom-Json
+            $dataflowSourcesResponse = Invoke-PowerBIRestMethod -Method GET -Url $dataflowSourcesUrl | ConvertFrom-Json
 
             # Ensure response is not null before looping
             if ($dataflowSourcesResponse.value) {
@@ -857,7 +857,7 @@ Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow metadata extracti
 foreach ($workspace in $workspacesInfo) {
 
         $dataflowLineageUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/groups/$($workspace.WorkspaceId)/datasets/upstreamDataflows"
-        $dataflowLineageResponse = Invoke-PowerBIRestMethod -Method GET -Url $dataflowLineageUrl -Verbose | ConvertFrom-Json
+        $dataflowLineageResponse = Invoke-PowerBIRestMethod -Method GET -Url $dataflowLineageUrl | ConvertFrom-Json
 
         # Ensure response is not null before looping
         if ($dataflowLineageResponse.value) {
@@ -891,7 +891,7 @@ foreach ($workspace in $workspacesInfo) {
 Write-Output "Workspace [$($workspace.WorkspaceName)] Dataflow Refresh History extraction process started."
     foreach ($dataflow in $dataflowsInfo | Where-Object { $_.WorkspaceId -eq $workspace.WorkspaceId }) {
         $refreshHistoryUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/groups/$($workspace.WorkspaceId)/dataflows/$($dataflow.DataflowId)/transactions"
-        $refreshHistoryResponse = Invoke-PowerBIRestMethod -Method GET -Url $refreshHistoryUrl -Verbose | ConvertFrom-Json
+        $refreshHistoryResponse = Invoke-PowerBIRestMethod -Method GET -Url $refreshHistoryUrl | ConvertFrom-Json
 
         # Ensure response is not null before looping
         if ($refreshHistoryResponse.value) {
@@ -926,7 +926,7 @@ Write-Output "Workspace [$($workspace.WorkspaceName)] Fabric Item metadata extra
     $fabricItemsUrl = "$($global:PowerBIEndpoints.FabricApiPrefix)/v1/workspaces/$workspaceId/items"
 
     try {
-        $fabricItemsResponse = Invoke-PowerBIRestMethod -Method GET -Url $fabricItemsUrl -Verbose | ConvertFrom-Json
+        $fabricItemsResponse = Invoke-PowerBIRestMethod -Method GET -Url $fabricItemsUrl | ConvertFrom-Json
 
 
         $filteredItems = $fabricItemsResponse.value | Where-Object {
@@ -976,7 +976,7 @@ if ($IncludeMyWorkspace -or ($selection -and $selection.TimedOut)) {
 
     # Fetch datasets from "My Workspace"
     $myWorkspaceDatasetsUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/datasets"
-    $myWorkspaceDatasets = Invoke-PowerBIRestMethod -Method GET -Url $myWorkspaceDatasetsUrl -Verbose | ConvertFrom-Json
+    $myWorkspaceDatasets = Invoke-PowerBIRestMethod -Method GET -Url $myWorkspaceDatasetsUrl | ConvertFrom-Json
     foreach ($dataset in $myWorkspaceDatasets.value) {
         $renamedDataset = Rename-Properties -object $dataset -renameMap $datasetRenameMap
         $renamedDataset | Add-Member -NotePropertyName "WorkspaceId" -NotePropertyValue $myWorkspaceId -Force
@@ -985,7 +985,7 @@ if ($IncludeMyWorkspace -or ($selection -and $selection.TimedOut)) {
         $datasetsInfo += $renamedDataset
 
         $datasourcesUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/datasets/$($dataset.id)/datasources"
-        $datasources = Invoke-PowerBIRestMethod -Method GET -Url $datasourcesUrl -Verbose | ConvertFrom-Json
+        $datasources = Invoke-PowerBIRestMethod -Method GET -Url $datasourcesUrl | ConvertFrom-Json
         foreach ($datasource in $datasources.value) {
             $renamedDatasource = Rename-Properties -object $datasource -renameMap $datasetDatasourceRenameMap
             $renamedDatasource | Add-Member -NotePropertyName "WorkspaceId" -NotePropertyValue $myWorkspaceId -Force
@@ -1001,7 +1001,7 @@ if ($IncludeMyWorkspace -or ($selection -and $selection.TimedOut)) {
 
     # Fetch reports from "My Workspace"
     $myWorkspaceReportsUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/reports"
-    $myWorkspaceReports = Invoke-PowerBIRestMethod -Method GET -Url $myWorkspaceReportsUrl -Verbose | ConvertFrom-Json
+    $myWorkspaceReports = Invoke-PowerBIRestMethod -Method GET -Url $myWorkspaceReportsUrl | ConvertFrom-Json
 
     $sharedReportExists = $false
     foreach ($report in $myWorkspaceReports.value) {
