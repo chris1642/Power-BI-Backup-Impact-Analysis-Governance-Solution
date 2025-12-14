@@ -537,6 +537,12 @@ $datasetRefreshRenameMap = @{
     "refreshType" = "DatasetRefreshType"
 }
 
+$datasetRefreshScheduleRenameMap = @{
+    "enabled" = "DatasetRefreshScheduleEnabled";
+    "localTimeZoneId" = "DatasetRefreshScheduleLocalTimeZoneId";
+    "notifyOption" = "DatasetRefreshScheduleNotifyOption"
+}
+
 $dataflowRefreshRenameMap = @{
     "requestId" = "DataflowRefreshRequestId";
     "id" = "DataflowRefreshId";
@@ -664,6 +670,7 @@ $reportsInAppInfo = @()
 $datasetNameLookup = @{}
 $dataflowNameLookup = @{}
 $datasetRefreshHistory = @()
+$datasetRefreshSchedule = @()
 $dataflowRefreshHistory = @()
 
 
@@ -794,6 +801,43 @@ Write-Output "Workspace [$($workspace.WorkspaceName)] Model Refresh History extr
     }
 Write-Output "Workspace [$($workspace.WorkspaceName)] Model Refresh History extraction process completed."
 }  
+
+
+# Fetch Refresh Schedule for Datasets
+foreach ($workspace in $workspacesInfo) {
+
+Write-Output "Workspace [$($workspace.WorkspaceName)] Model Refresh Schedule extraction process started."
+
+    foreach ($dataset in $datasetsInfo | Where-Object { $_.WorkspaceId -eq $workspace.WorkspaceId }) {
+        $refreshScheduleUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/groups/$($workspace.WorkspaceId)/datasets/$($dataset.DatasetId)/refreshSchedule"
+        
+        try {
+            $refreshScheduleResponse = Invoke-PowerBIRestMethod -Method GET -Url $refreshScheduleUrl | ConvertFrom-Json
+            
+            $renamedScheduleRecord = Rename-Properties -object $refreshScheduleResponse -renameMap $datasetRefreshScheduleRenameMap
+            $renamedScheduleRecord | Add-Member -NotePropertyName "WorkspaceId" -NotePropertyValue $workspace.WorkspaceId -Force
+            $renamedScheduleRecord | Add-Member -NotePropertyName "WorkspaceName" -NotePropertyValue $workspace.WorkspaceName -Force
+            $renamedScheduleRecord | Add-Member -NotePropertyName "DatasetId" -NotePropertyValue $dataset.DatasetId -Force
+            $renamedScheduleRecord | Add-Member -NotePropertyName "DatasetName" -NotePropertyValue $dataset.DatasetName -Force
+            
+            # Handle days array if present
+            if ($refreshScheduleResponse.days) {
+                $renamedScheduleRecord | Add-Member -NotePropertyName "DatasetRefreshScheduleDays" -NotePropertyValue ($refreshScheduleResponse.days -join ", ") -Force
+            }
+            
+            # Handle times array if present
+            if ($refreshScheduleResponse.times) {
+                $renamedScheduleRecord | Add-Member -NotePropertyName "DatasetRefreshScheduleTimes" -NotePropertyValue ($refreshScheduleResponse.times -join ", ") -Force
+            }
+
+            $datasetRefreshSchedule += $renamedScheduleRecord
+        }
+        catch {
+            # Silently continue if refresh schedule is not available for this dataset
+        }
+    }
+Write-Output "Workspace [$($workspace.WorkspaceName)] Model Refresh Schedule extraction process completed."
+}
 
 
 # Fetch Dataflows for Workspaces
@@ -1068,6 +1112,36 @@ if ($IncludeMyWorkspace -or ($selection -and $selection.TimedOut)) {
         }
     }
 
+    # Dataset refresh schedule for My Workspace
+    foreach ($dataset in $datasetsInfo | Where-Object { $_.WorkspaceId -eq $myWorkspaceId }) {
+        $refreshScheduleUrl = "$($global:PowerBIEndpoints.ApiPrefix)/v1.0/myorg/datasets/$($dataset.DatasetId)/refreshSchedule"
+        
+        try {
+            $refreshScheduleResponse = Invoke-PowerBIRestMethod -Method GET -Url $refreshScheduleUrl | ConvertFrom-Json
+            
+            $renamedScheduleRecord = Rename-Properties -object $refreshScheduleResponse -renameMap $datasetRefreshScheduleRenameMap
+            $renamedScheduleRecord | Add-Member -NotePropertyName "WorkspaceId" -NotePropertyValue $myWorkspaceId -Force
+            $renamedScheduleRecord | Add-Member -NotePropertyName "WorkspaceName" -NotePropertyValue $myWorkspaceName -Force
+            $renamedScheduleRecord | Add-Member -NotePropertyName "DatasetId" -NotePropertyValue $dataset.DatasetId -Force
+            $renamedScheduleRecord | Add-Member -NotePropertyName "DatasetName" -NotePropertyValue $dataset.DatasetName -Force
+            
+            # Handle days array if present
+            if ($refreshScheduleResponse.days) {
+                $renamedScheduleRecord | Add-Member -NotePropertyName "DatasetRefreshScheduleDays" -NotePropertyValue ($refreshScheduleResponse.days -join ", ") -Force
+            }
+            
+            # Handle times array if present
+            if ($refreshScheduleResponse.times) {
+                $renamedScheduleRecord | Add-Member -NotePropertyName "DatasetRefreshScheduleTimes" -NotePropertyValue ($refreshScheduleResponse.times -join ", ") -Force
+            }
+
+            $datasetRefreshSchedule += $renamedScheduleRecord
+        }
+        catch {
+            # Silently continue if refresh schedule is not available for this dataset
+        }
+    }
+
 } else {
     Write-Host "Skipping 'My Workspace' (user did not select it and no timeout)."
 }
@@ -1085,6 +1159,7 @@ $fabricItemsInfo | Export-Excel -Path $excelFile -WorksheetName "FabricItems" -A
 $datasetsInfo | Export-Excel -Path $excelFile -WorksheetName "Datasets" -AutoSize -Append
 $datasetSourcesInfo | Export-Excel -Path $excelFile -WorksheetName "DatasetSourcesInfo" -AutoSize -Append
 $datasetRefreshHistory | Export-Excel -Path $excelFile -WorksheetName "DatasetRefreshHistory" -AutoSize -Append
+$datasetRefreshSchedule | Export-Excel -Path $excelFile -WorksheetName "DatasetRefreshSchedule" -AutoSize -Append
 $dataflowsInfo | Export-Excel -Path $excelFile -WorksheetName "Dataflows" -AutoSize -Append
 $dataflowLineage | Export-Excel -Path $excelFile -WorksheetName "DataflowLineage" -AutoSize -Append
 $dataflowSourcesInfo | Export-Excel -Path $excelFile -WorksheetName "DataflowSourcesInfo" -AutoSize -Append
