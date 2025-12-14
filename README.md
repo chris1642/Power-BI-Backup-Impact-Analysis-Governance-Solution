@@ -17,7 +17,7 @@ This provides a quick and automated way to identify where and how specific field
 - **Used and Unused Objects**: Identify which tables, columns, and measures are actively used and where. Equally as important, see what isn't used and can be safely removed from your model to save space and complexity.
 - **Comprehensive Environment Overview**: Gain a clear, detailed view of your entire Power BI environment, including complete breakdowns of your models, reports, and dataflows and their dependencies. 
 - **Backup Solution**: Automatically backs up every model, report, and dataflow for safekeeping.
-- **User-Friendly Output**: Results are presented in a Power BI model, making them easy to explore, analyze, and share with your team.
+- **User-Friendly Output**: the final output is presented in a Power BI Report & Model, making everything easy to explore, analyze, and share with your team.
 
 ---
 
