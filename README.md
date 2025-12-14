@@ -2,7 +2,7 @@
 ## This all-in-one solution is designed to be ran by ANYONE. 
 - Everything within the script is limited to your access within the Power BI environment.
 - All computer requirements are at the user level and do not require admin privileges.
-- There are ZERO pre-reqs. A once-click solution is offered that stays updated with the latest features.
+- There are ZERO pre-reqs. A one-click solution is offered that stays updated with the latest features.
   
 *Have specific Reports and/or Models downloaded you want to analyze? Don't have direct access to the Workspace but have the PBIX? Check out the local version here: https://github.com/chris1642/Local-Power-BI-Impact-Analysis-Governance*
 
@@ -10,10 +10,10 @@
 # Power BI Governance & Impact Analysis Solution
 
 ## What It Does
-This provides a quick and automated way to identify where and how specific fields, measures, and tables are used across Power BI reports in all workspaces by analyzing the visual object layer. It also backs up and breaks down the details of your models, reports, and dataflows for easy review, giving you an all-in-one **Power BI Governance** solution.
+This provides a quick and automated way to identify where and how specific fields, measures, and tables are used across Power BI reports in all workspaces down to the visual level. It also backs up and breaks down the details of your models, reports, and dataflows for easy review, giving you an all-in-one **Power BI & Fabric Governance** solution.
 
 ### Key Features:
-- **Impact Analysis**: Fully understand the downstream impact of data model changes, ensuring you don’t accidentally break visuals or dashboards—especially when reports connected to a model span multiple workspaces.
+- **Impact Analysis**: Fully understand the downstream impact of data model changes with visual-level lineage, ensuring you don’t accidentally break visuals or dashboards—even when multiple reports connect to a model in a different workspace.
 - **Used and Unused Objects**: Identify which tables, columns, and measures are actively used and where. Equally as important, see what isn't used and can be safely removed from your model to save space and complexity.
 - **Comprehensive Environment Overview**: Gain a clear, detailed view of your entire Power BI environment, including complete breakdowns of your models, reports, and dataflows and their dependencies. 
 - **Backup Solution**: Automatically backs up every model, report, and dataflow for safekeeping.
