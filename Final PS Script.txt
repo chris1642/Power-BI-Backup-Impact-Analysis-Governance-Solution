@@ -814,23 +814,26 @@ Write-Output "Workspace [$($workspace.WorkspaceName)] Model Refresh Schedule ext
         try {
             $refreshScheduleResponse = Invoke-PowerBIRestMethod -Method GET -Url $refreshScheduleUrl | ConvertFrom-Json
             
+            # Get base properties that apply to all rows
             $renamedScheduleRecord = Rename-Properties -object $refreshScheduleResponse -renameMap $datasetRefreshScheduleRenameMap
-            $renamedScheduleRecord | Add-Member -NotePropertyName "WorkspaceId" -NotePropertyValue $workspace.WorkspaceId -Force
-            $renamedScheduleRecord | Add-Member -NotePropertyName "WorkspaceName" -NotePropertyValue $workspace.WorkspaceName -Force
-            $renamedScheduleRecord | Add-Member -NotePropertyName "DatasetId" -NotePropertyValue $dataset.DatasetId -Force
-            $renamedScheduleRecord | Add-Member -NotePropertyName "DatasetName" -NotePropertyValue $dataset.DatasetName -Force
             
-            # Handle days array if present
-            if ($refreshScheduleResponse.days) {
-                $renamedScheduleRecord | Add-Member -NotePropertyName "DatasetRefreshScheduleDays" -NotePropertyValue ($refreshScheduleResponse.days -join ", ") -Force
-            }
+            # Create separate rows for each day-time combination
+            $days = if ($refreshScheduleResponse.days) { $refreshScheduleResponse.days } else { @($null) }
+            $times = if ($refreshScheduleResponse.times) { $refreshScheduleResponse.times } else { @($null) }
             
-            # Handle times array if present
-            if ($refreshScheduleResponse.times) {
-                $renamedScheduleRecord | Add-Member -NotePropertyName "DatasetRefreshScheduleTimes" -NotePropertyValue ($refreshScheduleResponse.times -join ", ") -Force
+            foreach ($day in $days) {
+                foreach ($time in $times) {
+                    $scheduleRow = $renamedScheduleRecord.PSObject.Copy()
+                    $scheduleRow | Add-Member -NotePropertyName "WorkspaceId" -NotePropertyValue $workspace.WorkspaceId -Force
+                    $scheduleRow | Add-Member -NotePropertyName "WorkspaceName" -NotePropertyValue $workspace.WorkspaceName -Force
+                    $scheduleRow | Add-Member -NotePropertyName "DatasetId" -NotePropertyValue $dataset.DatasetId -Force
+                    $scheduleRow | Add-Member -NotePropertyName "DatasetName" -NotePropertyValue $dataset.DatasetName -Force
+                    $scheduleRow | Add-Member -NotePropertyName "DatasetRefreshScheduleDay" -NotePropertyValue $day -Force
+                    $scheduleRow | Add-Member -NotePropertyName "DatasetRefreshScheduleTime" -NotePropertyValue $time -Force
+                    
+                    $datasetRefreshSchedule += $scheduleRow
+                }
             }
-
-            $datasetRefreshSchedule += $renamedScheduleRecord
         }
         catch {
             # Silently continue if refresh schedule is not available for this dataset
@@ -1119,23 +1122,26 @@ if ($IncludeMyWorkspace -or ($selection -and $selection.TimedOut)) {
         try {
             $refreshScheduleResponse = Invoke-PowerBIRestMethod -Method GET -Url $refreshScheduleUrl | ConvertFrom-Json
             
+            # Get base properties that apply to all rows
             $renamedScheduleRecord = Rename-Properties -object $refreshScheduleResponse -renameMap $datasetRefreshScheduleRenameMap
-            $renamedScheduleRecord | Add-Member -NotePropertyName "WorkspaceId" -NotePropertyValue $myWorkspaceId -Force
-            $renamedScheduleRecord | Add-Member -NotePropertyName "WorkspaceName" -NotePropertyValue $myWorkspaceName -Force
-            $renamedScheduleRecord | Add-Member -NotePropertyName "DatasetId" -NotePropertyValue $dataset.DatasetId -Force
-            $renamedScheduleRecord | Add-Member -NotePropertyName "DatasetName" -NotePropertyValue $dataset.DatasetName -Force
             
-            # Handle days array if present
-            if ($refreshScheduleResponse.days) {
-                $renamedScheduleRecord | Add-Member -NotePropertyName "DatasetRefreshScheduleDays" -NotePropertyValue ($refreshScheduleResponse.days -join ", ") -Force
-            }
+            # Create separate rows for each day-time combination
+            $days = if ($refreshScheduleResponse.days) { $refreshScheduleResponse.days } else { @($null) }
+            $times = if ($refreshScheduleResponse.times) { $refreshScheduleResponse.times } else { @($null) }
             
-            # Handle times array if present
-            if ($refreshScheduleResponse.times) {
-                $renamedScheduleRecord | Add-Member -NotePropertyName "DatasetRefreshScheduleTimes" -NotePropertyValue ($refreshScheduleResponse.times -join ", ") -Force
+            foreach ($day in $days) {
+                foreach ($time in $times) {
+                    $scheduleRow = $renamedScheduleRecord.PSObject.Copy()
+                    $scheduleRow | Add-Member -NotePropertyName "WorkspaceId" -NotePropertyValue $myWorkspaceId -Force
+                    $scheduleRow | Add-Member -NotePropertyName "WorkspaceName" -NotePropertyValue $myWorkspaceName -Force
+                    $scheduleRow | Add-Member -NotePropertyName "DatasetId" -NotePropertyValue $dataset.DatasetId -Force
+                    $scheduleRow | Add-Member -NotePropertyName "DatasetName" -NotePropertyValue $dataset.DatasetName -Force
+                    $scheduleRow | Add-Member -NotePropertyName "DatasetRefreshScheduleDay" -NotePropertyValue $day -Force
+                    $scheduleRow | Add-Member -NotePropertyName "DatasetRefreshScheduleTime" -NotePropertyValue $time -Force
+                    
+                    $datasetRefreshSchedule += $scheduleRow
+                }
             }
-
-            $datasetRefreshSchedule += $renamedScheduleRecord
         }
         catch {
             # Silently continue if refresh schedule is not available for this dataset
