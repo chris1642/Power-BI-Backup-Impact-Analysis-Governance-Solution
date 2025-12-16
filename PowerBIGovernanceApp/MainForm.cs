@@ -13,6 +13,9 @@ namespace PowerBIGovernanceApp
 {
     public class MainForm : Form
     {
+        // Constants
+        private const string DEFAULT_ENVIRONMENT = "Public";
+        
         private Panel headerPanel = null!;
         private Label titleLabel = null!;
         private Label subtitleLabel = null!;
@@ -410,7 +413,7 @@ namespace PowerBIGovernanceApp
                 powershellProcess.Start();
 
                 // Send environment selection to the script
-                if (environment != "Public")
+                if (environment != DEFAULT_ENVIRONMENT)
                 {
                     powershellProcess.StandardInput.WriteLine(environment);
                 }
@@ -444,13 +447,13 @@ namespace PowerBIGovernanceApp
             int index = environmentComboBox.SelectedIndex;
             return index switch
             {
-                0 => "Public",
+                0 => DEFAULT_ENVIRONMENT,
                 1 => "Germany",
                 2 => "USGov",
                 3 => "China",
                 4 => "USGovHigh",
                 5 => "USGovMil",
-                _ => "Public"
+                _ => DEFAULT_ENVIRONMENT
             };
         }
 
@@ -525,9 +528,16 @@ namespace PowerBIGovernanceApp
 
                 try
                 {
-                    powershellProcess?.Kill();
+                    if (powershellProcess != null && !powershellProcess.HasExited)
+                    {
+                        powershellProcess.Kill();
+                    }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    // Log error but don't prevent exit
+                    System.Diagnostics.Debug.WriteLine($"Error killing process: {ex.Message}");
+                }
             }
 
             base.OnFormClosing(e);

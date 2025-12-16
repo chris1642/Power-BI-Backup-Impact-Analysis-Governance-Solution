@@ -47,7 +47,7 @@ You’ve got **three ways** to get started:
 **Features:**
 - 🎨 **Modern, Professional Interface** - Beautiful gradient design with intuitive controls
 - 📊 **Real-Time Progress** - See exactly what's happening as the script runs
-- �� **Environment Selection** - Easy dropdown to choose your Power BI cloud environment
+- 🌍 **Environment Selection** - Easy dropdown to choose your Power BI cloud environment
 - 📝 **Live Logging** - View detailed process logs in real-time
 - ✅ **One-Click Launch** - Open your Power BI Governance Model directly from the app
 - 📦 **Fully Self-Contained** - Single executable, no installation required!
