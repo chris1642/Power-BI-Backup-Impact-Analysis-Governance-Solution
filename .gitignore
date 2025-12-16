@@ -1,0 +1,37 @@
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio cache/options
+.vs/
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build output
+PowerBIGovernance.exe
+
+# Backup folders (user data)
+Model Backups/
+Report Backups/
+Dataflow Backups/
+Power BI Environment Detail.xlsx
+Model Detail.xlsx
+Report Detail.xlsx
+Dataflow Detail.xlsx
+
+# Temporary files
+*.tmp
+*.temp
+localhost/

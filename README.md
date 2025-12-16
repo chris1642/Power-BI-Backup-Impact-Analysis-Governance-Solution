@@ -35,11 +35,37 @@ a popup will allow you to choose which workspaces you run this against. Select A
 
 ## 🚀 Quick Start Instructions  
 
-You’ve got **two ways** to get started:  
+You’ve got **three ways** to get started:  
 
 
-### 🟢 Option 1 — One-Click Update & Run Tool (Recommended)  
-Always up-to-date and the easiest way to get started.  
+### 🟢 Option 1 — Modern GUI Application (NEW! - Most User-Friendly) ✨
+
+**The easiest, most professional way to run the Power BI Governance Solution!**
+
+➡️ [**Download GUI Application**](https://github.com/chris1642/Power-BI-Backup-Impact-Analysis-Governance-Solution/releases/latest/download/PowerBIGovernance.exe)
+
+**Features:**
+- 🎨 **Modern, Professional Interface** - Beautiful gradient design with intuitive controls
+- 📊 **Real-Time Progress** - See exactly what's happening as the script runs
+- �� **Environment Selection** - Easy dropdown to choose your Power BI cloud environment
+- 📝 **Live Logging** - View detailed process logs in real-time
+- ✅ **One-Click Launch** - Open your Power BI Governance Model directly from the app
+- 📦 **Fully Self-Contained** - Single executable, no installation required!
+
+**How to Use:**
+1. Download `PowerBIGovernance.exe`
+2. Double-click to run (no installation needed!)
+3. Select your Power BI environment from the dropdown
+4. Click "START GOVERNANCE PROCESS"
+5. Watch the progress in real-time
+6. When complete, click "Open Power BI Governance Model" to view results
+
+> 💡 **Note:** All functionality is embedded in the single executable - no dependencies or setup required!
+
+---
+
+### 🟡 Option 2 — One-Click Update & Run Tool  
+Always up-to-date and works great for automation.  
 
 ➡️ [**Download One-Click Update & Run Tool**](https://github.com/chris1642/Power-BI-Backup-Impact-Analysis-Governance-Solution/releases/download/v1.0/PBIGovernance-UpdateAndRun.bat)
 
@@ -59,7 +85,7 @@ This automatically:
 
 ---
 
-### 🟡 Option 2 — Manual Setup  
+### 🟡 Option 3 — Manual Setup  
 
 #### ✅ Step 1: Create Folder  
 > Make a folder at:  `C:\Power BI Backups`  
