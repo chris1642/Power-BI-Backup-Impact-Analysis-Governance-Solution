@@ -1,0 +1,42 @@
+name: Build and Release GUI Application
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+        
+    - name: Restore dependencies
+      run: dotnet restore PowerBIGovernanceApp/PowerBIGovernanceApp.csproj
+      
+    - name: Build application
+      run: dotnet publish PowerBIGovernanceApp/PowerBIGovernanceApp.csproj -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:PublishTrimmed=false
+      
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: PowerBIGovernance
+        path: PowerBIGovernanceApp/bin/Release/net8.0-windows/win-x64/publish/PowerBIGovernance.exe
+        
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: PowerBIGovernanceApp/bin/Release/net8.0-windows/win-x64/publish/PowerBIGovernance.exe
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

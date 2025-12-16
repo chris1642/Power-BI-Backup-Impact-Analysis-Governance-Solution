@@ -5,7 +5,7 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
-    <ApplicationIcon>app.ico</ApplicationIcon>
+    <ApplicationIcon Condition="Exists('app.ico')">app.ico</ApplicationIcon>
     <AssemblyName>PowerBIGovernance</AssemblyName>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
