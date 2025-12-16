@@ -199,16 +199,19 @@ function Show-EnvironmentPicker {
         }
     }
 
+    # Handle cancellation or timeout
     if ($form.Tag -eq 'Cancel') {
-        throw "User cancelled environment selection."
+        Write-Host "Environment selection cancelled - defaulting to Public" -ForegroundColor Yellow
+        $selectedEnvironment = 'Public'
     }
-
-    $timedOut = ($form.Tag -eq 'Timeout')
-    
-    if ($timedOut) {
+    elseif ($form.Tag -eq 'Timeout') {
         Write-Host "Timeout reached - defaulting to Public" -ForegroundColor Yellow
         $selectedEnvironment = 'Public'
     }
+
+    # Dispose timer
+    $timer.Dispose()
+    $form.Dispose()
 
     return $selectedEnvironment
 }
