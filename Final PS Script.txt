@@ -216,6 +216,10 @@ function Show-EnvironmentPicker {
         # Ensure resources are always disposed
         if ($null -ne $timer) { $timer.Dispose() }
         if ($null -ne $form) { $form.Dispose() }
+        
+        # Allow time for Windows Forms cleanup before MSAL authentication
+        Start-Sleep -Milliseconds 100
+        [System.Windows.Forms.Application]::DoEvents()
     }
 }
 
