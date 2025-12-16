@@ -152,6 +152,102 @@ function Read-HostWithTimeout {
     return ""
 }
 
+# ================================
+# Environment Picker Popup
+# ================================
+function Show-EnvironmentPicker {
+    Add-Type -AssemblyName System.Windows.Forms
+    Add-Type -AssemblyName System.Drawing
+
+    # Available environments
+    $environments = @(
+        [pscustomobject]@{ Display='Public (Commercial Cloud)'; Value='Public' }
+        [pscustomobject]@{ Display='Germany (Microsoft Cloud Germany)'; Value='Germany' }
+        [pscustomobject]@{ Display='USGov (Azure Government - GCC)'; Value='USGov' }
+        [pscustomobject]@{ Display='China (Microsoft Cloud China - 21Vianet)'; Value='China' }
+        [pscustomobject]@{ Display='USGovHigh (Azure Government - GCC High)'; Value='USGovHigh' }
+        [pscustomobject]@{ Display='USGovMil (Azure Government - DoD)'; Value='USGovMil' }
+    )
+
+    # Form
+    $form               = New-Object System.Windows.Forms.Form
+    $form.Text          = "Select Power BI Environment"
+    $form.StartPosition = 'CenterScreen'
+    $form.Size          = New-Object System.Drawing.Size(480,320)
+    $form.TopMost       = $true
+
+    # Instruction label
+    $lbl                = New-Object System.Windows.Forms.Label
+    $lbl.Text           = "Select your Power BI environment:"
+    $lbl.AutoSize       = $true
+    $lbl.Location       = New-Object System.Drawing.Point(12,12)
+    $form.Controls.Add($lbl)
+
+    # ListBox (single-select)
+    $listBox            = New-Object System.Windows.Forms.ListBox
+    $listBox.Location   = New-Object System.Drawing.Point(12,40)
+    $listBox.Size       = New-Object System.Drawing.Size(440,180)
+    $listBox.SelectionMode = 'One'
+
+    foreach ($env in $environments) {
+        [void]$listBox.Items.Add($env)
+    }
+    $listBox.DisplayMember = 'Display'
+    $listBox.SelectedIndex = 0  # Default to Public
+    $form.Controls.Add($listBox)
+
+    # OK button
+    $okBtn             = New-Object System.Windows.Forms.Button
+    $okBtn.Text        = "OK"
+    $okBtn.Width       = 100
+    $okBtn.Location    = New-Object System.Drawing.Point(160,240)
+    $okBtn.Add_Click({
+        $form.Tag = 'OK'
+        $form.Close()
+    })
+    $form.Controls.Add($okBtn)
+
+    # Cancel button
+    $cancelBtn         = New-Object System.Windows.Forms.Button
+    $cancelBtn.Text    = "Cancel"
+    $cancelBtn.Width   = 100
+    $cancelBtn.Location= New-Object System.Drawing.Point(270,240)
+    $cancelBtn.Add_Click({
+        $form.Tag = 'Cancel'
+        $form.Close()
+    })
+    $form.Controls.Add($cancelBtn)
+
+    # Timer (auto-close after 60 seconds)
+    $timer = New-Object System.Windows.Forms.Timer
+    $timer.Interval = 60000  # 60 seconds
+    $timer.Add_Tick({
+        $timer.Stop()
+        $form.Tag = 'Timeout'
+        $form.Close()
+    })
+    $timer.Start()
+
+    [void]$form.ShowDialog()
+
+    if ($form.Tag -eq 'Cancel') {
+        throw "User cancelled environment selection."
+    }
+
+    $timedOut = ($form.Tag -eq 'Timeout')
+    
+    # Get selected environment (default to Public on timeout or no selection)
+    $selectedEnv = 'Public'
+    if ($listBox.SelectedItem) {
+        $selectedEnv = $listBox.SelectedItem.Value
+    }
+
+    return [pscustomobject]@{
+        Environment = $selectedEnv
+        TimedOut    = $timedOut
+    }
+}
+
 # ============================================
 # Prompt for Power BI Environment + Validation
 # ============================================
@@ -380,99 +476,6 @@ function Rename-Properties {
         }
     }
     return $newObject
-}
-
-function Show-EnvironmentPicker {
-    Add-Type -AssemblyName System.Windows.Forms
-    Add-Type -AssemblyName System.Drawing
-
-    # Available environments
-    $environments = @(
-        [pscustomobject]@{ Display='Public (Commercial Cloud)'; Value='Public' }
-        [pscustomobject]@{ Display='Germany (Microsoft Cloud Germany)'; Value='Germany' }
-        [pscustomobject]@{ Display='USGov (Azure Government - GCC)'; Value='USGov' }
-        [pscustomobject]@{ Display='China (Microsoft Cloud China - 21Vianet)'; Value='China' }
-        [pscustomobject]@{ Display='USGovHigh (Azure Government - GCC High)'; Value='USGovHigh' }
-        [pscustomobject]@{ Display='USGovMil (Azure Government - DoD)'; Value='USGovMil' }
-    )
-
-    # Form
-    $form               = New-Object System.Windows.Forms.Form
-    $form.Text          = "Select Power BI Environment"
-    $form.StartPosition = 'CenterScreen'
-    $form.Size          = New-Object System.Drawing.Size(480,320)
-    $form.TopMost       = $true
-
-    # Instruction label
-    $lbl                = New-Object System.Windows.Forms.Label
-    $lbl.Text           = "Select your Power BI environment:"
-    $lbl.AutoSize       = $true
-    $lbl.Location       = New-Object System.Drawing.Point(12,12)
-    $form.Controls.Add($lbl)
-
-    # ListBox (single-select)
-    $listBox            = New-Object System.Windows.Forms.ListBox
-    $listBox.Location   = New-Object System.Drawing.Point(12,40)
-    $listBox.Size       = New-Object System.Drawing.Size(440,180)
-    $listBox.SelectionMode = 'One'
-
-    foreach ($env in $environments) {
-        [void]$listBox.Items.Add($env)
-    }
-    $listBox.DisplayMember = 'Display'
-    $listBox.SelectedIndex = 0  # Default to Public
-    $form.Controls.Add($listBox)
-
-    # OK button
-    $okBtn             = New-Object System.Windows.Forms.Button
-    $okBtn.Text        = "OK"
-    $okBtn.Width       = 100
-    $okBtn.Location    = New-Object System.Drawing.Point(160,240)
-    $okBtn.Add_Click({
-        $form.Tag = 'OK'
-        $form.Close()
-    })
-    $form.Controls.Add($okBtn)
-
-    # Cancel button
-    $cancelBtn         = New-Object System.Windows.Forms.Button
-    $cancelBtn.Text    = "Cancel"
-    $cancelBtn.Width   = 100
-    $cancelBtn.Location= New-Object System.Drawing.Point(270,240)
-    $cancelBtn.Add_Click({
-        $form.Tag = 'Cancel'
-        $form.Close()
-    })
-    $form.Controls.Add($cancelBtn)
-
-    # Timer (auto-close after 60 seconds)
-    $timer = New-Object System.Windows.Forms.Timer
-    $timer.Interval = 60000  # 60 seconds
-    $timer.Add_Tick({
-        $timer.Stop()
-        $form.Tag = 'Timeout'
-        $form.Close()
-    })
-    $timer.Start()
-
-    [void]$form.ShowDialog()
-
-    if ($form.Tag -eq 'Cancel') {
-        throw "User cancelled environment selection."
-    }
-
-    $timedOut = ($form.Tag -eq 'Timeout')
-    
-    # Get selected environment (default to Public on timeout or no selection)
-    $selectedEnv = 'Public'
-    if ($listBox.SelectedItem) {
-        $selectedEnv = $listBox.SelectedItem.Value
-    }
-
-    return [pscustomobject]@{
-        Environment = $selectedEnv
-        TimedOut    = $timedOut
-    }
 }
 
 function Show-WorkspacePicker {
