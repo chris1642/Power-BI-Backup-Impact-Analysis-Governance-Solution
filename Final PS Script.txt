@@ -236,9 +236,6 @@ if ($LoginEnvironment -eq 'Public') {
     $LoginEnvironment = $null 
 }
 
-
-# If LoginEnvironment is explicitly set to Public, use $null so Connect-PowerBIServiceAccount uses default 'Public' endpoint.
-if ($LoginEnvironment -eq 'Public') { $LoginEnvironment = $null }
 # Function to get environment-specific API endpoints
 function Get-PowerBIEndpoints {
     param(
