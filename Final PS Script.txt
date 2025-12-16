@@ -378,10 +378,10 @@ function Connect-PowerBI {
 
     if ($Environment) {
         Write-Host "[INFO] Connecting to Power BI using environment: $Environment"
-        Connect-PowerBIServiceAccount -Environment $Environment | Out-Null
+        Connect-PowerBIServiceAccount -Environment $Environment
     } else {
         Write-Host "[INFO] Connecting to Power BI using default environment"
-        Connect-PowerBIServiceAccount | Out-Null
+        Connect-PowerBIServiceAccount
     }
 
     $global:accessTokenObject = Get-PowerBIAccessToken
@@ -408,9 +408,9 @@ function Start-TokenRefreshJob {
             param([string]$Environment)
 
             if ($Environment) {
-                Connect-PowerBIServiceAccount -Environment $Environment | Out-Null
+                Connect-PowerBIServiceAccount -Environment $Environment
             } else {
-                Connect-PowerBIServiceAccount | Out-Null
+                Connect-PowerBIServiceAccount
             }
             $global:accessTokenObject = Get-PowerBIAccessToken
             $global:accessToken = $accessTokenObject.Authorization -replace 'Bearer ', ''
