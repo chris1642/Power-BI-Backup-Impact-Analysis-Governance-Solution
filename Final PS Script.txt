@@ -236,7 +236,7 @@ function Show-EnvironmentPicker {
     
     # Get selected environment (default to Public on timeout, cancel, or no selection)
     $selectedEnv = 'Public'
-    if ($listBox.SelectedItem -and -not $cancelled) {
+    if ($listBox.SelectedItem -and -not $cancelled -and -not $timedOut) {
         $selectedEnv = $listBox.SelectedItem.Value
     }
 
@@ -257,11 +257,9 @@ if (-not (Get-Variable -Name LoginEnvironment -Scope Script -ErrorAction Silentl
         $envSelection = Show-EnvironmentPicker
         $LoginEnvironment = $envSelection.Environment
         
-        if ($envSelection.Cancelled) {
-            Write-Host "Environment selection cancelled - defaulting to Public" -ForegroundColor Yellow
-        }
-        elseif ($envSelection.TimedOut) {
-            Write-Host "Timeout reached - defaulting to Public" -ForegroundColor Yellow
+        if ($envSelection.Cancelled -or $envSelection.TimedOut) {
+            $reason = if ($envSelection.Cancelled) { "cancelled" } else { "timed out" }
+            Write-Host "Environment selection $reason - defaulting to Public" -ForegroundColor Yellow
         }
         else {
             Write-Host "Selected environment: $LoginEnvironment" -ForegroundColor Green
