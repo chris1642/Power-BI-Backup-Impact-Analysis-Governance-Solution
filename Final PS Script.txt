@@ -115,7 +115,7 @@ foreach ($module in $requiredModules) {
 # ========================================
 function Show-EnvironmentPicker {
     param(
-        [int]$TimeoutSeconds = 120
+        [int]$TimeoutSeconds = 60
     )
     
     $environments = @(
@@ -128,9 +128,9 @@ function Show-EnvironmentPicker {
     )
     
     Write-Host ""
-    Write-Host "╔════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Host "║         Select Power BI Environment                       ║" -ForegroundColor Cyan
-    Write-Host "╚════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+    Write-Host "╔══════════════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host "║         Select Power BI Environment          ║" -ForegroundColor Cyan
+    Write-Host "╚══════════════════════════════════════════════╝" -ForegroundColor Cyan
     Write-Host ""
     
     foreach ($env in $environments) {
@@ -204,7 +204,7 @@ function Show-EnvironmentPicker {
 # Prompt for Power BI Environment + Validation
 # ============================================
 if (-not (Get-Variable -Name LoginEnvironment -Scope Script -ErrorAction SilentlyContinue)) {
-    $LoginEnvironment = Show-EnvironmentPicker -TimeoutSeconds 120
+    $LoginEnvironment = Show-EnvironmentPicker -TimeoutSeconds 60
 }
 
 # If explicitly 'Public', set to $null for Connect-PowerBIServiceAccount default
