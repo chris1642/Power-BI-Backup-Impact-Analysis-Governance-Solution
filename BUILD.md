@@ -61,6 +61,18 @@ See `PowerBIGovernanceApp/PowerBIGovernanceApp.csproj` for full configuration de
 ### "dotnet command not found"
 Install the .NET 8.0 SDK from [https://dotnet.microsoft.com/download/dotnet/8.0](https://dotnet.microsoft.com/download/dotnet/8.0)
 
+### NuGet restore errors (NU1100)
+If you encounter errors like "Unable to resolve 'Microsoft.NET.ILLink.Tasks'" or similar during build:
+
+1. Make sure you're using the publish command with `-r win-x64` specified (as shown in the build scripts)
+2. The project file is configured to avoid runtime-specific dependencies during restore
+3. Try cleaning the project first:
+   ```bash
+   cd PowerBIGovernanceApp
+   dotnet clean
+   dotnet publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true
+   ```
+
 ### Build errors about missing resources
 Ensure all Config files and resources are present in the repository before building.
 
