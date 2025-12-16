@@ -111,12 +111,12 @@ foreach ($module in $requiredModules) {
 
 
 # ================================
-# Read-Host With 120 Second Timeout
+# Read-Host With 60 Second Timeout
 # ================================
 function Read-HostWithTimeout {
     param(
         [string]$Prompt,
-        [int]$TimeoutSeconds = 120
+        [int]$TimeoutSeconds = 60
     )
 
     Write-Host -NoNewline "$Prompt "
@@ -128,7 +128,7 @@ function Read-HostWithTimeout {
     while ((Get-Date) -lt $endTime) {
         if ([Console]::KeyAvailable) {
             $key = [Console]::ReadKey($true)
-            # Enter pressed â†’ stop reading
+            # Enter pressed - stop reading
             if ($key.Key -eq "Enter") {
                 Write-Host ""
                 return $inputBuffer
@@ -148,7 +148,7 @@ function Read-HostWithTimeout {
         Start-Sleep -Milliseconds 100
     }
 
-    Write-Host "`n[Timeout reached â€” defaulting to blank input]" -ForegroundColor Yellow
+    Write-Host "Timeout reached - defaulting to Public" -ForegroundColor Yellow
     return ""
 }
 
