@@ -115,7 +115,7 @@ foreach ($module in $requiredModules) {
 # ========================================
 function Show-EnvironmentPicker {
     param(
-        [int]$TimeoutSeconds = 60
+        [int]$TimeoutSeconds = 120
     )
     
     $environments = @(
@@ -204,7 +204,7 @@ function Show-EnvironmentPicker {
 # Prompt for Power BI Environment + Validation
 # ============================================
 if (-not (Get-Variable -Name LoginEnvironment -Scope Script -ErrorAction SilentlyContinue)) {
-    $LoginEnvironment = Show-EnvironmentPicker -TimeoutSeconds 60
+    $LoginEnvironment = Show-EnvironmentPicker
 }
 
 # If explicitly 'Public', set to $null for Connect-PowerBIServiceAccount default
