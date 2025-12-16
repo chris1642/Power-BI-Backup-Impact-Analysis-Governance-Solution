@@ -230,21 +230,20 @@ function Show-EnvironmentPicker {
 
     [void]$form.ShowDialog()
 
-    if ($form.Tag -eq 'Cancel') {
-        throw "User cancelled environment selection."
-    }
-
+    # Determine what happened
+    $cancelled = ($form.Tag -eq 'Cancel')
     $timedOut = ($form.Tag -eq 'Timeout')
     
-    # Get selected environment (default to Public on timeout or no selection)
+    # Get selected environment (default to Public on timeout, cancel, or no selection)
     $selectedEnv = 'Public'
-    if ($listBox.SelectedItem) {
+    if ($listBox.SelectedItem -and -not $cancelled) {
         $selectedEnv = $listBox.SelectedItem.Value
     }
 
     return [pscustomobject]@{
         Environment = $selectedEnv
         TimedOut    = $timedOut
+        Cancelled   = $cancelled
     }
 }
 
@@ -253,12 +252,15 @@ function Show-EnvironmentPicker {
 # ============================================
 if (-not (Get-Variable -Name LoginEnvironment -Scope Script -ErrorAction SilentlyContinue)) {
 
-    # --- Try WinForms picker; fallback to text input if GUI not available ---
+    # Try to show popup, default to Public if any issues
     try {
         $envSelection = Show-EnvironmentPicker
         $LoginEnvironment = $envSelection.Environment
         
-        if ($envSelection.TimedOut) {
+        if ($envSelection.Cancelled) {
+            Write-Host "Environment selection cancelled - defaulting to Public" -ForegroundColor Yellow
+        }
+        elseif ($envSelection.TimedOut) {
             Write-Host "Timeout reached - defaulting to Public" -ForegroundColor Yellow
         }
         else {
@@ -266,26 +268,9 @@ if (-not (Get-Variable -Name LoginEnvironment -Scope Script -ErrorAction Silentl
         }
     }
     catch {
-        Write-Warning "WinForms not available. Using text input fallback."
-        $inputEnv = Read-HostWithTimeout -Prompt "Enter Power BI environment [Public|Germany|USGov|China|USGovHigh|USGovMil] (press Enter for Public)" -TimeoutSeconds 60
-
-        if ([string]::IsNullOrWhiteSpace($inputEnv)) {
-            $LoginEnvironment = 'Public'
-        }
-        else {
-            switch -Regex ($inputEnv.Trim()) {
-                '^public$'        { $LoginEnvironment = 'Public' ; break }
-                '^germany$'       { $LoginEnvironment = 'Germany' ; break }
-                '^usgovhigh$'     { $LoginEnvironment = 'USGovHigh' ; break }
-                '^usgovmil$'      { $LoginEnvironment = 'USGovMil' ; break }
-                '^usgov$'         { $LoginEnvironment = 'USGov' ; break }
-                '^china$'         { $LoginEnvironment = 'China' ; break }
-                default {
-                    Write-Warning "Unrecognized environment '$inputEnv'. Defaulting to 'Public'."
-                    $LoginEnvironment = 'Public'
-                }
-            }
-        }
+        # If popup fails for any reason, default to Public
+        Write-Host "Could not display environment selector - defaulting to Public" -ForegroundColor Yellow
+        $LoginEnvironment = 'Public'
     }
 }
 
