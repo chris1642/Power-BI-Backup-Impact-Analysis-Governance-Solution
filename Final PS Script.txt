@@ -110,28 +110,74 @@ foreach ($module in $requiredModules) {
 }
 
 
-# ================================
-# Read-Host With 60 Second Timeout
-# ================================
-function Read-HostWithTimeout {
+# ========================================
+# Environment Picker Function (Console Menu)
+# ========================================
+function Show-EnvironmentPicker {
     param(
-        [string]$Prompt,
-        [int]$TimeoutSeconds = 60
+        [int]$TimeoutSeconds = 120
     )
-
-    Write-Host -NoNewline "$Prompt "
-    Write-Host "(waiting up to $TimeoutSeconds seconds):" -ForegroundColor DarkGray
-
+    
+    $environments = @(
+        @{ Number = 1; Name = 'Public'; Description = 'Commercial Cloud (Default)' }
+        @{ Number = 2; Name = 'China'; Description = 'Microsoft Cloud China (21Vianet)' }
+        @{ Number = 3; Name = 'Germany'; Description = 'Microsoft Cloud Germany' }
+        @{ Number = 4; Name = 'USGov'; Description = 'Azure Government (GCC)' }
+        @{ Number = 5; Name = 'USGovHigh'; Description = 'Azure Government (GCC High)' }
+        @{ Number = 6; Name = 'USGovMil'; Description = 'Azure Government (DoD)' }
+    )
+    
+    Write-Host ""
+    Write-Host "╔══════════════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host "║         Select Power BI Environment                      ║" -ForegroundColor Cyan
+    Write-Host "╚══════════════════════════════════════════════╝" -ForegroundColor Cyan
+    Write-Host ""
+    
+    foreach ($env in $environments) {
+        $number = $env.Number
+        $name = $env.Name.PadRight(12)
+        $desc = $env.Description
+        if ($env.Number -eq 1) {
+            Write-Host "  [$number] $name - $desc" -ForegroundColor Green
+        } else {
+            Write-Host "  [$number] $name - $desc"
+        }
+    }
+    
+    Write-Host ""
+    Write-Host "Enter selection [1-6] or press Enter for default (Public)" -ForegroundColor Yellow
+    Write-Host "Timeout: $TimeoutSeconds seconds" -ForegroundColor DarkGray
+    Write-Host ""
+    
+    $selectedEnvironment = 'Public'  # Default
     $inputBuffer = ""
     $endTime = (Get-Date).AddSeconds($TimeoutSeconds)
-
+    
+    Write-Host -NoNewline "Your choice: " -ForegroundColor Cyan
+    
     while ((Get-Date) -lt $endTime) {
         if ([Console]::KeyAvailable) {
             $key = [Console]::ReadKey($true)
+            
             # Enter pressed - stop reading
             if ($key.Key -eq "Enter") {
                 Write-Host ""
-                return $inputBuffer
+                if ([string]::IsNullOrWhiteSpace($inputBuffer)) {
+                    Write-Host "Using default: Public" -ForegroundColor Green
+                    return 'Public'
+                }
+                
+                $choice = 0
+                if ([int]::TryParse($inputBuffer.Trim(), [ref]$choice)) {
+                    $selected = $environments | Where-Object { $_.Number -eq $choice }
+                    if ($selected) {
+                        Write-Host "Selected: $($selected.Name)" -ForegroundColor Green
+                        return $selected.Name
+                    }
+                }
+                
+                Write-Host "Invalid selection. Using default: Public" -ForegroundColor Yellow
+                return 'Public'
             }
             # Backspace
             elseif ($key.Key -eq "Backspace") {
@@ -140,42 +186,25 @@ function Read-HostWithTimeout {
                     Write-Host -NoNewline "`b `b"
                 }
             }
-            else {
+            # Only accept numeric input
+            elseif ($key.KeyChar -match '[1-6]' -and $inputBuffer.Length -eq 0) {
                 $inputBuffer += $key.KeyChar
-                Write-Host -NoNewline $key.KeyChar
+                Write-Host -NoNewline $key.KeyChar -ForegroundColor Cyan
             }
         }
         Start-Sleep -Milliseconds 100
     }
-
-    Write-Host "Timeout reached - defaulting to Public" -ForegroundColor Yellow
-    return ""
+    
+    Write-Host ""
+    Write-Host "Timeout reached - using default: Public" -ForegroundColor Yellow
+    return 'Public'
 }
 
 # ============================================
 # Prompt for Power BI Environment + Validation
 # ============================================
 if (-not (Get-Variable -Name LoginEnvironment -Scope Script -ErrorAction SilentlyContinue)) {
-
-    $inputEnv = Read-HostWithTimeout -Prompt "Enter Power BI environment [Public|Germany|USGov|China|USGovHigh|USGovMil] (press Enter for Public)" -TimeoutSeconds 60
-
-    if ([string]::IsNullOrWhiteSpace($inputEnv)) {
-        $LoginEnvironment = 'Public'
-    }
-    else {
-        switch -Regex ($inputEnv.Trim()) {
-            '^public$'        { $LoginEnvironment = 'Public' ; break }
-            '^germany$'       { $LoginEnvironment = 'Germany' ; break }
-            '^usgovhigh$'     { $LoginEnvironment = 'USGovHigh' ; break }
-            '^usgovmil$'      { $LoginEnvironment = 'USGovMil' ; break }
-            '^usgov$'         { $LoginEnvironment = 'USGov' ; break }
-            '^china$'         { $LoginEnvironment = 'China' ; break }
-            default {
-                Write-Warning "Unrecognized environment '$inputEnv'. Defaulting to 'Public'."
-                $LoginEnvironment = 'Public'
-            }
-        }
-    }
+    $LoginEnvironment = Show-EnvironmentPicker
 }
 
 # If explicitly 'Public', set to $null for Connect-PowerBIServiceAccount default
@@ -183,9 +212,6 @@ if ($LoginEnvironment -eq 'Public') {
     $LoginEnvironment = $null 
 }
 
-
-# If LoginEnvironment is explicitly set to Public, use $null so Connect-PowerBIServiceAccount uses default 'Public' endpoint.
-if ($LoginEnvironment -eq 'Public') { $LoginEnvironment = $null }
 # Function to get environment-specific API endpoints
 function Get-PowerBIEndpoints {
     param(
