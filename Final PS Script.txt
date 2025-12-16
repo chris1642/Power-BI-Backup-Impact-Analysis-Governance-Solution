@@ -214,12 +214,22 @@ function Show-EnvironmentPicker {
     }
     finally {
         # Ensure resources are always disposed
-        if ($null -ne $timer) { $timer.Dispose() }
+        if ($null -ne $timer) { 
+            $timer.Stop()
+            $timer.Dispose() 
+        }
         if ($null -ne $form) { $form.Dispose() }
         
-        # Allow time for Windows Forms cleanup before MSAL authentication
-        Start-Sleep -Milliseconds 100
-        [System.Windows.Forms.Application]::DoEvents()
+        # Complete Windows Forms cleanup to prevent threading issues with MSAL
+        # Process any remaining messages in the queue
+        for ($i = 0; $i -lt 10; $i++) {
+            [System.Windows.Forms.Application]::DoEvents()
+            Start-Sleep -Milliseconds 10
+        }
+        
+        # Force garbage collection to clean up COM objects
+        [System.GC]::Collect()
+        [System.GC]::WaitForPendingFinalizers()
     }
 }
 
