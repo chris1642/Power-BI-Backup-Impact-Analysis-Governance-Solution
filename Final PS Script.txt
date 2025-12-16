@@ -180,7 +180,7 @@ function Show-EnvironmentPicker {
 
     # Timer (auto-close after 120 seconds)
     $timer = New-Object System.Windows.Forms.Timer
-    $timer.Interval = 120000
+    $timer.Interval = 120000  # 120 seconds in milliseconds
     $timer.Add_Tick({
         $timer.Stop()
         $form.Tag = 'Timeout'
@@ -214,8 +214,8 @@ function Show-EnvironmentPicker {
     }
     finally {
         # Ensure resources are always disposed
-        if ($timer) { $timer.Dispose() }
-        if ($form) { $form.Dispose() }
+        if ($null -ne $timer) { $timer.Dispose() }
+        if ($null -ne $form) { $form.Dispose() }
     }
 }
 
