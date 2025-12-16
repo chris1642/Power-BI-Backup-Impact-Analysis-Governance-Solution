@@ -110,46 +110,107 @@ foreach ($module in $requiredModules) {
 }
 
 
-# ================================
-# Read-Host With 60 Second Timeout
-# ================================
-function Read-HostWithTimeout {
-    param(
-        [string]$Prompt,
-        [int]$TimeoutSeconds = 60
-    )
+# ========================================
+# Environment Picker Function
+# ========================================
+function Show-EnvironmentPicker {
+    Add-Type -AssemblyName System.Windows.Forms
+    Add-Type -AssemblyName System.Drawing
 
-    Write-Host -NoNewline "$Prompt "
-    Write-Host "(waiting up to $TimeoutSeconds seconds):" -ForegroundColor DarkGray
+    # Form
+    $form               = New-Object System.Windows.Forms.Form
+    $form.Text          = "Select Power BI Environment"
+    $form.StartPosition = 'CenterScreen'
+    $form.Size          = New-Object System.Drawing.Size(400,320)
+    $form.TopMost       = $true
 
-    $inputBuffer = ""
-    $endTime = (Get-Date).AddSeconds($TimeoutSeconds)
+    # Instruction label
+    $lbl                = New-Object System.Windows.Forms.Label
+    $lbl.Text           = "Select your Power BI environment:"
+    $lbl.AutoSize       = $true
+    $lbl.Location       = New-Object System.Drawing.Point(12,12)
+    $form.Controls.Add($lbl)
 
-    while ((Get-Date) -lt $endTime) {
-        if ([Console]::KeyAvailable) {
-            $key = [Console]::ReadKey($true)
-            # Enter pressed - stop reading
-            if ($key.Key -eq "Enter") {
-                Write-Host ""
-                return $inputBuffer
-            }
-            # Backspace
-            elseif ($key.Key -eq "Backspace") {
-                if ($inputBuffer.Length -gt 0) {
-                    $inputBuffer = $inputBuffer.Substring(0, $inputBuffer.Length - 1)
-                    Write-Host -NoNewline "`b `b"
-                }
-            }
-            else {
-                $inputBuffer += $key.KeyChar
-                Write-Host -NoNewline $key.KeyChar
-            }
-        }
-        Start-Sleep -Milliseconds 100
+    # GroupBox for radio buttons
+    $groupBox           = New-Object System.Windows.Forms.GroupBox
+    $groupBox.Location  = New-Object System.Drawing.Point(12,40)
+    $groupBox.Size      = New-Object System.Drawing.Size(360,180)
+    $groupBox.Text      = "Environments"
+    $form.Controls.Add($groupBox)
+
+    # Radio buttons for each environment
+    $environments = @('Public', 'Germany', 'USGov', 'China', 'USGovHigh', 'USGovMil')
+    $radioButtons = @{}
+    $yPos = 25
+
+    foreach ($env in $environments) {
+        $radio = New-Object System.Windows.Forms.RadioButton
+        $radio.Text = $env
+        $radio.Location = New-Object System.Drawing.Point(15, $yPos)
+        $radio.AutoSize = $true
+        $groupBox.Controls.Add($radio)
+        $radioButtons[$env] = $radio
+        $yPos += 25
     }
 
-    Write-Host "Timeout reached - defaulting to Public" -ForegroundColor Yellow
-    return ""
+    # Set Public as default selection
+    $radioButtons['Public'].Checked = $true
+
+    # OK button
+    $okBtn             = New-Object System.Windows.Forms.Button
+    $okBtn.Text        = "OK"
+    $okBtn.Width       = 100
+    $okBtn.Location    = New-Object System.Drawing.Point(100,240)
+    $okBtn.Add_Click({
+        $form.Tag = 'OK'
+        $form.Close()
+    })
+    $form.Controls.Add($okBtn)
+
+    # Cancel button
+    $cancelBtn         = New-Object System.Windows.Forms.Button
+    $cancelBtn.Text    = "Cancel"
+    $cancelBtn.Width   = 100
+    $cancelBtn.Location= New-Object System.Drawing.Point(210,240)
+    $cancelBtn.Add_Click({
+        $form.Tag = 'Cancel'
+        $form.Close()
+    })
+    $form.Controls.Add($cancelBtn)
+
+    # Timer (auto-close after 120 seconds)
+    $timer = New-Object System.Windows.Forms.Timer
+    $timer.Interval = 120000
+    $timer.Add_Tick({
+        $timer.Stop()
+        $form.Tag = 'Timeout'
+        $form.Close()
+    })
+    $timer.Start()
+
+    [void]$form.ShowDialog()
+
+    # Get selected environment
+    $selectedEnvironment = 'Public'  # Default
+    foreach ($env in $environments) {
+        if ($radioButtons[$env].Checked) {
+            $selectedEnvironment = $env
+            break
+        }
+    }
+
+    if ($form.Tag -eq 'Cancel') {
+        throw "User cancelled environment selection."
+    }
+
+    $timedOut = ($form.Tag -eq 'Timeout')
+    
+    if ($timedOut) {
+        Write-Host "Timeout reached - defaulting to Public" -ForegroundColor Yellow
+        $selectedEnvironment = 'Public'
+    }
+
+    return $selectedEnvironment
 }
 
 # ============================================
@@ -157,24 +218,13 @@ function Read-HostWithTimeout {
 # ============================================
 if (-not (Get-Variable -Name LoginEnvironment -Scope Script -ErrorAction SilentlyContinue)) {
 
-    $inputEnv = Read-HostWithTimeout -Prompt "Enter Power BI environment [Public|Germany|USGov|China|USGovHigh|USGovMil] (press Enter for Public)" -TimeoutSeconds 60
-
-    if ([string]::IsNullOrWhiteSpace($inputEnv)) {
-        $LoginEnvironment = 'Public'
+    # Try WinForms picker; fallback if GUI not available
+    try {
+        $LoginEnvironment = Show-EnvironmentPicker
     }
-    else {
-        switch -Regex ($inputEnv.Trim()) {
-            '^public$'        { $LoginEnvironment = 'Public' ; break }
-            '^germany$'       { $LoginEnvironment = 'Germany' ; break }
-            '^usgovhigh$'     { $LoginEnvironment = 'USGovHigh' ; break }
-            '^usgovmil$'      { $LoginEnvironment = 'USGovMil' ; break }
-            '^usgov$'         { $LoginEnvironment = 'USGov' ; break }
-            '^china$'         { $LoginEnvironment = 'China' ; break }
-            default {
-                Write-Warning "Unrecognized environment '$inputEnv'. Defaulting to 'Public'."
-                $LoginEnvironment = 'Public'
-            }
-        }
+    catch {
+        Write-Warning "WinForms not available. Defaulting to 'Public' environment."
+        $LoginEnvironment = 'Public'
     }
 }
 

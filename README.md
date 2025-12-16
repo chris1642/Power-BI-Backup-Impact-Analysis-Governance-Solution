@@ -72,10 +72,10 @@ This automatically:
 > - Copy/paste the full script, or  
 > - Rename `Final PS Script.txt` → `Final PS Script.ps1` and run directly  
 > 
-> **Environment Selection**: When prompted, enter your Power BI environment:
-> - Press **Enter** for Public cloud (default)
-> - Or enter: `Germany`, `USGov`, `China`, `USGovHigh`, or `USGovMil` for sovereign clouds.
-> - If no selection is made after 120 seconds, it will continue with the default of Public.
+> **Environment Selection**: A popup window will appear for you to select your Power BI environment:
+> - Choose from: `Public` (default), `Germany`, `USGov`, `China`, `USGovHigh`, or `USGovMil`
+> - Click **OK** to confirm your selection
+> - If no selection is made after 120 seconds, it will automatically continue with the default of Public.
 
 #### ✅ Step 4: Open the Power BI File  
 > Open: `Power BI Governance Model.pbit`  
@@ -105,7 +105,7 @@ This automatically:
 > - **USGovHigh** - Azure Government (GCC High)
 > - **USGovMil** - Azure Government (DoD)
 > 
-> When you run the script, you'll be prompted to select your environment (or default to Public after 120 seconds). The script automatically uses the correct API endpoints for all Power BI, Fabric, and XMLA connections.
+> When you run the script, a popup window will appear for you to select your environment (or default to Public after 120 seconds). The script automatically uses the correct API endpoints for all Power BI, Fabric, and XMLA connections.
 
 > ⚙️ *PowerShell may prompt to install required modules.*  
 > No admin access is needed — they install at the user level.
