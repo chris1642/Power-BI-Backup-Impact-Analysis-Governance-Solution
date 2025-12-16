@@ -23,7 +23,7 @@ This provides a quick and automated way to identify where and how specific field
 
 #### ✨ Recently Added Features
 
-- **Sovereign Cloud Support** → Now supports Power BI in Government and International clouds! Choose from Public (default), Germany, USGov, China, USGovHigh, or USGovMil environments at script start.
+- **Sovereign Cloud Support** → Now supports Power BI in Government and International clouds! A popup selector allows you to choose from Public (default), Germany, USGov, China, USGovHigh, or USGovMil environments at script start with a 60-second auto-select timeout.
 - **Workspace Selector** → Only want to run this against 1, 2, 10 workspaces? Now
 a popup will allow you to choose which workspaces you run this against. Select All will still run against eveyrthing and a built-in timer ensures no selection will run against everything.
 - **Unused Model Objects** → Identify model fields/measures not used in any visuals, measures, calculated columns, or relationships.  
@@ -72,10 +72,14 @@ This automatically:
 > - Copy/paste the full script, or  
 > - Rename `Final PS Script.txt` → `Final PS Script.ps1` and run directly  
 > 
-> **Environment Selection**: When prompted, enter your Power BI environment:
-> - Press **Enter** for Public cloud (default)
-> - Or enter: `Germany`, `USGov`, `China`, `USGovHigh`, or `USGovMil` for sovereign clouds.
-> - If no selection is made after 120 seconds, it will continue with the default of Public.
+> **Environment Selection**: When prompted, select your Power BI environment from the popup:
+> - **Public** (default) - Commercial cloud
+> - **Germany** - Microsoft Cloud Germany
+> - **USGov** - Azure Government (GCC)
+> - **China** - Microsoft Cloud China (21Vianet)
+> - **USGovHigh** - Azure Government (GCC High)
+> - **USGovMil** - Azure Government (DoD)
+> - If no selection is made after 60 seconds, it will default to Public cloud.
 
 #### ✅ Step 4: Open the Power BI File  
 > Open: `Power BI Governance Model.pbit`  
@@ -105,7 +109,7 @@ This automatically:
 > - **USGovHigh** - Azure Government (GCC High)
 > - **USGovMil** - Azure Government (DoD)
 > 
-> When you run the script, you'll be prompted to select your environment (or default to Public after 120 seconds). The script automatically uses the correct API endpoints for all Power BI, Fabric, and XMLA connections.
+> When you run the script, a popup will appear allowing you to select your environment (or default to Public after 60 seconds). The script automatically uses the correct API endpoints for all Power BI, Fabric, and XMLA connections.
 
 > ⚙️ *PowerShell may prompt to install required modules.*  
 > No admin access is needed — they install at the user level.
