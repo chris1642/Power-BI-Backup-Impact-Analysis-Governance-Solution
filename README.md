@@ -25,7 +25,7 @@ This provides a quick and automated way to identify where and how specific field
 
 - **Sovereign Cloud Support** → Now supports Power BI in Government and International clouds! A popup selector allows you to choose from Public (default), Germany, USGov, China, USGovHigh, or USGovMil environments at script start with a 60-second auto-select timeout.
 - **Workspace Selector** → Only want to run this against 1, 2, 10 workspaces? Now
-a popup will allow you to choose which workspaces you run this against. Select All will still run against eveyrthing and a built-in timer ensures no selection will run against everything.
+a popup will allow you to choose which workspaces you run this against. Select All will still run against everything and a built-in timer ensures no selection will run against everything.
 - **Unused Model Objects** → Identify model fields/measures not used in any visuals, measures, calculated columns, or relationships.  
 - **Broken Visuals (with Page Links)** → See all broken visuals/filters and jump directly to the impacted report page.  
 - **Report-Level Measures Inventory** → Surface report-only measures with full DAX and usage details.
