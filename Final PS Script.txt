@@ -188,32 +188,35 @@ function Show-EnvironmentPicker {
     })
     $timer.Start()
 
-    [void]$form.ShowDialog()
+    try {
+        [void]$form.ShowDialog()
 
-    # Get selected environment
-    $selectedEnvironment = 'Public'  # Default
-    foreach ($env in $environments) {
-        if ($radioButtons[$env].Checked) {
-            $selectedEnvironment = $env
-            break
+        # Get selected environment
+        $selectedEnvironment = 'Public'  # Default
+        foreach ($env in $environments) {
+            if ($radioButtons[$env].Checked) {
+                $selectedEnvironment = $env
+                break
+            }
         }
-    }
 
-    # Handle cancellation or timeout
-    if ($form.Tag -eq 'Cancel') {
-        Write-Host "Environment selection cancelled - defaulting to Public" -ForegroundColor Yellow
-        $selectedEnvironment = 'Public'
-    }
-    elseif ($form.Tag -eq 'Timeout') {
-        Write-Host "Timeout reached - defaulting to Public" -ForegroundColor Yellow
-        $selectedEnvironment = 'Public'
-    }
+        # Handle cancellation or timeout
+        if ($form.Tag -eq 'Cancel') {
+            Write-Host "Environment selection cancelled - defaulting to Public" -ForegroundColor Yellow
+            $selectedEnvironment = 'Public'
+        }
+        elseif ($form.Tag -eq 'Timeout') {
+            Write-Host "Timeout reached - defaulting to Public" -ForegroundColor Yellow
+            $selectedEnvironment = 'Public'
+        }
 
-    # Dispose timer
-    $timer.Dispose()
-    $form.Dispose()
-
-    return $selectedEnvironment
+        return $selectedEnvironment
+    }
+    finally {
+        # Ensure resources are always disposed
+        if ($timer) { $timer.Dispose() }
+        if ($form) { $form.Dispose() }
+    }
 }
 
 # ============================================
