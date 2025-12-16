@@ -111,141 +111,100 @@ foreach ($module in $requiredModules) {
 
 
 # ========================================
-# Environment Picker Function
+# Environment Picker Function (Console Menu)
 # ========================================
 function Show-EnvironmentPicker {
-    Add-Type -AssemblyName System.Windows.Forms
-    Add-Type -AssemblyName System.Drawing
-
-    # Form
-    $form               = New-Object System.Windows.Forms.Form
-    $form.Text          = "Select Power BI Environment"
-    $form.StartPosition = 'CenterScreen'
-    $form.Size          = New-Object System.Drawing.Size(400,320)
-    $form.TopMost       = $true
-
-    # Instruction label
-    $lbl                = New-Object System.Windows.Forms.Label
-    $lbl.Text           = "Select your Power BI environment:"
-    $lbl.AutoSize       = $true
-    $lbl.Location       = New-Object System.Drawing.Point(12,12)
-    $form.Controls.Add($lbl)
-
-    # GroupBox for radio buttons
-    $groupBox           = New-Object System.Windows.Forms.GroupBox
-    $groupBox.Location  = New-Object System.Drawing.Point(12,40)
-    $groupBox.Size      = New-Object System.Drawing.Size(360,180)
-    $groupBox.Text      = "Environments"
-    $form.Controls.Add($groupBox)
-
-    # Radio buttons for each environment
-    $environments = @('Public', 'Germany', 'USGov', 'China', 'USGovHigh', 'USGovMil')
-    $radioButtons = @{}
-    $yPos = 25
-
+    param(
+        [int]$TimeoutSeconds = 120
+    )
+    
+    $environments = @(
+        @{ Number = 1; Name = 'Public'; Description = 'Commercial Cloud (Default)' }
+        @{ Number = 2; Name = 'Germany'; Description = 'Microsoft Cloud Germany' }
+        @{ Number = 3; Name = 'USGov'; Description = 'Azure Government (GCC)' }
+        @{ Number = 4; Name = 'China'; Description = 'Microsoft Cloud China (21Vianet)' }
+        @{ Number = 5; Name = 'USGovHigh'; Description = 'Azure Government (GCC High)' }
+        @{ Number = 6; Name = 'USGovMil'; Description = 'Azure Government (DoD)' }
+    )
+    
+    Write-Host ""
+    Write-Host "╔════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host "║         Select Power BI Environment                       ║" -ForegroundColor Cyan
+    Write-Host "╚════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+    Write-Host ""
+    
     foreach ($env in $environments) {
-        $radio = New-Object System.Windows.Forms.RadioButton
-        $radio.Text = $env
-        $radio.Location = New-Object System.Drawing.Point(15, $yPos)
-        $radio.AutoSize = $true
-        $groupBox.Controls.Add($radio)
-        $radioButtons[$env] = $radio
-        $yPos += 25
+        $number = $env.Number
+        $name = $env.Name.PadRight(12)
+        $desc = $env.Description
+        if ($env.Number -eq 1) {
+            Write-Host "  [$number] $name - $desc" -ForegroundColor Green
+        } else {
+            Write-Host "  [$number] $name - $desc"
+        }
     }
-
-    # Set Public as default selection
-    $radioButtons['Public'].Checked = $true
-
-    # OK button
-    $okBtn             = New-Object System.Windows.Forms.Button
-    $okBtn.Text        = "OK"
-    $okBtn.Width       = 100
-    $okBtn.Location    = New-Object System.Drawing.Point(100,240)
-    $okBtn.Add_Click({
-        $form.Tag = 'OK'
-        $form.Close()
-    })
-    $form.Controls.Add($okBtn)
-
-    # Cancel button
-    $cancelBtn         = New-Object System.Windows.Forms.Button
-    $cancelBtn.Text    = "Cancel"
-    $cancelBtn.Width   = 100
-    $cancelBtn.Location= New-Object System.Drawing.Point(210,240)
-    $cancelBtn.Add_Click({
-        $form.Tag = 'Cancel'
-        $form.Close()
-    })
-    $form.Controls.Add($cancelBtn)
-
-    # Timer (auto-close after 120 seconds)
-    $timer = New-Object System.Windows.Forms.Timer
-    $timer.Interval = 120000  # 120 seconds in milliseconds
-    $timer.Add_Tick({
-        $timer.Stop()
-        $form.Tag = 'Timeout'
-        $form.Close()
-    })
-    $timer.Start()
-
-    try {
-        [void]$form.ShowDialog()
-
-        # Get selected environment
-        $selectedEnvironment = 'Public'  # Default
-        foreach ($env in $environments) {
-            if ($radioButtons[$env].Checked) {
-                $selectedEnvironment = $env
-                break
+    
+    Write-Host ""
+    Write-Host "Enter selection [1-6] or press Enter for default (Public)" -ForegroundColor Yellow
+    Write-Host "Timeout: $TimeoutSeconds seconds" -ForegroundColor DarkGray
+    Write-Host ""
+    
+    $selectedEnvironment = 'Public'  # Default
+    $inputBuffer = ""
+    $endTime = (Get-Date).AddSeconds($TimeoutSeconds)
+    
+    Write-Host -NoNewline "Your choice: " -ForegroundColor Cyan
+    
+    while ((Get-Date) -lt $endTime) {
+        if ([Console]::KeyAvailable) {
+            $key = [Console]::ReadKey($true)
+            
+            # Enter pressed - stop reading
+            if ($key.Key -eq "Enter") {
+                Write-Host ""
+                if ([string]::IsNullOrWhiteSpace($inputBuffer)) {
+                    Write-Host "Using default: Public" -ForegroundColor Green
+                    return 'Public'
+                }
+                
+                $choice = 0
+                if ([int]::TryParse($inputBuffer.Trim(), [ref]$choice)) {
+                    $selected = $environments | Where-Object { $_.Number -eq $choice }
+                    if ($selected) {
+                        Write-Host "Selected: $($selected.Name)" -ForegroundColor Green
+                        return $selected.Name
+                    }
+                }
+                
+                Write-Host "Invalid selection. Using default: Public" -ForegroundColor Yellow
+                return 'Public'
+            }
+            # Backspace
+            elseif ($key.Key -eq "Backspace") {
+                if ($inputBuffer.Length -gt 0) {
+                    $inputBuffer = $inputBuffer.Substring(0, $inputBuffer.Length - 1)
+                    Write-Host -NoNewline "`b `b"
+                }
+            }
+            # Only accept numeric input
+            elseif ($key.KeyChar -match '[1-6]' -and $inputBuffer.Length -eq 0) {
+                $inputBuffer += $key.KeyChar
+                Write-Host -NoNewline $key.KeyChar -ForegroundColor Cyan
             }
         }
-
-        # Handle cancellation or timeout
-        if ($form.Tag -eq 'Cancel') {
-            Write-Host "Environment selection cancelled - defaulting to Public" -ForegroundColor Yellow
-            $selectedEnvironment = 'Public'
-        }
-        elseif ($form.Tag -eq 'Timeout') {
-            Write-Host "Timeout reached - defaulting to Public" -ForegroundColor Yellow
-            $selectedEnvironment = 'Public'
-        }
-
-        return $selectedEnvironment
+        Start-Sleep -Milliseconds 100
     }
-    finally {
-        # Ensure resources are always disposed
-        if ($null -ne $timer) { 
-            $timer.Stop()
-            $timer.Dispose() 
-        }
-        if ($null -ne $form) { $form.Dispose() }
-        
-        # Complete Windows Forms cleanup to prevent threading issues with MSAL
-        # Process any remaining messages in the queue
-        for ($i = 0; $i -lt 10; $i++) {
-            [System.Windows.Forms.Application]::DoEvents()
-            Start-Sleep -Milliseconds 10
-        }
-        
-        # Force garbage collection to clean up COM objects
-        [System.GC]::Collect()
-        [System.GC]::WaitForPendingFinalizers()
-    }
+    
+    Write-Host ""
+    Write-Host "Timeout reached - using default: Public" -ForegroundColor Yellow
+    return 'Public'
 }
 
 # ============================================
 # Prompt for Power BI Environment + Validation
 # ============================================
 if (-not (Get-Variable -Name LoginEnvironment -Scope Script -ErrorAction SilentlyContinue)) {
-
-    # Try WinForms picker; fallback if GUI not available
-    try {
-        $LoginEnvironment = Show-EnvironmentPicker
-    }
-    catch {
-        Write-Warning "WinForms not available. Defaulting to 'Public' environment."
-        $LoginEnvironment = 'Public'
-    }
+    $LoginEnvironment = Show-EnvironmentPicker -TimeoutSeconds 120
 }
 
 # If explicitly 'Public', set to $null for Connect-PowerBIServiceAccount default
