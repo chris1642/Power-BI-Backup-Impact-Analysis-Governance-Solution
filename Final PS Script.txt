@@ -406,9 +406,9 @@ $scriptStartTime = Get-Date
 
 try {
     Connect-PowerBI -Environment $LoginEnvironment -ErrorAction Stop | Out-Null
+    # First attempt is likely to fail due to MSAL interaction with a window pop-up. Second attempt will then succeed.
 }
 catch {
-    # First attempt is expected to fail due to MSAL interaction with window pop-up. Second attempt will succeed.
     Write-Host "[INFO] Connecting to Power BI using environment: $EnvironmentForEndpoints"
     Connect-PowerBI -Environment $LoginEnvironment
 }
