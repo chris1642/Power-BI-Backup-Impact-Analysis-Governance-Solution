@@ -45,7 +45,7 @@ if ($pbiAsset -and $pbiAsset.browser_download_url) {
 }
 
 # =============================
-Download latest Tabular Editor 2 Portable
+# Download latest Tabular Editor 2 Portable
 # =============================
 
 $teZip = Join-Path $configFolder "TabularEditor.zip"
@@ -152,29 +152,153 @@ function Read-HostWithTimeout {
     return ""
 }
 
+# ================================
+# Show Environment Selection Dialog
+# ================================
+function Show-EnvironmentSelectionDialog {
+    param(
+        [int]$TimeoutSeconds = 60
+    )
+
+    Add-Type -AssemblyName System.Windows.Forms
+    Add-Type -AssemblyName System.Drawing
+
+    $form = New-Object System.Windows.Forms.Form
+    $form.Text = "Select Power BI Environment"
+    $form.StartPosition = 'CenterScreen'
+    $form.Size = New-Object System.Drawing.Size(400, 320)
+    $form.TopMost = $true
+    $form.FormBorderStyle = 'FixedDialog'
+    $form.MaximizeBox = $false
+
+    # Label
+    $label = New-Object System.Windows.Forms.Label
+    $label.Text = "Select your Power BI cloud environment:"
+    $label.AutoSize = $true
+    $label.Location = New-Object System.Drawing.Point(20, 20)
+    $form.Controls.Add($label)
+
+    # ListBox for environment selection
+    $listBox = New-Object System.Windows.Forms.ListBox
+    $listBox.Location = New-Object System.Drawing.Point(20, 50)
+    $listBox.Size = New-Object System.Drawing.Size(340, 150)
+    $listBox.SelectionMode = 'One'
+    
+    # Add environment options
+    $environments = @(
+        'Public (Commercial)',
+        'Germany',
+        'USGov',
+        'China',
+        'USGovHigh',
+        'USGovMil'
+    )
+    
+    foreach ($env in $environments) {
+        [void]$listBox.Items.Add($env)
+    }
+    
+    # Set default selection to Public
+    $listBox.SelectedIndex = 0
+    $form.Controls.Add($listBox)
+
+    # Timeout label
+    $timeoutLabel = New-Object System.Windows.Forms.Label
+    $timeoutLabel.Text = "Timeout in $TimeoutSeconds seconds (defaults to Public)"
+    $timeoutLabel.AutoSize = $true
+    $timeoutLabel.Location = New-Object System.Drawing.Point(20, 210)
+    $timeoutLabel.ForeColor = [System.Drawing.Color]::Gray
+    $form.Controls.Add($timeoutLabel)
+
+    # OK button
+    $okButton = New-Object System.Windows.Forms.Button
+    $okButton.Text = "OK"
+    $okButton.Size = New-Object System.Drawing.Size(75, 30)
+    $okButton.Location = New-Object System.Drawing.Point(205, 240)
+    $okButton.Add_Click({
+        $form.Tag = $listBox.SelectedItem
+        $form.Close()
+    })
+    $form.Controls.Add($okButton)
+
+    # Cancel button
+    $cancelButton = New-Object System.Windows.Forms.Button
+    $cancelButton.Text = "Cancel"
+    $cancelButton.Size = New-Object System.Drawing.Size(75, 30)
+    $cancelButton.Location = New-Object System.Drawing.Point(285, 240)
+    $cancelButton.Add_Click({
+        $form.Tag = 'Cancelled'
+        $form.Close()
+    })
+    $form.Controls.Add($cancelButton)
+
+    # Timer for timeout
+    $timer = New-Object System.Windows.Forms.Timer
+    $timer.Interval = $TimeoutSeconds * 1000
+    $timer.Add_Tick({
+        $timer.Stop()
+        $form.Tag = 'Timeout'
+        $form.Close()
+    })
+
+    # Add FormClosing event handler
+    $form.Add_FormClosing({
+        param($sender, $e)
+        $timer.Stop()
+        $timer.Dispose()
+        
+        # If Tag is not set (form closed without button click), mark as cancelled
+        if (-not $form.Tag) {
+            $form.Tag = 'Cancelled'
+        }
+    })
+
+    # Handle double-click on list item (same as OK button)
+    $listBox.Add_DoubleClick({
+        $form.Tag = $listBox.SelectedItem
+        $form.Close()
+    })
+
+    # Set default button and show
+    $form.AcceptButton = $okButton
+    $form.CancelButton = $cancelButton
+    $timer.Start()
+    [void]$form.ShowDialog()
+
+    return $form.Tag
+}
+
 # ============================================
 # Prompt for Power BI Environment + Validation
 # ============================================
 if (-not (Get-Variable -Name LoginEnvironment -Scope Script -ErrorAction SilentlyContinue)) {
 
-    $inputEnv = Read-HostWithTimeout -Prompt "Enter Power BI environment [Public|Germany|USGov|China|USGovHigh|USGovMil] (press Enter for Public)" -TimeoutSeconds 60
+    $selectedEnv = Show-EnvironmentSelectionDialog -TimeoutSeconds 60
 
-    if ([string]::IsNullOrWhiteSpace($inputEnv)) {
+    # Handle timeout, cancellation, or no selection
+    if ($selectedEnv -eq 'Timeout' -or $selectedEnv -eq 'Cancelled' -or [string]::IsNullOrWhiteSpace($selectedEnv)) {
+        Write-Host "No environment selected or timeout reached - defaulting to Public" -ForegroundColor Yellow
         $LoginEnvironment = 'Public'
     }
     else {
-        switch -Regex ($inputEnv.Trim()) {
-            '^public$'        { $LoginEnvironment = 'Public' ; break }
-            '^germany$'       { $LoginEnvironment = 'Germany' ; break }
-            '^usgovhigh$'     { $LoginEnvironment = 'USGovHigh' ; break }
-            '^usgovmil$'      { $LoginEnvironment = 'USGovMil' ; break }
-            '^usgov$'         { $LoginEnvironment = 'USGov' ; break }
-            '^china$'         { $LoginEnvironment = 'China' ; break }
+        # Extract the environment name from the display text
+        # The format is "EnvironmentName" or "EnvironmentName (Description)"
+        $envName = $selectedEnv -replace ' \(.*\)', ''
+        
+        switch ($envName.Trim()) {
+            'Public'       { $LoginEnvironment = 'Public' ; break }
+            'Germany'      { $LoginEnvironment = 'Germany' ; break }
+            'USGovHigh'    { $LoginEnvironment = 'USGovHigh' ; break }
+            'USGovMil'     { $LoginEnvironment = 'USGovMil' ; break }
+            'USGov'        { $LoginEnvironment = 'USGov' ; break }
+            'China'        { $LoginEnvironment = 'China' ; break }
             default {
-                Write-Warning "Unrecognized environment '$inputEnv'. Defaulting to 'Public'."
+                Write-Warning "Unrecognized environment '$selectedEnv'. Defaulting to 'Public'."
                 $LoginEnvironment = 'Public'
             }
         }
+        
+        Write-Host "[INFO] Selected environment: $LoginEnvironment" -ForegroundColor Green
     }
 }
 
@@ -266,10 +390,8 @@ function Connect-PowerBI {
     )
 
     if ($Environment) {
-        Write-Host "[INFO] Connecting to Power BI using environment: $Environment"
         Connect-PowerBIServiceAccount -Environment $Environment | Out-Null
     } else {
-        Write-Host "[INFO] Connecting to Power BI using default environment"
         Connect-PowerBIServiceAccount | Out-Null
     }
 
@@ -281,7 +403,16 @@ function Connect-PowerBI {
 
 # Track script start time
 $scriptStartTime = Get-Date
-Connect-PowerBI -Environment $LoginEnvironment
+
+try {
+    Connect-PowerBI -Environment $LoginEnvironment -ErrorAction Stop | Out-Null
+}
+catch {
+    # First attempt is expected to fail due to MSAL interaction with window pop-up. Second attempt will succeed.
+    Write-Host "[INFO] Connecting to Power BI using environment: $EnvironmentForEndpoints"
+    Connect-PowerBI -Environment $LoginEnvironment
+}
+
 
 # Function to refresh the token in a background job
 # Start a background job that refreshes the token. Pass the environment so child job can reconnect correctly.
@@ -328,6 +459,7 @@ function Get-CurrentAccessToken {
 
 # Create a variable date
 $date = (Get-Date -UFormat "%Y-%m-%d")
+
 
 
 
