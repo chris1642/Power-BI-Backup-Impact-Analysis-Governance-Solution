@@ -72,9 +72,9 @@ This automatically:
 > - Copy/paste the full script, or  
 > - Rename `Final PS Script.txt` → `Final PS Script.ps1` and run directly  
 > 
-> **Environment Selection**: When prompted, enter your Power BI environment:
+> **Environment Selection**: When prompted, choose your Power BI environment:
 > - Press **Enter** for Public cloud (default)
-> - Or enter: `Germany`, `USGov`, `China`, `USGovHigh`, or `USGovMil` for sovereign clouds.
+> - Or choose: `Germany`, `USGov`, `China`, `USGovHigh`, or `USGovMil` for sovereign clouds.
 > - If no selection is made after 120 seconds, it will continue with the default of Public.
 
 #### ✅ Step 4: Open the Power BI File  
